@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.ActivityResultLauncher
@@ -31,6 +32,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.app.ActivityCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.ViewCompat
@@ -212,6 +214,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var translationsSpinner: QuranSpinner
   private lateinit var overlay: FrameLayout
   private lateinit var toolBarArea: View
+  private lateinit var readerModeMushaf: TextView
+  private lateinit var readerModePersian: TextView
 
   private var requestPermissionLauncher: ActivityResultLauncher<String>? = null
 
@@ -468,6 +472,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
 
     initAyahActionPanel()
+    initReaderModeToggle()
 
     if (showingTranslation && translationNames.isNotEmpty()) {
       updateActionBarSpinner()
@@ -1990,6 +1995,45 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     progressDialog = null
   }
 
+  /**
+   * The Tasnim "mushaf / Persian translation and tafsir" toggle. The Persian side opens the
+   * Persian tafsir panel for the selected ayah, or for the first ayah on the page.
+   */
+  private fun initReaderModeToggle() {
+    readerModeMushaf = findViewById(R.id.reader_mode_mushaf)
+    readerModePersian = findViewById(R.id.reader_mode_persian)
+    readerModeMushaf.setOnClickListener {
+      if (slidingPanel.isPaneVisible) {
+        slidingPanel.collapsePane()
+      }
+      setPersianModeSelected(false)
+    }
+    readerModePersian.setOnClickListener { openPersianTafsir() }
+    setPersianModeSelected(false)
+  }
+
+  private fun setPersianModeSelected(persian: Boolean) {
+    val selectedText = ContextCompat.getColor(this, R.color.tasnim_on_primary)
+    val normalText = ContextCompat.getColor(this, R.color.title_color)
+    listOf(readerModeMushaf to !persian, readerModePersian to persian).forEach { (view, selected) ->
+      view.isSelected = selected
+      view.setBackgroundResource(if (selected) R.drawable.tasnim_segment_selected else 0)
+      view.setTextColor(if (selected) selectedText else normalText)
+    }
+  }
+
+  private fun openPersianTafsir() {
+    if (selectionStart == null) {
+      val bounds = quranInfo.getPageBounds(currentPage)
+      readingEventPresenterBridge.setSelection(bounds[0], bounds[1], false)
+    }
+    setPersianModeSelected(true)
+    val tafsirPage =
+      slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
+    // let the selection reach the panel fragments before the panel opens
+    handler.post { showSlider(tafsirPage) }
+  }
+
   private fun showSlider(sliderPage: Int) {
     readingEventPresenterBridge.clearMenuForSelection()
     slidingPager.currentItem = sliderPage
@@ -2050,10 +2094,15 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
       slidingPanel.hidePane()
       readingEventPresenter.onPanelClosed()
+      setPersianModeSelected(false)
     }
 
     override fun onPanelExpanded(panel: View) {
       readingEventPresenter.onPanelOpened()
+      setPersianModeSelected(
+        slidingPager.currentItem ==
+            slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
+      )
     }
 
     override fun onPanelAnchored(panel: View) {

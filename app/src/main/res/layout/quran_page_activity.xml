@@ -20,11 +20,13 @@
       android:visibility="gone"
       />
 
-  <FrameLayout
+  <LinearLayout
       android:id="@+id/toolbar_area"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:background="@color/toolbar"
+      android:elevation="4dp"
+      android:orientation="vertical"
       >
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -35,7 +37,6 @@
         app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight"
         app:titleTextAppearance="@style/ToolbarTitleText"
         app:subtitleTextAppearance="@style/ToolbarSubtitleText"
-        android:elevation="4dp"
         >
       <com.quran.labs.androidquran.view.QuranSpinner
           android:id="@+id/spinner"
@@ -44,7 +45,32 @@
           android:visibility="gone"
           />
     </androidx.appcompat.widget.Toolbar>
-  </FrameLayout>
+
+    <!-- Tasnim: mushaf / Persian translation and tafsir toggle (Reader artboard) -->
+    <LinearLayout
+        android:id="@+id/reader_mode_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/tasnim_segment_track"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        >
+      <TextView
+          android:id="@+id/reader_mode_mushaf"
+          style="@style/TasnimSegment"
+          android:text="@string/tasnim_reader_mushaf"
+          />
+      <TextView
+          android:id="@+id/reader_mode_persian"
+          style="@style/TasnimSegment"
+          android:layout_marginStart="4dp"
+          android:text="@string/tasnim_reader_persian"
+          />
+    </LinearLayout>
+  </LinearLayout>
 
   <com.quran.mobile.feature.audiobar.AudioBarWrapper
       android:id="@+id/audio_area"
