@@ -91,7 +91,7 @@
               android:id="@+id/continue_sura"
               android:layout_width="wrap_content"
               android:layout_height="wrap_content"
-              android:textColor="@color/tasnim_on_primary"
+              android:textColor="@color/tasnim_cream"
               android:textSize="28sp" />
 
           <TextView

@@ -91,7 +91,7 @@
             android:layout_marginBottom="6dp"
             android:text="@string/tasnim_riwaya"
             android:textAppearance="@style/TasnimUiText.Medium"
-            android:textColor="@color/tasnim_on_primary"
+            android:textColor="@color/tasnim_cream"
             android:textSize="18sp"
             android:textStyle="bold" />
       </LinearLayout>

@@ -144,7 +144,7 @@
     <item name="android:gravity">center</item>
     <item name="android:drawablePadding">8dp</item>
     <item name="drawableTint">@color/tasnim_gold_light</item>
-    <item name="android:textColor">@color/tasnim_on_primary</item>
+    <item name="android:textColor">@color/tasnim_cream</item>
     <item name="android:textSize">14sp</item>
     <item name="android:clickable">true</item>
     <item name="android:focusable">true</item>
