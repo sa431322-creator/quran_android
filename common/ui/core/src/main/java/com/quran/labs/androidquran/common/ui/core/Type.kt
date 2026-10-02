@@ -2,113 +2,138 @@ package com.quran.labs.androidquran.common.ui.core
 
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.sp
+import com.quran.mobile.common.ui.core.R
 
-val Roboto = FontFamily.Default
+private fun vazirmatn(weight: FontWeight) = Font(
+  R.font.vazirmatn,
+  weight = weight,
+  variationSettings = FontVariation.Settings(FontVariation.weight(weight.weight))
+)
+
+/** Tasnim UI font (Vazirmatn, OFL). For UI text only, never for Quran text. */
+val Vazirmatn = FontFamily(
+  vazirmatn(FontWeight.W400),
+  vazirmatn(FontWeight.W500),
+  vazirmatn(FontWeight.W600),
+  vazirmatn(FontWeight.W700)
+)
+
+/** Tasnim title font (Noto Kufi Arabic, OFL). For UI titles only. */
+val NotoKufiArabic = FontFamily(
+  Font(
+    R.font.noto_kufi_arabic,
+    weight = FontWeight.W700,
+    variationSettings = FontVariation.Settings(FontVariation.weight(700))
+  )
+)
+
 
 val AppTypography = Typography(
   labelLarge = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.Medium,
       letterSpacing = 0.1.sp,
       lineHeight = 20.sp,
       fontSize = 14.sp
   ),
   labelMedium = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.Medium,
       letterSpacing = 0.5.sp,
       lineHeight = 16.sp,
       fontSize = 12.sp
   ),
   labelSmall = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.Medium,
       letterSpacing = 0.5.sp,
       lineHeight = 16.sp,
       fontSize = 11.sp
   ),
   bodyLarge = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.5.sp,
       lineHeight = 24.sp,
       fontSize = 16.sp
   ),
   bodyMedium = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.25.sp,
       lineHeight = 20.sp,
       fontSize = 14.sp
   ),
   bodySmall = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.4.sp,
       lineHeight = 16.sp,
       fontSize = 12.sp
   ),
   headlineLarge = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 40.sp,
       fontSize = 32.sp
   ),
   headlineMedium = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 36.sp,
       fontSize = 28.sp
   ),
   headlineSmall = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 32.sp,
       fontSize = 24.sp
   ),
   displayLarge = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = (-0.25).sp,
       lineHeight = 64.sp,
       fontSize = 57.sp
   ),
   displayMedium = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 52.sp,
       fontSize = 45.sp
   ),
   displaySmall = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 44.sp,
       fontSize = 36.sp
   ),
   titleLarge = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.W400,
       letterSpacing = 0.sp,
       lineHeight = 28.sp,
       fontSize = 22.sp
   ),
   titleMedium = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.Medium,
       letterSpacing = 0.15.sp,
       lineHeight = 24.sp,
       fontSize = 16.sp
   ),
   titleSmall = TextStyle(
-      fontFamily = Roboto,
+      fontFamily = Vazirmatn,
       fontWeight = FontWeight.Medium,
       letterSpacing = 0.1.sp,
       lineHeight = 20.sp,

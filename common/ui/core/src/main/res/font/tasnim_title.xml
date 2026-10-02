@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Noto Kufi Arabic (OFL) for UI titles only. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:targetApi="o">
+  <font
+      android:font="@font/noto_kufi_arabic"
+      android:fontStyle="normal"
+      android:fontWeight="400"
+      android:fontVariationSettings="'wght' 700"
+      app:font="@font/noto_kufi_arabic"
+      app:fontStyle="normal"
+      app:fontWeight="400"
+      app:fontVariationSettings="'wght' 700" />
+  <font
+      android:font="@font/noto_kufi_arabic"
+      android:fontStyle="normal"
+      android:fontWeight="700"
+      android:fontVariationSettings="'wght' 700"
+      app:font="@font/noto_kufi_arabic"
+      app:fontStyle="normal"
+      app:fontWeight="700"
+      app:fontVariationSettings="'wght' 700" />
+</font-family>

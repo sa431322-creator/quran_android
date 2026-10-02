@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Vazirmatn medium/semibold (OFL) for UI labels. Bold maps to semibold. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:targetApi="o">
+  <font
+      android:font="@font/vazirmatn"
+      android:fontStyle="normal"
+      android:fontWeight="400"
+      android:fontVariationSettings="'wght' 500"
+      app:font="@font/vazirmatn"
+      app:fontStyle="normal"
+      app:fontWeight="400"
+      app:fontVariationSettings="'wght' 500" />
+  <font
+      android:font="@font/vazirmatn"
+      android:fontStyle="normal"
+      android:fontWeight="700"
+      android:fontVariationSettings="'wght' 600"
+      app:font="@font/vazirmatn"
+      app:fontStyle="normal"
+      app:fontWeight="700"
+      app:fontVariationSettings="'wght' 600" />
+</font-family>
