@@ -1,25 +1,25 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <color name="toolbar">@color/surface</color>
-  <color name="toolbar_text">#ffffffff</color>
-  <color name="toolbar_icon_tint">#ffffffff</color>
-  <color name="accent_color">#ffb2dfdb</color>
-  <color name="header_background">#ff424242</color>
+  <color name="toolbar_text">#ffe8e0cc</color>
+  <color name="toolbar_icon_tint">#ffe8e0cc</color>
+  <color name="accent_color">#ff8ccadb</color>
+  <color name="header_background">#ff1a252a</color>
   <color name="header_text_color">@color/sura_number_color</color>
-  <color name="sura_number_color">#7fffffff</color>
-  <color name="surface">#ff212121</color>
-  <color name="secondary_dark_background">#ff303030</color>
+  <color name="sura_number_color">#b3e8e0cc</color>
+  <color name="surface">#ff0e1518</color>
+  <color name="secondary_dark_background">#ff1a252a</color>
   <color name="ripple_dark">#33ffffff</color>
-  <color name="title_color">#ffffffff</color>
-  <color name="sura_details_color">#b2ffffff</color>
-  <color name="toolbar_secondary_text">#ffffffff</color>
-  <color name="panel_background_color">#ff212121</color>
-  <color name="translation_translator_color">#ffa7ffeb</color>
-  <color name="icon_tint">#ffffffff</color>
+  <color name="title_color">#ffe8e0cc</color>
+  <color name="sura_details_color">#ffa9a08c</color>
+  <color name="toolbar_secondary_text">#ffa9a08c</color>
+  <color name="panel_background_color">#ff1a252a</color>
+  <color name="translation_translator_color">#ff8ccadb</color>
+  <color name="icon_tint">#ffe8e0cc</color>
   <color name="indicator_color">@color/accent_color</color>
   <color name="color_control_activated">@color/accent_color</color>
-  <color name="color_control_normal">#89b2dfdb</color>
-  <color name="download_button_background">#ff556f79</color>
+  <color name="color_control_normal">#898ccadb</color>
+  <color name="download_button_background">#ff2a3a40</color>
 
   <color name="ayah_bookmark_color">#ff81c784</color>
 
@@ -29,10 +29,20 @@
   <color name="highlight_list_red">#ffe57373</color>
   <color name="highlight_list_purple">#ffba68c8</color>
   <color name="unhighlighted_bookmark_color">#ff90a4ae</color>
-  <color name="tag_chip_border">#73b2dfdb</color>
+  <color name="tag_chip_border">#738ccadb</color>
 
-  <color name="default_text">#ffffffff</color>
+  <color name="default_text">#ffe8e0cc</color>
 
-  <color name="text_primary">#ffffffff</color>
+  <color name="text_primary">#ffe8e0cc</color>
   <color name="text_hint_color">#80ffffff</color>
+
+  <color name="tasnim_primary">#ff8ccadb</color>
+  <color name="tasnim_on_primary">#ff0e1518</color>
+  <color name="tasnim_ornament">#ff8f7440</color>
+  <color name="tasnim_card">#ff1a252a</color>
+  <color name="tasnim_border">#ff2a3a40</color>
+  <color name="tasnim_muted">#ffa9a08c</color>
+  <color name="tasnim_nav_indicator">#ff1f4e56</color>
+  <color name="tasnim_continue_card">#ff1a252a</color>
+  <color name="tasnim_continue_track">#ff2a3a40</color>
 </resources>
