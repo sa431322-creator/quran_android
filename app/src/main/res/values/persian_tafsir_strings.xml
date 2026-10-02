@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- the bundled tafsir is Persian, so its panel text is always Persian -->
+  <string name="persian_tafsir_ayah_header" translatable="false">سوره %1$s، آیه %2$s</string>
+  <string name="persian_tafsir_unavailable" translatable="false">تفسیر فارسی در دسترس نیست.</string>
+</resources>

@@ -223,6 +223,7 @@ dependencies {
   implementation(project(":common:download"))
   implementation(project(":common:networking"))
   implementation(project(":common:pages"))
+  implementation(project(":common:persiantafsir"))
   implementation(project(":common:preference"))
   implementation(project(":common:reading"))
   implementation(project(":common:recitation"))

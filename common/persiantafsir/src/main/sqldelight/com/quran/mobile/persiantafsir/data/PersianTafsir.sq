@@ -1,0 +1,26 @@
+-- The database is prebuilt by tools/persian-tafsir/convert.mjs and bundled as an asset.
+-- Keep this schema in sync with that script.
+CREATE TABLE IF NOT EXISTS surah(
+  sura INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL,
+  bismillah TEXT
+);
+
+CREATE TABLE IF NOT EXISTS tafsir(
+  sura INTEGER NOT NULL,
+  ayah INTEGER NOT NULL,
+  text TEXT NOT NULL,
+  PRIMARY KEY(sura, ayah)
+);
+
+CREATE TABLE IF NOT EXISTS properties(
+  property TEXT NOT NULL PRIMARY KEY,
+  value TEXT NOT NULL
+);
+
+tafsirForRange:
+SELECT tafsir.sura, tafsir.ayah, tafsir.text, surah.name, surah.bismillah
+FROM tafsir
+JOIN surah ON surah.sura = tafsir.sura
+WHERE tafsir.sura * 1000 + tafsir.ayah BETWEEN :start AND :end
+ORDER BY tafsir.sura, tafsir.ayah;
