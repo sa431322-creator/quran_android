@@ -4,6 +4,7 @@
   <string name="share_ayah">اشتراک‌گذاری آیه</string>
   <string name="share_ayah_text">اشتراک‌گذاری متن آیه</string>
   <string name="translation_ayah">ترجمه آیه</string>
+  <string name="persian_tafsir_ayah">تفسیر فارسی</string>
   <string name="play_from_here">شروع پخش از این آیه</string>
   <string name="recite_from_here">از اینجا بخوان</string>
   <string name="search_key">دکمه جستجو را بفشارید</string>

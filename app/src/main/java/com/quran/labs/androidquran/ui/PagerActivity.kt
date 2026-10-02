@@ -628,7 +628,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         { currentPage },
         { ayahToolBar },
         { ayah: SuraAyah -> ensurePage(ayah.sura, ayah.ayah) },
-        { sliderPage: Int -> showSlider(slidingPagerAdapter.getPagePosition(sliderPage)) }
+        { sliderPage: Int ->
+          val position = slidingPagerAdapter.getPagePositionForOrder(sliderPage)
+          if (position >= 0) showSlider(position)
+        }
       ))
   }
 
@@ -1870,6 +1873,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_translate_ayah) {
         sliderPage =
           slidingPagerAdapter.getPagePosition(SlidingPagerAdapter.TRANSLATION_PAGE)
+      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_persian_tafsir) {
+        sliderPage =
+          slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_play_from_here) {
         quranEventLogger.logAudioPlayback(
           QuranEventLogger.AudioPlaybackSource.AYAH,

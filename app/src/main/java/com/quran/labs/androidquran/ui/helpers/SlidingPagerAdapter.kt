@@ -43,9 +43,20 @@ class SlidingPagerAdapter(
     return if (isRtl) pages.size - 1 - page else page
   }
 
+  /**
+   * Returns the pager position of the panel with the given [AyahActionFragmentProvider.order],
+   * or -1 if no such panel is present. Unlike [getPagePosition], this does not assume that a
+   * panel's order matches its index, which is not true once optional panels are added.
+   */
+  fun getPagePositionForOrder(order: Int): Int {
+    val index = pages.indexOfFirst { it.order == order }
+    return if (index < 0) -1 else getPagePosition(index)
+  }
+
   companion object {
     const val TRANSLATION_PAGE = 0
     const val AUDIO_PAGE = 1
     const val TRANSCRIPT_PAGE = 2
+    const val PERSIAN_TAFSIR_PAGE = 3
   }
 }
