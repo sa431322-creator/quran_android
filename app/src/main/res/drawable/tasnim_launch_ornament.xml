@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Girih-style ornament behind the logo on the start screen (from the design canvas). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="390dp"
+    android:height="312dp"
+    android:viewportWidth="390"
+    android:viewportHeight="312">
+  <group
+      android:pivotX="195"
+      android:pivotY="22"
+      android:rotation="0">
+    <path
+        android:strokeColor="@color/tasnim_gold"
+        android:strokeAlpha="0.22"
+        android:strokeWidth="1.2"
+        android:pathData="M105,22 A90,90 0 1,1 285,22 A90,90 0 1,1 105,22 Z M45,22 A150,150 0 1,1 345,22 A150,150 0 1,1 45,22 Z M-20,22 A215,215 0 1,1 410,22 A215,215 0 1,1 -20,22 Z M135,-38 H255 V82 H135 Z M90,-83 H300 V127 H90 Z" />
+  </group>
+  <group
+      android:pivotX="195"
+      android:pivotY="22"
+      android:rotation="45">
+    <path
+        android:strokeColor="@color/tasnim_gold"
+        android:strokeAlpha="0.22"
+        android:strokeWidth="1.2"
+        android:pathData="M135,-38 H255 V82 H135 Z M90,-83 H300 V127 H90 Z" />
+  </group>
+  <group
+      android:pivotX="195"
+      android:pivotY="22"
+      android:rotation="22.5">
+    <path
+        android:strokeColor="@color/tasnim_gold"
+        android:strokeAlpha="0.22"
+        android:strokeWidth="1.2"
+        android:pathData="M45,-128 H345 V172 H45 Z" />
+  </group>
+  <group
+      android:pivotX="195"
+      android:pivotY="22"
+      android:rotation="67.5">
+    <path
+        android:strokeColor="@color/tasnim_gold"
+        android:strokeAlpha="0.22"
+        android:strokeWidth="1.2"
+        android:pathData="M45,-128 H345 V172 H45 Z" />
+  </group>
+</vector>

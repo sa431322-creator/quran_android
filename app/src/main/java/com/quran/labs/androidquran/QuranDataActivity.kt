@@ -11,10 +11,14 @@ import android.text.TextUtils
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
 import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.model.QuranDataStatus
@@ -28,6 +32,7 @@ import com.quran.labs.androidquran.service.util.QuranDownloadNotifier.ProgressIn
 import com.quran.labs.androidquran.service.util.ServiceIntentHelper
 import com.quran.labs.androidquran.ui.PagerActivity
 import com.quran.labs.androidquran.ui.QuranActivity
+import com.quran.labs.androidquran.ui.TasnimLaunchActivity
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranScreenInfo
 import com.quran.labs.androidquran.util.QuranSettings
@@ -91,6 +96,20 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
     quranApp.applicationComponent.inject(this)
     quranSettings = QuranSettings.getInstance(this)
     quranSettings.upgradePreferences(preferencesUpgrade)
+    applyDefaultPersianLocale()
+  }
+
+  /**
+   * Tasnim is built for Persian speakers: on the first run, if no app language was chosen,
+   * use Persian (which also gives Persian digits). Runs once, so a later choice is kept.
+   */
+  private fun applyDefaultPersianLocale() {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    if (prefs.getBoolean(PREF_TASNIM_DEFAULT_LOCALE_APPLIED, false)) return
+    prefs.edit { putBoolean(PREF_TASNIM_DEFAULT_LOCALE_APPLIED, true) }
+    if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+      AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("fa"))
+    }
   }
 
   override fun onResume() {
@@ -531,7 +550,7 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
         }
       }
       else -> {
-        Intent(this, QuranActivity::class.java).apply {
+        Intent(this, TasnimLaunchActivity::class.java).apply {
           putExtra(
             QuranActivity.EXTRA_SHOW_TRANSLATION_UPGRADE,
             quranSettings.haveUpdatedTranslations()
@@ -542,6 +561,7 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
   }
 
   companion object {
+    private const val PREF_TASNIM_DEFAULT_LOCALE_APPLIED = "tasnimDefaultLocaleApplied"
     const val ACTION_OPEN_PAGE = "com.quran.labs.androidquran.open_page"
     const val PAGES_DOWNLOAD_KEY = "PAGES_DOWNLOAD_KEY"
     private const val REQUEST_POST_NOTIFICATION_PERMISSIONS = 1

@@ -18,9 +18,33 @@
     <item name="android:textColorSecondary">@color/toolbar_secondary_text</item>
   </style>
 
-  <style name="ToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title" />
+  <style name="ToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+    <item name="fontFamily">@font/tasnim_ui_medium</item>
+    <item name="android:fontFamily">@font/tasnim_ui_medium</item>
+  </style>
 
-  <style name="ToolbarSubtitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle" />
+  <style name="ToolbarSubtitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
+  </style>
+
+  <!-- Tasnim UI text. Only for chrome, never for Quran text or ayah snippets. -->
+  <style name="TasnimUiText">
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
+  </style>
+
+  <style name="TasnimUiText.Medium">
+    <item name="fontFamily">@font/tasnim_ui_medium</item>
+    <item name="android:fontFamily">@font/tasnim_ui_medium</item>
+  </style>
+
+  <style name="TasnimTitleText">
+    <item name="fontFamily">@font/tasnim_title</item>
+    <item name="android:fontFamily">@font/tasnim_title</item>
+    <item name="android:textColor">@color/tasnim_primary</item>
+    <item name="android:includeFontPadding">false</item>
+  </style>
 
   <style name="NotificationText" parent="android:TextAppearance.StatusBar.EventContent" />
 
@@ -65,11 +89,15 @@
   </style>
 
   <style name="SearchResult.Location">
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
     <item name="android:textColor">@color/text_hint_color</item>
     <item name="android:textSize">14sp</item>
   </style>
 
   <style name="PanelLabel">
+    <item name="fontFamily">@font/tasnim_ui_medium</item>
+    <item name="android:fontFamily">@font/tasnim_ui_medium</item>
     <item name="android:textColor">@color/panel_label</item>
     <item name="android:textSize">16sp</item>
   </style>
@@ -102,6 +130,31 @@
   <style name="ToastText">
     <item name="android:textSize">14sp</item>
     <item name="android:textStyle">normal</item>
-    <item name="fontFamily">sans-serif</item>
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
+  </style>
+
+  <style name="TasnimLaunchTile" parent="TasnimUiText.Medium">
+    <item name="android:layout_width">0dp</item>
+    <item name="android:layout_height">match_parent</item>
+    <item name="android:layout_weight">1</item>
+    <item name="android:background">@drawable/tasnim_launch_tile</item>
+    <item name="android:gravity">center</item>
+    <item name="android:drawablePadding">8dp</item>
+    <item name="drawableTint">@color/tasnim_gold_light</item>
+    <item name="android:textColor">@color/tasnim_on_primary</item>
+    <item name="android:textSize">14sp</item>
+    <item name="android:clickable">true</item>
+    <item name="android:focusable">true</item>
+  </style>
+
+  <style name="TasnimLaunchSocial">
+    <item name="android:layout_width">52dp</item>
+    <item name="android:layout_height">52dp</item>
+    <item name="android:layout_marginStart">8dp</item>
+    <item name="android:layout_marginEnd">8dp</item>
+    <item name="android:background">@drawable/tasnim_launch_social</item>
+    <item name="android:scaleType">center</item>
+    <item name="tint">@color/tasnim_gold_light</item>
   </style>
 </resources>

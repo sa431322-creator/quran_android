@@ -47,7 +47,7 @@
     <activity
         android:name=".QuranDataActivity"
         android:configChanges="keyboardHidden|orientation|screenSize"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.Splash"
         android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN"/>
@@ -61,15 +61,19 @@
     <activity android:name=".ShortcutsActivity"
               android:exported="true" />
     <activity
+        android:name=".ui.TasnimLaunchActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimLaunch"
+        android:exported="false"/>
+    <activity
         android:name=".ui.QuranActivity"
         android:theme="@style/QuranToolBarDayNight"
         android:exported="false"/>
     <activity
         android:name=".AboutUsActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:exported="false"/>
     <activity android:name=".HelpActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:exported="false"/>
     <activity
         android:name=".ui.PagerActivity"
@@ -78,17 +82,17 @@
         android:exported="false"/>
     <activity
         android:name=".ui.TranslationManagerActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:configChanges="keyboardHidden|orientation|screenSize"
         android:exported="false"/>
     <activity
         android:name=".QuranPreferenceActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:configChanges="keyboardHidden|orientation|screenSize"
         android:exported="false"/>
     <activity
         android:name=".QuranAdvancedPreferenceActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:configChanges="keyboardHidden|orientation|screenSize"
         android:exported="false"/>
 
@@ -170,7 +174,7 @@
     </activity>
 
     <activity android:name=".pageselect.PageSelectActivity"
-        android:theme="@style/QuranToolBarDayNight"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:exported="false"/>
 
     <service

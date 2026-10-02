@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
 
   <style name="Quran" parent="Theme.AppCompat">
     <item name="colorAccent">@color/accent_color</item>
@@ -27,6 +27,23 @@
     <item name="spinnerStyle">?attr/actionDropDownStyle</item>
     <item name="spinnerDropDownItemStyle">@style/SherlockDropDownItem</item>
     <item name="spinnerItemStyle">@style/SherlockSpinnerItem</item>
+  </style>
+
+  <!-- for screens that never show Quran text: the Tasnim UI font everywhere -->
+  <style name="QuranToolBarDayNight.TasnimUi">
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
+  </style>
+
+  <!-- the Tasnim start screen -->
+  <style name="QuranToolBarDayNight.TasnimLaunch" parent="QuranToolBarDayNight.TasnimUi">
+    <item name="android:windowBackground">@color/tasnim_launch_background</item>
+  </style>
+
+  <!-- the launcher activity: Tasnim teal behind the Android 12+ splash icon -->
+  <style name="QuranToolBarDayNight.Splash">
+    <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/tasnim_launch_background</item>
+    <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">@color/tasnim_icon_background</item>
   </style>
 
   <style name="QuranToolBarActionButton" parent="Widget.AppCompat.ActionButton">

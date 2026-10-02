@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasnim UI strings. The app is built for Persian speakers, so these are Persian everywhere. -->
+<resources>
+  <string name="tasnim_tagline" translatable="false">چشمه‌ای از کلام وحی</string>
+  <string name="tasnim_footer" translatable="false">تسنیم… چشمه‌ای از کلام وحی</string>
+  <string name="tasnim_riwaya" translatable="false">روایت حفص از عاصم</string>
+  <string name="tasnim_logo_description" translatable="false">نشانهٔ تسنیم</string>
+
+  <string name="tasnim_section_mushaf" translatable="false">مصحف</string>
+  <string name="tasnim_section_live" translatable="false">پخش زنده</string>
+  <string name="tasnim_section_radio" translatable="false">رادیو</string>
+  <string name="tasnim_sections_description" translatable="false">بخش‌های اصلی</string>
+  <string name="tasnim_menu" translatable="false">منو</string>
+  <string name="tasnim_night_mode" translatable="false">حالت شب</string>
+
+  <string name="tasnim_social_website" translatable="false">وب‌سایت</string>
+  <string name="tasnim_social_email" translatable="false">ایمیل</string>
+  <string name="tasnim_social_video" translatable="false">کانال ویدیویی</string>
+  <string name="tasnim_social_messenger" translatable="false">پیام‌رسان</string>
+  <!-- Links for the start screen. Empty until the final addresses are confirmed. -->
+  <string name="tasnim_url_website" translatable="false"></string>
+  <string name="tasnim_url_email" translatable="false"></string>
+  <string name="tasnim_url_video" translatable="false"></string>
+  <string name="tasnim_url_messenger" translatable="false"></string>
+
+  <string name="tasnim_coming_soon" translatable="false">به‌زودی</string>
+
+  <string name="tasnim_continue_reading" translatable="false">ادامهٔ خواندن</string>
+  <string name="tasnim_start_reading" translatable="false">شروع خواندن</string>
+  <string name="tasnim_page_juz" translatable="false">صفحهٔ %1$s · جزء %2$s</string>
+  <string name="tasnim_live_video" translatable="false">پخش زندهٔ تصویری</string>
+  <string name="tasnim_live_badge" translatable="false">زنده</string>
+
+  <string name="tasnim_nav_description" translatable="false">ناوبری اصلی</string>
+  <string name="tasnim_nav_quran" translatable="false">قرآن</string>
+  <string name="tasnim_nav_listen" translatable="false">شنیدن</string>
+  <string name="tasnim_nav_live" translatable="false">پخش زنده</string>
+  <string name="tasnim_nav_more" translatable="false">بیشتر</string>
+
+  <string name="tasnim_reader_mushaf" translatable="false">مصحف</string>
+  <string name="tasnim_reader_persian" translatable="false">ترجمه و تفسیر فارسی</string>
+</resources>
