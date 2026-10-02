@@ -2,6 +2,8 @@ package com.quran.labs.androidquran.ui.helpers
 
 import android.content.Context
 import android.graphics.PorterDuff
+import android.graphics.Typeface
+import android.util.TypedValue
 import android.util.SparseBooleanArray
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +19,7 @@ import com.quran.data.model.bookmark.Tag
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.common.ui.core.CollectionNames
 import com.quran.labs.androidquran.ui.QuranActivity
+import com.quran.labs.androidquran.ui.util.TypefaceManager
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.JuzView
 import com.quran.labs.androidquran.view.TagsViewGroup
@@ -162,6 +165,7 @@ class QuranListAdapter(
     val item = elements[position]
 
     with(holder) {
+      styleTitle(title, item)
       number.text = QuranUtils.getLocalizedNumber(item.sura)
       metadata.visibility = View.VISIBLE
       metadata.text = item.metadata
@@ -223,6 +227,24 @@ class QuranListAdapter(
         }
       }
     }
+  }
+
+  private val uiTypeface: Typeface? by lazy { ResourcesCompat.getFont(context, com.quran.mobile.common.ui.core.R.font.tasnim_ui_medium) }
+
+  /**
+   * Sura names use the existing Kitab font (as in the Tasnim design), other labels the UI font.
+   * Ayah snippets keep the system font: the UI font is never used for Quran text.
+   */
+  private fun styleTitle(title: TextView, item: QuranRow) {
+    val isSuraRow = item.rowType == QuranRow.NONE && item.sura > 0 &&
+        item.juzType == null && item.imageResource == null
+    val showsAyahText = item.isAyahBookmark || item.isHighlightedAyah
+    title.typeface = when {
+      isSuraRow -> TypefaceManager.getTafseerTypeface(context)
+      showsAyahText -> Typeface.DEFAULT
+      else -> uiTypeface ?: Typeface.DEFAULT
+    }
+    title.setTextSize(TypedValue.COMPLEX_UNIT_SP, if (isSuraRow) 20f else 16f)
   }
 
   private fun bindHeader(holder: HeaderHolder, pos: Int) {

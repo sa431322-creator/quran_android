@@ -15,17 +15,212 @@
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
-        style="@style/ToolBarArea"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
         android:theme="@style/ToolbarStyle"
+        app:contentInsetStart="20dp"
         app:popupTheme="@style/ThemeOverlay.AppCompat"
         app:subtitleTextAppearance="@style/ToolbarSubtitleText"
-        app:titleTextAppearance="@style/ToolbarTitleText" />
+        app:titleTextAppearance="@style/ToolbarTitleText">
+
+      <!-- Tasnim brand: logo and name -->
+      <LinearLayout
+          android:id="@+id/brand"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+        <ImageView
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/tasnim_logo" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:text="@string/app_name"
+            android:textAppearance="@style/TasnimTitleText"
+            android:textSize="24sp" />
+      </LinearLayout>
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- continue reading (Home artboard) -->
+    <LinearLayout
+        android:id="@+id/continue_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/tasnim_continue_card"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:padding="20dp">
+
+      <TextView
+          android:id="@+id/continue_label"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:drawablePadding="8dp"
+          android:gravity="center_vertical"
+          android:text="@string/tasnim_continue_reading"
+          android:textAppearance="@style/TasnimUiText.Medium"
+          android:textColor="@color/tasnim_gold_light"
+          android:textSize="13sp"
+          app:drawableStartCompat="@drawable/ic_tasnim_bookmark"
+          app:drawableTint="@color/tasnim_gold_light" />
+
+      <LinearLayout
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginTop="10dp"
+          android:gravity="bottom"
+          android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+          <TextView
+              android:id="@+id/continue_sura"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:textColor="@color/tasnim_on_primary"
+              android:textSize="28sp" />
+
+          <TextView
+              android:id="@+id/continue_details"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="4dp"
+              android:textAppearance="@style/TasnimUiText"
+              android:textColor="@color/tasnim_on_continue_muted"
+              android:textSize="14sp" />
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/tasnim_circle_cream"
+            android:importantForAccessibility="no"
+            android:scaleType="center"
+            app:srcCompat="@drawable/ic_tasnim_chevron"
+            app:tint="@color/tasnim_continue_card" />
+      </LinearLayout>
+
+      <ProgressBar
+          android:id="@+id/continue_progress"
+          style="?android:attr/progressBarStyleHorizontal"
+          android:layout_width="match_parent"
+          android:layout_height="4dp"
+          android:layout_marginTop="14dp"
+          android:importantForAccessibility="no"
+          android:max="604"
+          android:progressDrawable="@drawable/tasnim_continue_progress" />
+    </LinearLayout>
+
+    <!-- live video and radio (phase 2) -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/tasnim_card_outline"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="8dp">
+
+      <LinearLayout
+          android:id="@+id/live_card"
+          android:layout_width="0dp"
+          android:layout_height="wrap_content"
+          android:layout_weight="1"
+          android:background="?attr/selectableItemBackground"
+          android:gravity="center_vertical"
+          android:orientation="horizontal">
+
+        <FrameLayout
+            android:layout_width="92dp"
+            android:layout_height="52dp"
+            android:background="@drawable/tasnim_video_thumb">
+
+          <ImageView
+              android:layout_width="20dp"
+              android:layout_height="20dp"
+              android:layout_gravity="center"
+              android:importantForAccessibility="no"
+              app:srcCompat="@drawable/ic_tasnim_play"
+              app:tint="#FFE8E0CC" />
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:layout_gravity="top|start"
+              android:layout_margin="5dp"
+              android:background="@drawable/tasnim_live_badge"
+              android:paddingStart="6dp"
+              android:paddingEnd="6dp"
+              android:text="@string/tasnim_live_badge"
+              android:textAppearance="@style/TasnimUiText.Medium"
+              android:textColor="#FFFFFFFF"
+              android:textSize="10sp"
+              android:textStyle="bold" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="12dp"
+            android:orientation="vertical">
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/tasnim_live_video"
+              android:textAppearance="@style/TasnimUiText.Medium"
+              android:textColor="@color/title_color"
+              android:textSize="15sp"
+              android:textStyle="bold" />
+
+          <TextView
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:text="@string/tasnim_coming_soon"
+              android:textAppearance="@style/TasnimUiText"
+              android:textColor="@color/tasnim_muted"
+              android:textSize="12sp" />
+        </LinearLayout>
+      </LinearLayout>
+
+      <TextView
+          android:id="@+id/radio_button"
+          android:layout_width="wrap_content"
+          android:layout_height="44dp"
+          android:layout_marginStart="8dp"
+          android:background="@drawable/tasnim_pill_outline"
+          android:drawablePadding="6dp"
+          android:gravity="center_vertical"
+          android:paddingStart="12dp"
+          android:paddingEnd="12dp"
+          android:text="@string/tasnim_section_radio"
+          android:textAppearance="@style/TasnimUiText.Medium"
+          android:textColor="@color/tasnim_primary"
+          android:textSize="13sp"
+          android:textStyle="bold"
+          app:drawableStartCompat="@drawable/ic_tasnim_radio_waves"
+          app:drawableTint="@color/tasnim_primary" />
+    </LinearLayout>
 
     <com.quran.labs.androidquran.view.SlidingTabLayout
         android:id="@+id/indicator"
-        style="@style/ToolBarArea"
         android:layout_width="match_parent"
         android:layout_height="wrap_content" />
   </LinearLayout>
@@ -33,5 +228,43 @@
   <com.quran.labs.androidquran.view.QuranViewPager
       android:id="@+id/index_pager"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="0dp"
+      android:layout_weight="1" />
+
+  <!-- bottom navigation (Home artboard) -->
+  <LinearLayout
+      android:id="@+id/bottom_nav"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@drawable/tasnim_nav_background"
+      android:contentDescription="@string/tasnim_nav_description"
+      android:minHeight="76dp"
+      android:orientation="horizontal">
+
+    <TextView
+        android:id="@+id/nav_quran"
+        style="@style/TasnimNavItem"
+        android:text="@string/tasnim_nav_quran"
+        android:textColor="@color/tasnim_primary"
+        android:textStyle="bold"
+        app:drawableTopCompat="@drawable/tasnim_nav_quran_selected" />
+
+    <TextView
+        android:id="@+id/nav_listen"
+        style="@style/TasnimNavItem"
+        android:text="@string/tasnim_nav_listen"
+        app:drawableTopCompat="@drawable/ic_tasnim_listen" />
+
+    <TextView
+        android:id="@+id/nav_live"
+        style="@style/TasnimNavItem"
+        android:text="@string/tasnim_nav_live"
+        app:drawableTopCompat="@drawable/ic_tasnim_camera" />
+
+    <TextView
+        android:id="@+id/nav_more"
+        style="@style/TasnimNavItem"
+        android:text="@string/tasnim_nav_more"
+        app:drawableTopCompat="@drawable/ic_tasnim_more" />
+  </LinearLayout>
 </LinearLayout>

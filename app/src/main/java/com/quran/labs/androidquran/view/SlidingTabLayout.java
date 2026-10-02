@@ -32,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 import androidx.viewpager.widget.PagerAdapter;
 import androidx.viewpager.widget.ViewPager;
@@ -85,6 +86,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
   private int mTabViewTextViewId;
   private final int mSelectedTabColor;
   private final int mUnselectedTabColor;
+  private final Typeface mTabTypeface;
 
   private ViewPager mViewPager;
   private ViewPager.OnPageChangeListener mViewPagerPageChangeListener;
@@ -113,7 +115,10 @@ public class SlidingTabLayout extends HorizontalScrollView {
     mTabPadding = (int) (TAB_VIEW_PADDING_DIPS * density);
 
     mSelectedTabColor = ContextCompat.getColor(context, R.color.color_control_activated);
-    mUnselectedTabColor = ContextCompat.getColor(context, R.color.color_control_normal);
+    mUnselectedTabColor = ContextCompat.getColor(context, R.color.tasnim_muted);
+    // Tasnim UI font for the tab labels
+    Typeface tabTypeface = ResourcesCompat.getFont(context, com.quran.mobile.common.ui.core.R.font.tasnim_ui_medium);
+    mTabTypeface = Typeface.create(tabTypeface == null ? Typeface.DEFAULT : tabTypeface, Typeface.BOLD);
 
     mTabStrip = new SlidingTabStrip(context);
     mTabStrip.setSelectedIndicatorColors(ContextCompat.getColor(context, R.color.indicator_color));
@@ -184,7 +189,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
     TextView textView = new TextView(context);
     textView.setGravity(Gravity.CENTER);
     textView.setTextSize(TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP);
-    textView.setTypeface(Typeface.DEFAULT_BOLD);
+    textView.setTypeface(mTabTypeface);
     textView.setSingleLine();
     textView.setTextColor(mUnselectedTabColor);
 
@@ -211,7 +216,7 @@ public class SlidingTabLayout extends HorizontalScrollView {
         TypedValue.COMPLEX_UNIT_SP, TAB_VIEW_TEXT_SIZE_SP, metrics);
     final TextPaint paint = new TextPaint();
     paint.setTextSize(fontSize);
-    paint.setTypeface(Typeface.DEFAULT_BOLD);
+    paint.setTypeface(mTabTypeface);
 
     int targetWidth = 0;
     final int tabs = adapter.getCount();

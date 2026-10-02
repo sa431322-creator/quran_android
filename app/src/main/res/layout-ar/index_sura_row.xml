@@ -5,20 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="72dp"
-    android:paddingLeft="16dp"
-    android:paddingRight="16dp"
     android:background="@drawable/quran_row_background"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp"
     android:orientation="horizontal"
     >
 
   <TextView
       android:id="@+id/suraNumber"
-      android:layout_width="56dp"
-      android:layout_height="wrap_content"
-      android:gravity="center"
+      android:layout_width="40dp"
+      android:layout_height="40dp"
+      android:layout_marginEnd="14dp"
       android:layout_gravity="center"
+      android:background="@drawable/tasnim_sura_star"
+      android:fontFamily="@font/tasnim_ui_medium"
+      android:gravity="center"
       android:textColor="@color/sura_number_color"
-      android:textSize="24sp"
+      android:textSize="13sp"
+      android:textStyle="bold"
       tools:text="23"
       />
 
@@ -60,6 +64,7 @@
         android:layout_height="wrap_content"
         android:gravity="start"
         android:textColor="@color/sura_details_color"
+        android:fontFamily="@font/tasnim_ui"
         android:textSize="14sp"
         tools:text="Makki - 286 Verses"
         />
@@ -79,6 +84,7 @@
       android:layout_height="wrap_content"
       android:layout_gravity="center_vertical"
       android:textColor="@color/sura_details_color"
+      android:fontFamily="@font/tasnim_ui"
       android:textSize="14sp"
       tools:text="1"
       />
