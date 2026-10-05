@@ -30,6 +30,7 @@
   <string name="tasnim_page_juz" translatable="false">صفحهٔ %1$s · جزء %2$s</string>
   <string name="tasnim_live_video" translatable="false">پخش زندهٔ تصویری</string>
   <string name="tasnim_live_badge" translatable="false">زنده</string>
+  <string name="tasnim_live_now" translatable="false">%1$s · هم‌اکنون</string>
 
   <string name="tasnim_nav_description" translatable="false">ناوبری اصلی</string>
   <string name="tasnim_nav_quran" translatable="false">قرآن</string>

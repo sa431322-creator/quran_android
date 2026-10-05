@@ -26,6 +26,7 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.util.ThemeUtil
 import com.quran.mobile.feature.livetv.LiveTvActivity
+import com.quran.mobile.feature.livetv.radio.RadioActivity
 
 /**
  * The Tasnim start screen: the logo, the main sections (mushaf, live video, radio) and the
@@ -57,7 +58,9 @@ class TasnimLaunchActivity : AppCompatActivity() {
     findViewById<View>(R.id.launch_live).setOnClickListener {
       startActivity(Intent(this, LiveTvActivity::class.java))
     }
-    findViewById<View>(R.id.launch_radio).setOnClickListener { comingSoon() }
+    findViewById<View>(R.id.launch_radio).setOnClickListener {
+      startActivity(Intent(this, RadioActivity::class.java))
+    }
     findViewById<View>(R.id.launch_menu).setOnClickListener { showMenu(it) }
     findViewById<View>(R.id.launch_night).setOnClickListener { toggleNightMode() }
 

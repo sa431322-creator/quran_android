@@ -14,7 +14,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ProgressBar
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -66,6 +65,8 @@ import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.di.ExtraScreenProvider
 import com.quran.mobile.feature.livetv.LiveTvActivity
+import com.quran.mobile.feature.livetv.data.LiveChannelRepository
+import com.quran.mobile.feature.livetv.radio.RadioActivity
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -133,6 +134,8 @@ class QuranActivity : AppCompatActivity(),
   lateinit var recentPagesDao: RecentPagesDao
   @Inject
   lateinit var latestPageTracker: LatestPageTracker
+  @Inject
+  lateinit var liveChannelRepository: LiveChannelRepository
   @Inject
   lateinit var translationManagerPresenter: TranslationManagerPresenter
   @Inject
@@ -427,14 +430,15 @@ class QuranActivity : AppCompatActivity(),
 
   private fun setupTasnimHome(toolbar: Toolbar) {
     findViewById<View>(R.id.continue_card).setOnClickListener { jumpToLastPage() }
-    val comingSoon = View.OnClickListener {
-      Toast.makeText(this, R.string.tasnim_coming_soon, Toast.LENGTH_SHORT).show()
-    }
     val openLiveTv = View.OnClickListener {
       startActivity(Intent(this, LiveTvActivity::class.java))
     }
     findViewById<View>(R.id.live_card).setOnClickListener(openLiveTv)
-    findViewById<View>(R.id.radio_button).setOnClickListener(comingSoon)
+    findViewById<TextView>(R.id.live_card_subtitle).text =
+      getString(R.string.tasnim_live_now, liveChannelRepository.channels().first().name)
+    findViewById<View>(R.id.radio_button).setOnClickListener {
+      startActivity(Intent(this, RadioActivity::class.java))
+    }
     findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
     findViewById<View>(R.id.nav_more).setOnClickListener { toolbar.showOverflowMenu() }
