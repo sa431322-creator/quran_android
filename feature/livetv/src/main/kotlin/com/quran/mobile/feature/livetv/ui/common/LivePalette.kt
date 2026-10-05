@@ -20,7 +20,8 @@ data class LivePalette(
   val track: Color,
   val selectedChip: Color,
   val onSelectedChip: Color,
-  val chipText: Color
+  val chipText: Color,
+  val chipBorder: Color
 ) {
   val primary = Color(0xFF1F4E56)
   val onPrimary = Color(0xFFF7F0E1)
@@ -46,7 +47,8 @@ private val LightLivePalette = LivePalette(
   track = Color(0xFFEAE0CA),
   selectedChip = Color(0xFF1C1A16),
   onSelectedChip = Color(0xFFF7F0E1),
-  chipText = Color(0xFF7E5A1C)
+  chipText = Color(0xFF7E5A1C),
+  chipBorder = Color(0xFFC8B48A)
 )
 
 private val DarkLivePalette = LivePalette(
@@ -60,7 +62,8 @@ private val DarkLivePalette = LivePalette(
   track = Color(0xFF1A252A),
   selectedChip = Color(0xFFE8E0CC),
   onSelectedChip = Color(0xFF0E1518),
-  chipText = Color(0xFFE3C58A)
+  chipText = Color(0xFFE3C58A),
+  chipBorder = Color(0xFF5C4416)
 )
 
 val LocalLivePalette = staticCompositionLocalOf { LightLivePalette }

@@ -50,6 +50,7 @@ import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -142,7 +143,7 @@ private fun PhaseChip() {
     fontSize = 12.sp,
     fontWeight = FontWeight.SemiBold,
     modifier = Modifier
-      .border(1.dp, Color(0xFFC8B48A), RoundedCornerShape(14.dp))
+      .border(1.dp, palette.chipBorder, RoundedCornerShape(14.dp))
       .padding(horizontal = 12.dp, vertical = 6.dp)
   )
 }
@@ -169,6 +170,7 @@ private fun NowPlayingCard(
       modifier = Modifier
         .align(Alignment.Start)
         .alpha(if (station.isLive) 1f else 0f)
+        .then(if (station.isLive) Modifier else Modifier.clearAndSetSemantics { })
     )
     WavingLogo(isPlaying = playback.isPlaying)
     Column(

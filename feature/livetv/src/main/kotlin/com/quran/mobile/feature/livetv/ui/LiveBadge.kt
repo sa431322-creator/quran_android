@@ -32,14 +32,6 @@ import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 /** The red «زنده» pill. [pulsing] animates the dot while the broadcast is actually playing. */
 @Composable
 fun LiveBadge(modifier: Modifier = Modifier, pulsing: Boolean = true) {
-  val transition = rememberInfiniteTransition(label = "liveDot")
-  val pulse by transition.animateFloat(
-    initialValue = 1f,
-    targetValue = 0.25f,
-    animationSpec = infiniteRepeatable(tween(durationMillis = 800), RepeatMode.Reverse),
-    label = "liveDotAlpha"
-  )
-
   Row(
     modifier = modifier
       .background(LocalLivePalette.current.live, RoundedCornerShape(14.dp))
@@ -49,7 +41,7 @@ fun LiveBadge(modifier: Modifier = Modifier, pulsing: Boolean = true) {
     Box(
       Modifier
         .size(7.dp)
-        .alpha(if (pulsing) pulse else 1f)
+        .then(if (pulsing) Modifier.pulsing() else Modifier)
         .background(Color.White, CircleShape)
     )
     Spacer(Modifier.width(6.dp))
@@ -61,6 +53,19 @@ fun LiveBadge(modifier: Modifier = Modifier, pulsing: Boolean = true) {
       fontWeight = FontWeight.SemiBold
     )
   }
+}
+
+// a modifier of its own so the infinite animation only runs while pulsing
+@Composable
+private fun Modifier.pulsing(): Modifier {
+  val transition = rememberInfiniteTransition(label = "liveDot")
+  val dotAlpha by transition.animateFloat(
+    initialValue = 1f,
+    targetValue = 0.25f,
+    animationSpec = infiniteRepeatable(tween(durationMillis = 800), RepeatMode.Reverse),
+    label = "liveDotAlpha"
+  )
+  return this.alpha(dotAlpha)
 }
 
 /** The small «● زنده» marker used in channel and station rows. */
