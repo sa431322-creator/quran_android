@@ -5,5 +5,20 @@
       android:name=".LiveTvActivity"
       android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
       android:exported="false" />
+
+    <activity
+      android:name=".radio.RadioActivity"
+      android:exported="false" />
+
+    <!-- background radio; the app manifest declares FOREGROUND_SERVICE_MEDIA_PLAYBACK.
+         exported so system media controls (lock screen, Bluetooth) can connect -->
+    <service
+      android:name=".radio.LiveRadioService"
+      android:exported="true"
+      android:foregroundServiceType="mediaPlayback">
+      <intent-filter>
+        <action android:name="androidx.media3.session.MediaSessionService" />
+      </intent-filter>
+    </service>
   </application>
 </manifest>

@@ -31,4 +31,5 @@
   <string name="livetv_slot_later" translatable="false">سپس</string>
   <string name="livetv_reminder" translatable="false">یادآوری %1$s</string>
   <string name="livetv_reminder_soon" translatable="false">یادآوری برنامه‌ها به‌زودی</string>
+  <string name="livetv_phase_two" translatable="false">فاز ۲</string>
 </resources>
