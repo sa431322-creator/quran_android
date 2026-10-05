@@ -65,6 +65,7 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.di.ExtraScreenProvider
+import com.quran.mobile.feature.livetv.LiveTvActivity
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -429,9 +430,12 @@ class QuranActivity : AppCompatActivity(),
     val comingSoon = View.OnClickListener {
       Toast.makeText(this, R.string.tasnim_coming_soon, Toast.LENGTH_SHORT).show()
     }
-    findViewById<View>(R.id.live_card).setOnClickListener(comingSoon)
+    val openLiveTv = View.OnClickListener {
+      startActivity(Intent(this, LiveTvActivity::class.java))
+    }
+    findViewById<View>(R.id.live_card).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.radio_button).setOnClickListener(comingSoon)
-    findViewById<View>(R.id.nav_live).setOnClickListener(comingSoon)
+    findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
     findViewById<View>(R.id.nav_more).setOnClickListener { toolbar.showOverflowMenu() }
     // the selected item's icon carries its own colors

@@ -23,3 +23,6 @@ crashlytics-build.properties
 com_crashlytics_export_strings.xml
 extras
 app/google-services.json
+
+# Live TV mock broadcast clip: too large for GitHub, kept local only
+feature/livetv/src/main/assets/sample_stream.mp4

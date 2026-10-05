@@ -1,0 +1,9 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+  <application>
+    <!-- configChanges keeps the broadcast running across rotation -->
+    <activity
+      android:name=".LiveTvActivity"
+      android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize"
+      android:exported="false" />
+  </application>
+</manifest>

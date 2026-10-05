@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Live TV strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
+<resources>
+  <string name="livetv_badge" translatable="false">زنده</string>
+  <string name="livetv_guide_title" translatable="false">جدول پخش</string>
+  <string name="livetv_on_air" translatable="false">در حال پخش</string>
+  <string name="livetv_error" translatable="false">پخش در دسترس نیست</string>
+  <string name="livetv_retry" translatable="false">تلاش دوباره</string>
+  <string name="livetv_back" translatable="false">بازگشت</string>
+</resources>
