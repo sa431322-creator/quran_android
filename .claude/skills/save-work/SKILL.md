@@ -29,14 +29,17 @@ git branch --show-current
 ## 3. Quick build check (when Kotlin/Java/Gradle files changed)
 
 ```bash
-./gradlew :app:compileDebugKotlin --offline -q
+JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac --offline -q
 ```
+
+(This compiles both Kotlin and Java. `java` is not on PATH, so JAVA_HOME must point at Android Studio's JBR. "Failed connecting to the daemon" from Kotlin is harmless — it falls back to in-process compilation.)
 
 Run it in the background if it is slow. If it fails, fix the error before committing. If it cannot run (no SDK / network), say so in the summary — do not claim the build passed.
 
 ## 4. Commit
 
 - If on `main` or `master`, create a branch first: `git switch -c <short-topic-name>`.
+- Use the Bash tool with a heredoc for the commit message (PowerShell here-strings piped to `git commit -F -` break).
 - Stage explicit paths (`git add <file> ...`), never `git add -A` blindly.
 - Commit message: one short imperative subject line (English), optional body describing *why*, then the attribution line required by the current session (e.g. `Co-Authored-By: ...`).
 - Never use `--no-verify` or amend an already-pushed commit.
