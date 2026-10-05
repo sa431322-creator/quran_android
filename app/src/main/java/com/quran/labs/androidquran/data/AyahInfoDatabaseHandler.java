@@ -18,15 +18,18 @@ import com.quran.page.common.data.coordinates.PageGlyphsCoords;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 public class AyahInfoDatabaseHandler {
   private static final RectF EMPTY_BOUNDS = new RectF();
   private static final String COL_PAGE = "page_number";
   private static final String COL_LINE = "line_number";
+  private static final int LINES_PER_PAGE = 15;
   private static final String COL_SURA = "sura_number";
   private static final String COL_AYAH = "ayah_number";
   private static final String COL_POSITION = "position";
@@ -102,7 +105,8 @@ public class AyahInfoDatabaseHandler {
           getSuraHeadersForPage(page),
           getVerseMarkersForPage(page));
     } else {
-      return new PageCoordinates(page, bounds, new ArrayList<>(), new ArrayList<>());
+      return new PageCoordinates(page, bounds,
+          getEstimatedSuraHeadersForPage(page), new ArrayList<>());
     }
   }
 
@@ -221,6 +225,93 @@ public class AyahInfoDatabaseHandler {
       DatabaseUtils.closeCursor(cursor);
     }
     return markers;
+  }
+
+  /**
+   * For databases without a sura_headers table, estimate where each sura header on this page is.
+   * A header takes the line two above the first line of its sura (one above for al-Fatiha and
+   * at-Tawbah, which have no separate basmala line), wrapping onto the last line of the previous
+   * page. Only y (the estimated centre of the header line) is set; callers should confirm the
+   * header in the page image before using it.
+   */
+  private List<SuraHeaderLocation> getEstimatedSuraHeadersForPage(int page) {
+    final List<SuraHeaderLocation> headers = new ArrayList<>();
+    Cursor cursor = null;
+    try {
+      final Map<Integer, Integer> headerLines = new HashMap<>();
+      cursor = database.query(GLYPHS_TABLE, new String[] { COL_SURA, COL_PAGE, COL_LINE },
+          COL_AYAH + " = 1 AND " + COL_POSITION + " = 1 AND " + COL_PAGE + " IN (?, ?)",
+          new String[] { String.valueOf(page), String.valueOf(page + 1) },
+          null, null, COL_SURA);
+      while (cursor.moveToNext()) {
+        final int sura = cursor.getInt(0);
+        int headerPage = cursor.getInt(1);
+        int headerLine = cursor.getInt(2) - ((sura == 1 || sura == 9) ? 1 : 2);
+        if (headerLine < 1) {
+          headerPage--;
+          headerLine += LINES_PER_PAGE;
+        }
+        if (headerPage == page) {
+          headerLines.put(sura, headerLine);
+        }
+      }
+      DatabaseUtils.closeCursor(cursor);
+      cursor = null;
+      if (headerLines.isEmpty()) {
+        return headers;
+      }
+
+      final Map<Integer, List<int[]>> lineBounds = new TreeMap<>();
+      cursor = database.query(GLYPHS_TABLE, new String[] { COL_LINE, MIN_Y, MAX_Y },
+          COL_PAGE + " = ?", new String[] { String.valueOf(page) }, null, null, null);
+      while (cursor.moveToNext()) {
+        List<int[]> bounds = lineBounds.get(cursor.getInt(0));
+        if (bounds == null) {
+          bounds = new ArrayList<>();
+          lineBounds.put(cursor.getInt(0), bounds);
+        }
+        bounds.add(new int[] { cursor.getInt(1), cursor.getInt(2) });
+      }
+      if (lineBounds.size() < 2) {
+        return headers;
+      }
+
+      // the centre of each line, from the median glyph top and bottom (tall glyphs skew the mean)
+      final List<Integer> lines = new ArrayList<>(lineBounds.keySet());
+      final float[] centers = new float[lines.size()];
+      for (int i = 0; i < lines.size(); i++) {
+        final List<int[]> bounds = lineBounds.get(lines.get(i));
+        final int[] tops = new int[bounds.size()];
+        final int[] bottoms = new int[bounds.size()];
+        for (int j = 0; j < bounds.size(); j++) {
+          tops[j] = bounds.get(j)[0];
+          bottoms[j] = bounds.get(j)[1];
+        }
+        Arrays.sort(tops);
+        Arrays.sort(bottoms);
+        centers[i] = (tops[tops.length / 2] + bottoms[bottoms.length / 2]) / 2.0f;
+      }
+
+      for (Map.Entry<Integer, Integer> entry : headerLines.entrySet()) {
+        final int line = entry.getValue();
+        int after = 0;
+        while (after < lines.size() && lines.get(after) < line) {
+          after++;
+        }
+        // interpolate between the lines around the header, or extrapolate from the nearest two
+        final int a = Math.max(0, Math.min(after - 1, lines.size() - 2));
+        final int b = a + 1;
+        final float pitch = (centers[b] - centers[a]) / (lines.get(b) - lines.get(a));
+        final float y = centers[a] + pitch * (line - lines.get(a));
+        headers.add(new SuraHeaderLocation(entry.getKey(), 0, Math.round(y), 0, 0));
+      }
+    } catch (Exception e) {
+      // no usable glyph data, so no headers
+      headers.clear();
+    } finally {
+      DatabaseUtils.closeCursor(cursor);
+    }
+    return headers;
   }
 
   private List<SuraHeaderLocation> getSuraHeadersForPage(int page) {

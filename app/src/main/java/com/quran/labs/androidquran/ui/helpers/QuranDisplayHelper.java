@@ -112,21 +112,20 @@ public class QuranDisplayHelper {
     return sb.toString();
   }
 
-  public static PaintDrawable getPaintDrawable(int startX, int endX) {
+  public static PaintDrawable getPaintDrawable(int startX, int endX, int[] colors) {
     PaintDrawable drawable = new PaintDrawable();
     drawable.setShape(new RectShape());
-    drawable.setShaderFactory(getShaderFactory(startX, endX));
+    drawable.setShaderFactory(getShaderFactory(startX, endX, colors));
     return drawable;
   }
 
-  private static ShapeDrawable.ShaderFactory getShaderFactory(final int startX, final int endX) {
+  private static ShapeDrawable.ShaderFactory getShaderFactory(final int startX, final int endX, final int[] colors) {
     return new ShapeDrawable.ShaderFactory() {
 
       @Override
       public Shader resize(int width, int height) {
         return new LinearGradient(startX, 0, endX, 0,
-            new int[]{0xFFDCDAD5, 0xFFFDFDF4,
-                0xFFFFFFFF, 0xFFFDFBEF},
+            colors,
             new float[]{0, 0.18f, 0.48f, 1},
             Shader.TileMode.REPEAT);
       }

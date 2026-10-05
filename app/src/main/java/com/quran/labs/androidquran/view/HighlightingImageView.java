@@ -117,6 +117,10 @@ public class HighlightingImageView extends AppCompatImageView {
       HIGHLIGHT, BACKGROUND, UNDERLINE
   );
 
+  // Draws the Tasnim sura header frames over the page image (day mode only)
+  private final ImageDrawHelper suraHeaderDrawer =
+      new MushafSuraHeaderDrawer(getContext(), () -> isNightMode);
+
   private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS ?
       new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates) : null;
 
@@ -537,6 +541,11 @@ public class HighlightingImageView extends AppCompatImageView {
 
     // Restore the canvas to remove any clippings so the remaining highlights/drawers don't get clipped
     canvas.restore();
+
+    // Cover the sura headers of the image, before the highlights so they tint them too
+    if (pageCoordinates != null) {
+      suraHeaderDrawer.draw(pageCoordinates, canvas, this);
+    }
 
     // Draw remaining highlights (other than HIDE, COLOR)
     if (pageCoordinates != null) {

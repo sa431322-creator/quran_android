@@ -8,7 +8,16 @@
   <color name="surface">#fff7f0e1</color>
   <color name="accent_color">#ff1f4e56</color>
   <color name="accent_color_dark">@color/color_control_normal</color>
-  <color name="page_background">#FFF4CB</color>
+  <color name="page_background">#fff6eedd</color>
+  <!-- the "new background" gradient across a mushaf page: spine shadow to paper, in the page_background tone -->
+  <color name="page_gradient_spine">#ffe6dcc6</color>
+  <color name="page_gradient_inner">#fff3e9d6</color>
+  <color name="page_gradient_middle">#fff6eedd</color>
+  <color name="page_gradient_edge">#fff4ebd8</color>
+  <!-- sura header frames drawn over the madani page images (day mode only) -->
+  <color name="mushaf_sura_header_fill">#ff1f4e56</color>
+  <color name="mushaf_sura_header_gold">#ffd4af37</color>
+  <color name="mushaf_sura_header_pill">@color/page_background</color>
   <color name="secondary_dark_background">#ffffffff</color>
   <color name="header_background">#ffefe5cf</color>
   <color name="header_text_color">@color/sura_number_color</color>
@@ -83,7 +92,7 @@
   <color name="disabled_color">#ffbdbdbd</color>
   <color name="text_hint_color">#ff9e9e9e</color>
 
-  <!-- Tasnim identity tokens, for the UI chrome only. The mushaf page keeps page_background. -->
+  <!-- Tasnim identity tokens, for the UI chrome only. The mushaf page uses page_background. -->
   <color name="tasnim_primary">#ff1f4e56</color>
   <color name="tasnim_on_primary">#fff7f0e1</color>
   <!-- text on surfaces that stay dark in both modes (start screen, continue card) -->
