@@ -14,7 +14,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -25,14 +24,16 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
+import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 
-private val LiveRed = Color(0xFFD32F2F)
-
+/** The red «زنده» pill. [pulsing] animates the dot while the broadcast is actually playing. */
 @Composable
-fun LiveBadge(modifier: Modifier = Modifier) {
+fun LiveBadge(modifier: Modifier = Modifier, pulsing: Boolean = true) {
   val transition = rememberInfiniteTransition(label = "liveDot")
-  val dotAlpha by transition.animateFloat(
+  val pulse by transition.animateFloat(
     initialValue = 1f,
     targetValue = 0.25f,
     animationSpec = infiniteRepeatable(tween(durationMillis = 800), RepeatMode.Reverse),
@@ -41,22 +42,36 @@ fun LiveBadge(modifier: Modifier = Modifier) {
 
   Row(
     modifier = modifier
-      .background(LiveRed, RoundedCornerShape(50))
-      .padding(horizontal = 10.dp, vertical = 4.dp),
+      .background(LocalLivePalette.current.live, RoundedCornerShape(14.dp))
+      .padding(horizontal = 10.dp, vertical = 5.dp),
     verticalAlignment = Alignment.CenterVertically
   ) {
     Box(
       Modifier
-        .size(8.dp)
-        .alpha(dotAlpha)
+        .size(7.dp)
+        .alpha(if (pulsing) pulse else 1f)
         .background(Color.White, CircleShape)
     )
     Spacer(Modifier.width(6.dp))
     Text(
       text = stringResource(R.string.livetv_badge),
       color = Color.White,
-      style = MaterialTheme.typography.labelLarge,
-      fontWeight = FontWeight.Bold
+      fontFamily = Vazirmatn,
+      fontSize = 12.sp,
+      fontWeight = FontWeight.SemiBold
     )
   }
+}
+
+/** The small «● زنده» marker used in channel and station rows. */
+@Composable
+fun LiveMarker(modifier: Modifier = Modifier) {
+  Text(
+    text = stringResource(R.string.livetv_live_marker),
+    color = LocalLivePalette.current.live,
+    fontFamily = Vazirmatn,
+    fontSize = 11.sp,
+    fontWeight = FontWeight.SemiBold,
+    modifier = modifier
+  )
 }

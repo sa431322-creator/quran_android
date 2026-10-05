@@ -1,10 +1,34 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Live TV strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
 <resources>
+  <string name="livetv_title" translatable="false">پخش زنده</string>
   <string name="livetv_badge" translatable="false">زنده</string>
-  <string name="livetv_guide_title" translatable="false">جدول پخش</string>
-  <string name="livetv_on_air" translatable="false">در حال پخش</string>
+  <string name="livetv_live_marker" translatable="false">● زنده</string>
   <string name="livetv_error" translatable="false">پخش در دسترس نیست</string>
   <string name="livetv_retry" translatable="false">تلاش دوباره</string>
   <string name="livetv_back" translatable="false">بازگشت</string>
+  <string name="livetv_mode_video" translatable="false">تصویری</string>
+  <string name="livetv_mode_audio" translatable="false">صوتی</string>
+  <string name="livetv_play" translatable="false">پخش</string>
+  <string name="livetv_pause" translatable="false">توقف</string>
+  <string name="livetv_mute" translatable="false">بی‌صدا</string>
+  <string name="livetv_unmute" translatable="false">صدا</string>
+  <string name="livetv_subtitles" translatable="false">زیرنویس فارسی</string>
+  <string name="livetv_subtitles_unavailable" translatable="false">زیرنویس فارسی برای این پخش در دسترس نیست</string>
+  <string name="livetv_state_on" translatable="false">روشن</string>
+  <string name="livetv_state_off" translatable="false">خاموش</string>
+  <string name="livetv_fullscreen" translatable="false">تمام‌صفحه</string>
+  <string name="livetv_exit_fullscreen" translatable="false">خروج از تمام‌صفحه</string>
+  <string name="livetv_viewers" translatable="false">%1$s بیننده</string>
+  <!-- shown until a backend reports real viewer counts -->
+  <string name="livetv_viewers_unknown" translatable="false">[تعداد]</string>
+  <string name="livetv_share" translatable="false">اشتراک‌گذاری</string>
+  <string name="livetv_share_text" translatable="false">%1$s — %2$s، پخش زنده در تسنیم</string>
+  <string name="livetv_tab_channels" translatable="false">شبکه‌ها</string>
+  <string name="livetv_tab_schedule" translatable="false">برنامهٔ امروز</string>
+  <string name="livetv_slot_now" translatable="false">اکنون</string>
+  <string name="livetv_slot_next" translatable="false">بعدی</string>
+  <string name="livetv_slot_later" translatable="false">سپس</string>
+  <string name="livetv_reminder" translatable="false">یادآوری %1$s</string>
+  <string name="livetv_reminder_soon" translatable="false">یادآوری برنامه‌ها به‌زودی</string>
 </resources>

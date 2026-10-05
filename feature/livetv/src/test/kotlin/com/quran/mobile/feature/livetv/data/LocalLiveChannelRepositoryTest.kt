@@ -5,18 +5,25 @@ import org.junit.Test
 
 class LocalLiveChannelRepositoryTest {
 
-  private val channel = LocalLiveChannelRepository().currentChannel()
+  private val channels = LocalLiveChannelRepository().channels()
 
   @Test
-  fun channelPlaysBundledSample() {
-    assertThat(channel.title).isEqualTo("MVP Local Preview")
-    assertThat(channel.source)
-      .isEqualTo(LiveStreamSource.LocalAsset(LocalLiveChannelRepository.SAMPLE_ASSET))
+  fun everyChannelPlaysBundledSample() {
+    assertThat(channels).isNotEmpty()
+    val sample = LiveStreamSource.LocalAsset(LocalLiveChannelRepository.SAMPLE_ASSET)
+    channels.forEach { assertThat(it.source).isEqualTo(sample) }
   }
 
   @Test
-  fun guideHasExactlyOneProgramOnAir() {
-    assertThat(channel.guide).isNotEmpty()
-    assertThat(channel.guide.count { it.isOnAir }).isEqualTo(1)
+  fun channelIdsAreUnique() {
+    assertThat(channels.map { it.id }).containsNoDuplicates()
+  }
+
+  @Test
+  fun scheduleStartsWithExactlyOneProgramOnAir() {
+    channels.forEach { channel ->
+      assertThat(channel.schedule.first().slot).isEqualTo(ScheduleSlot.NOW)
+      assertThat(channel.schedule.count { it.slot == ScheduleSlot.NOW }).isEqualTo(1)
+    }
   }
 }
