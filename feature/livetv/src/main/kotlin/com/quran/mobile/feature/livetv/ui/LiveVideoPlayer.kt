@@ -29,6 +29,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
@@ -170,6 +172,8 @@ fun LiveVideoPlayer(
       modifier = Modifier
         .align(Alignment.BottomCenter)
         .fillMaxWidth()
+        // keeps the controls readable over bright video
+        .background(Brush.verticalGradient(listOf(Color.Transparent, Color.Black.copy(alpha = 0.6f))))
         .padding(start = 6.dp, end = 6.dp, bottom = 4.dp)
     ) {
       Box(

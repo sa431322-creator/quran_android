@@ -64,6 +64,8 @@ class LiveRadioService : MediaSessionService() {
     })
 
     session = MediaSession.Builder(this, player)
+      // the Android Auto service in the same process already uses the default (empty) id
+      .setId(SESSION_ID)
       .setCallback(SessionCallback())
       .setSessionActivity(
         PendingIntent.getActivity(
@@ -91,6 +93,10 @@ class LiveRadioService : MediaSessionService() {
     }
     session = null
     super.onDestroy()
+  }
+
+  private companion object {
+    const val SESSION_ID = "tasnim_live_radio"
   }
 
   private fun currentStation(player: Player): RadioStation? =
