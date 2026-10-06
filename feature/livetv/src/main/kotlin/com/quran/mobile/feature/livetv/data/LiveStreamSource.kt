@@ -13,6 +13,15 @@ sealed interface LiveStreamSource {
     override val loops: Boolean = true
   }
 
+  /** Several bundled videos played one after another, the whole list looped. */
+  data class LocalPlaylist(val assetPaths: List<String>) : LiveStreamSource {
+    init {
+      require(assetPaths.isNotEmpty()) { "a playlist needs at least one video" }
+    }
+
+    override val loops: Boolean = true
+  }
+
   /** A remote stream, such as an HLS (.m3u8) or DASH (.mpd) live feed. */
   data class Remote(val url: String, val format: StreamFormat) : LiveStreamSource {
     override val loops: Boolean = false

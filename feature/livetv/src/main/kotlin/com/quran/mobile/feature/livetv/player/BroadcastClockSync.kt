@@ -9,6 +9,9 @@ import androidx.media3.common.Player
  * whenever the user resumes it, it jumps to where a broadcast started at the epoch would
  * be now. Without this the clip restarts at 0:00 on every open and resumes where it was
  * paused, which a live feed never does.
+ *
+ * In a playlist the sync is within the video playing at the time; the playlist as a
+ * whole always opens on its first video.
  */
 internal class BroadcastClockSync(
   private val player: Player,
@@ -18,8 +21,9 @@ internal class BroadcastClockSync(
   private var synced = false
 
   override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-    // a repeat is the same broadcast continuing; a new item is a new one
-    if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_REPEAT) synced = false
+    // repeating or moving on to the next video of a playlist is the same broadcast
+    // continuing; only a new source (such as switching radio station) is a new one
+    if (reason == Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) synced = false
   }
 
   override fun onPlaybackStateChanged(playbackState: Int) {

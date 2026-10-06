@@ -5,7 +5,7 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 /**
- * Placeholder channels from the design, all backed by the clip bundled in assets. The
+ * Placeholder channels from the design, backed by the clips bundled in assets. The
  * [bracketed] names are placeholders for the real channel names. When the streaming
  * backend exists, replace this with a repository returning [LiveStreamSource.Remote];
  * nothing else changes.
@@ -20,7 +20,7 @@ class LocalLiveChannelRepository : LiveChannelRepository {
       name = "[نام شبکه]",
       description = "تلاوت و نماز جماعت به‌صورت زنده",
       currentProgram = "[عنوان برنامهٔ در حال پخش]",
-      source = sample,
+      source = mainPlaylist,
       schedule = schedule
     ),
     LiveChannel(
@@ -43,8 +43,12 @@ class LocalLiveChannelRepository : LiveChannelRepository {
 
   companion object {
     const val SAMPLE_ASSET = "sample_stream.mp4"
+    const val SECOND_ASSET = "second_stream.mp4"
 
     private val sample = LiveStreamSource.LocalAsset(SAMPLE_ASSET)
+
+    // the main channel plays both clips back to back, like a longer broadcast
+    private val mainPlaylist = LiveStreamSource.LocalPlaylist(listOf(SAMPLE_ASSET, SECOND_ASSET))
 
     private val schedule = listOf(
       ScheduleEntry(ScheduleSlot.NOW, "تلاوت مجلسی", "[نام قاری]"),

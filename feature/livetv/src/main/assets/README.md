@@ -1,10 +1,13 @@
-# Live TV sample clip
+# Live TV sample clips
 
-`sample_stream.mp4` in this folder is the mock "live" broadcast. It is played on a loop
-by `LivePlayerController` until the real streaming backend exists.
+The videos in this folder are the mock "live" broadcasts, looped by `LivePlayerController`
+until the real streaming backend exists:
 
-- The file is **gitignored** (it is ~389 MB; GitHub rejects files over 100 MB).
-  Copy it here locally before building, otherwise the Live TV screen shows its
-  "stream unavailable" state.
-- **Before any Play release**, replace it with a short, compressed clip (~10–20 MB),
-  or switch `LocalLiveChannelRepository` to a remote HLS/DASH source.
+- `sample_stream.mp4` (~389 MB) — every channel.
+- `second_stream.mp4` (~1.09 GB) — played after `sample_stream.mp4` on the main channel.
+
+Both files are **gitignored** (GitHub rejects files over 100 MB). Copy them here locally
+before building, otherwise the Live TV screen shows its "stream unavailable" state.
+
+**Before any Play release**, replace them with short, compressed clips (~10–20 MB each),
+or switch `LocalLiveChannelRepository` to a remote HLS/DASH source.

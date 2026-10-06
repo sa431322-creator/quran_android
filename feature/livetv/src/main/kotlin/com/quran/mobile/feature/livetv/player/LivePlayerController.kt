@@ -83,7 +83,7 @@ class LivePlayerController(
     exoPlayer.addListener(sync)
     exoPlayer.volume = if (_isMuted.value) 0f else 1f
     applySubtitlePreference(exoPlayer)
-    exoPlayer.setMediaItem(LiveStreamMediaItems.from(source))
+    exoPlayer.setMediaItems(LiveStreamMediaItems.playlist(source))
     exoPlayer.repeatMode = if (source.loops) Player.REPEAT_MODE_ALL else Player.REPEAT_MODE_OFF
     exoPlayer.playWhenReady = true
     exoPlayer.prepare()
