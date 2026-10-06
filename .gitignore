@@ -25,5 +25,4 @@ extras
 app/google-services.json
 
 # Live TV mock broadcast clip: too large for GitHub, kept local only
-feature/livetv/src/main/assets/sample_stream.mp4
 feature/livetv/src/main/assets/second_stream.mp4

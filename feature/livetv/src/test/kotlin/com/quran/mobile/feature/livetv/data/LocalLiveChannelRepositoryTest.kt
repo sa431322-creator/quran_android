@@ -8,18 +8,10 @@ class LocalLiveChannelRepositoryTest {
   private val channels = LocalLiveChannelRepository().channels()
 
   @Test
-  fun mainChannelPlaysBothClipsInOrder() {
-    assertThat(channels.first().source).isEqualTo(
-      LiveStreamSource.LocalPlaylist(
-        listOf(LocalLiveChannelRepository.SAMPLE_ASSET, LocalLiveChannelRepository.SECOND_ASSET)
-      )
-    )
-  }
-
-  @Test
-  fun otherChannelsPlayBundledSample() {
-    val sample = LiveStreamSource.LocalAsset(LocalLiveChannelRepository.SAMPLE_ASSET)
-    channels.drop(1).forEach { assertThat(it.source).isEqualTo(sample) }
+  fun everyChannelPlaysBundledSample() {
+    assertThat(channels).isNotEmpty()
+    val sample = LiveStreamSource.LocalAsset("second_stream.mp4")
+    channels.forEach { assertThat(it.source).isEqualTo(sample) }
   }
 
   @Test
