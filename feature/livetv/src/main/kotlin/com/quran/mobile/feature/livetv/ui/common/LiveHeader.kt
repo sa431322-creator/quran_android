@@ -19,13 +19,14 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.NotoKufiArabic
 import com.quran.mobile.feature.livetv.R
 
 /** Back button, the «پخش زنده» title, and an optional trailing slot. */
 @Composable
 fun LiveHeader(onBack: () -> Unit, trailing: @Composable RowScope.() -> Unit = {}) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   Row(
     modifier = Modifier
       .fillMaxWidth()

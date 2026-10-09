@@ -47,13 +47,13 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
 import com.quran.mobile.feature.livetv.data.LiveStreamSource
 import com.quran.mobile.feature.livetv.player.LivePlayerController
 import com.quran.mobile.feature.livetv.player.LivePlayerState
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
-import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 import com.quran.mobile.feature.livetv.ui.common.formatPersianCount
 
 /**
@@ -77,7 +77,7 @@ fun LiveVideoPlayer(
 ) {
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val controller = remember(source) { LivePlayerController(context, source) }
   val playerView = remember {
     PlayerView(context).apply {
@@ -231,7 +231,7 @@ fun LiveVideoPlayer(
 
 @Composable
 private fun ViewerCount(viewerCount: Int?) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val count = viewerCount?.let(::formatPersianCount)
     ?: stringResource(R.string.livetv_viewers_unknown)
   Row(
@@ -265,7 +265,7 @@ private fun ControlButton(
   enabled: Boolean = true,
   dimmed: Boolean = false
 ) {
-  val tint = LocalLivePalette.current.onPrimary
+  val tint = LocalTasnimPalette.current.onPrimary
   IconButton(onClick = onClick, enabled = enabled, modifier = modifier.size(44.dp)) {
     Icon(
       imageVector = icon,

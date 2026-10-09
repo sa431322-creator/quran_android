@@ -26,12 +26,14 @@ import com.quran.labs.androidquran.QuranPreferenceActivity
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.util.ThemeUtil
+import com.quran.mobile.feature.library.LibraryActivity
 import com.quran.mobile.feature.livetv.LiveTvActivity
 import com.quran.mobile.feature.livetv.radio.RadioActivity
 
 /**
- * The Tasnim start screen: the logo, the main sections (mushaf, live video, radio) and the
- * social links. The mushaf opens [QuranActivity]; live video and radio are phase 2 stubs.
+ * The Tasnim start screen: the logo, the main sections (mushaf, library, live video, radio)
+ * and the social links. The mushaf opens [QuranActivity]; live video and radio are phase 2
+ * stubs, and the library reads from a mock API until the backend exists.
  */
 class TasnimLaunchActivity : AppCompatActivity() {
 
@@ -56,6 +58,9 @@ class TasnimLaunchActivity : AppCompatActivity() {
     }
 
     findViewById<View>(R.id.launch_mushaf).setOnClickListener { openMushaf() }
+    findViewById<View>(R.id.launch_library).setOnClickListener {
+      startActivity(Intent(this, LibraryActivity::class.java))
+    }
     findViewById<View>(R.id.launch_live).setOnClickListener {
       startActivity(Intent(this, LiveTvActivity::class.java))
     }

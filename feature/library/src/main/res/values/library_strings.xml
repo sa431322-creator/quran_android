@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Library strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
+<resources>
+  <string name="library_title" translatable="false">کتابخانه</string>
+  <string name="library_back" translatable="false">بازگشت</string>
+  <string name="library_categories" translatable="false">دسته‌ها</string>
+  <string name="library_category_quran_sciences" translatable="false">علوم قرآن کریم</string>
+  <string name="library_category_quran_translation" translatable="false">ترجمه قرآن کریم</string>
+  <string name="library_category_tajweed" translatable="false">تجوید القرآن الکریم</string>
+  <string name="library_category_tafsir" translatable="false">تفسیر قرآن کریم</string>
+  <string name="library_empty" translatable="false">کتابی در این دسته نیست</string>
+  <string name="library_error" translatable="false">بارگیری کتاب‌ها ممکن نشد</string>
+  <string name="library_retry" translatable="false">تلاش دوباره</string>
+  <string name="library_loading" translatable="false">در حال بارگیری</string>
+  <string name="library_file_unavailable" translatable="false">فایل این کتاب هنوز در دسترس نیست</string>
+</resources>

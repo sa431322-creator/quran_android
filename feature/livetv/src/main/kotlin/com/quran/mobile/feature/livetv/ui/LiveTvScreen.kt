@@ -60,6 +60,8 @@ import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
+import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
 import com.quran.mobile.feature.livetv.data.LiveChannel
@@ -67,8 +69,6 @@ import com.quran.mobile.feature.livetv.data.ScheduleEntry
 import com.quran.mobile.feature.livetv.data.ScheduleSlot
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
-import com.quran.mobile.feature.livetv.ui.common.LivePaletteProvider
-import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 import com.quran.mobile.feature.livetv.ui.common.SegmentedSwitch
 
 private enum class LiveTab { CHANNELS, SCHEDULE }
@@ -91,8 +91,8 @@ fun LiveTvScreen(
 
   // the screen's copy is Persian, so lay it out right to left regardless of device locale
   CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-    LivePaletteProvider {
-      val palette = LocalLivePalette.current
+    TasnimPaletteProvider {
+      val palette = LocalTasnimPalette.current
       Column(
         modifier = Modifier
           .fillMaxSize()
@@ -201,7 +201,7 @@ private fun shareChannel(context: android.content.Context, channel: LiveChannel)
 
 @Composable
 private fun ProgramInfo(channel: LiveChannel, onShare: () -> Unit) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   Column(
     modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp),
     verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -281,7 +281,7 @@ private fun Tabs(selected: LiveTab, onSelect: (LiveTab) -> Unit) {
 
 @Composable
 private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val shape = RoundedCornerShape(20.dp)
   Box(
     modifier = Modifier
@@ -309,7 +309,7 @@ private fun TabChip(label: String, selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun ChannelRow(channel: LiveChannel, selected: Boolean, onClick: () -> Unit) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val shape = RoundedCornerShape(14.dp)
   Row(
     modifier = Modifier
@@ -364,7 +364,7 @@ private fun ChannelRow(channel: LiveChannel, selected: Boolean, onClick: () -> U
 
 @Composable
 private fun ScheduleRow(entry: ScheduleEntry) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val context = LocalContext.current
   val (tag, tagColor) = when (entry.slot) {
     ScheduleSlot.NOW -> stringResource(R.string.livetv_slot_now) to palette.live

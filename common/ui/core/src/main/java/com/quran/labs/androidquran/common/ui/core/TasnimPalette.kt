@@ -1,4 +1,4 @@
-package com.quran.mobile.feature.livetv.ui.common
+package com.quran.labs.androidquran.common.ui.core
 
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
@@ -7,9 +7,9 @@ import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-/** Tasnim tokens used by the live screens, matching the app's tasnim_* colors. */
+/** Tasnim tokens for the Compose screens (live, radio, library), matching the app's tasnim_* colors. */
 @Immutable
-data class LivePalette(
+data class TasnimPalette(
   val background: Color,
   val surface: Color,
   val ink: Color,
@@ -29,14 +29,14 @@ data class LivePalette(
   val gold = Color(0xFFC8A45E)
   val water = Color(0xFF5FA9C1)
 
-  /** Only for live badges. */
+  /** Only for live badges and the video player. */
   val live = Color(0xFFB3261E)
   val videoBackground = Color(0xFF0E1518)
   val thumbnail = Color(0xFF1A252A)
   val onVideo = Color(0xFFE8E0CC)
 }
 
-private val LightLivePalette = LivePalette(
+private val LightTasnimPalette = TasnimPalette(
   background = Color(0xFFF7F0E1),
   surface = Color(0xFFFCF8EF),
   ink = Color(0xFF1C1A16),
@@ -51,7 +51,7 @@ private val LightLivePalette = LivePalette(
   chipBorder = Color(0xFFC8B48A)
 )
 
-private val DarkLivePalette = LivePalette(
+private val DarkTasnimPalette = TasnimPalette(
   background = Color(0xFF0E1518),
   surface = Color(0xFF1A252A),
   ink = Color(0xFFE8E0CC),
@@ -66,10 +66,10 @@ private val DarkLivePalette = LivePalette(
   chipBorder = Color(0xFF5C4416)
 )
 
-val LocalLivePalette = staticCompositionLocalOf { LightLivePalette }
+val LocalTasnimPalette = staticCompositionLocalOf { LightTasnimPalette }
 
 @Composable
-fun LivePaletteProvider(content: @Composable () -> Unit) {
-  val palette = if (isSystemInDarkTheme()) DarkLivePalette else LightLivePalette
-  CompositionLocalProvider(LocalLivePalette provides palette, content = content)
+fun TasnimPaletteProvider(content: @Composable () -> Unit) {
+  val palette = if (isSystemInDarkTheme()) DarkTasnimPalette else LightTasnimPalette
+  CompositionLocalProvider(LocalTasnimPalette provides palette, content = content)
 }

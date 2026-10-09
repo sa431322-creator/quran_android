@@ -60,6 +60,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
+import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
 import com.quran.mobile.feature.livetv.data.RadioStation
@@ -67,8 +69,6 @@ import com.quran.mobile.feature.livetv.radio.RadioConnection
 import com.quran.mobile.feature.livetv.radio.RadioPlaybackState
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
-import com.quran.mobile.feature.livetv.ui.common.LivePaletteProvider
-import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 
 /** The «پخش زنده» radio screen from the design canvas (Radio.dc.html). */
 @Composable
@@ -99,8 +99,8 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
 
   // the screen's copy is Persian, so lay it out right to left regardless of device locale
   CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
-    LivePaletteProvider {
-      val palette = LocalLivePalette.current
+    TasnimPaletteProvider {
+      val palette = LocalTasnimPalette.current
       Column(
         modifier = Modifier
           .fillMaxSize()
@@ -135,7 +135,7 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
 
 @Composable
 private fun PhaseChip() {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   Text(
     text = stringResource(R.string.livetv_phase_two),
     color = palette.chipText,
@@ -154,7 +154,7 @@ private fun NowPlayingCard(
   playback: RadioPlaybackState,
   onTogglePlay: () -> Unit
 ) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   Column(
     modifier = Modifier
       .padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 20.dp)
@@ -199,7 +199,7 @@ private fun NowPlayingCard(
 
 @Composable
 private fun PlayButton(playback: RadioPlaybackState, onClick: () -> Unit) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val showPause = playback.playWhenReady && !playback.hasError
   FilledIconButton(
     onClick = onClick,
@@ -226,7 +226,7 @@ private fun PlayButton(playback: RadioPlaybackState, onClick: () -> Unit) {
 /** The round logo between gold sound-wave arcs, which dim while paused. */
 @Composable
 private fun WavingLogo(isPlaying: Boolean) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val inner by animateFloatAsState(if (isPlaying) 1f else 0.25f, label = "innerWave")
   val outer by animateFloatAsState(if (isPlaying) 0.55f else 0.15f, label = "outerWave")
   Box(modifier = Modifier.size(width = 240.dp, height = 140.dp), contentAlignment = Alignment.Center) {
@@ -260,7 +260,7 @@ private fun WavingLogo(isPlaying: Boolean) {
 
 @Composable
 private fun StationRow(station: RadioStation, selected: Boolean, onClick: () -> Unit) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   val shape = RoundedCornerShape(16.dp)
   Row(
     modifier = Modifier

@@ -18,6 +18,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 
 /** The pill switch from the design's header (تصویری / صوتی). */
@@ -28,7 +29,7 @@ fun SegmentedSwitch(
   onSelect: (Int) -> Unit,
   modifier: Modifier = Modifier
 ) {
-  val palette = LocalLivePalette.current
+  val palette = LocalTasnimPalette.current
   Row(
     modifier = modifier
       .background(palette.track, RoundedCornerShape(20.dp))

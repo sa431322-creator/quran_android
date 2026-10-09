@@ -25,16 +25,16 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
-import com.quran.mobile.feature.livetv.ui.common.LocalLivePalette
 
 /** The red «زنده» pill. [pulsing] animates the dot while the broadcast is actually playing. */
 @Composable
 fun LiveBadge(modifier: Modifier = Modifier, pulsing: Boolean = true) {
   Row(
     modifier = modifier
-      .background(LocalLivePalette.current.live, RoundedCornerShape(14.dp))
+      .background(LocalTasnimPalette.current.live, RoundedCornerShape(14.dp))
       .padding(horizontal = 10.dp, vertical = 5.dp),
     verticalAlignment = Alignment.CenterVertically
   ) {
@@ -73,7 +73,7 @@ private fun Modifier.pulsing(): Modifier {
 fun LiveMarker(modifier: Modifier = Modifier) {
   Text(
     text = stringResource(R.string.livetv_live_marker),
-    color = LocalLivePalette.current.live,
+    color = LocalTasnimPalette.current.live,
     fontFamily = Vazirmatn,
     fontSize = 11.sp,
     fontWeight = FontWeight.SemiBold,
