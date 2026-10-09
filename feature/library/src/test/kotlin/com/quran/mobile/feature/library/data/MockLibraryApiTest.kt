@@ -65,7 +65,7 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "  عنوان  ", description = "", published = true, category = "tajweed")
     )
-    assertThat(created.order).isEqualTo(40)
+    assertThat(created.order).isEqualTo(50)
     assertThat(created.bookTitle).isEqualTo("عنوان")
     assertThat(created.fileUrl).isNull()
     assertThat(api.getBook(created.id)).isEqualTo(created)
@@ -106,7 +106,7 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "x", description = "", published = true, category = "tafsir")
     )
-    assertThat(created.id).isEqualTo("17")
+    assertThat(created.id).isEqualTo("18")
   }
 
   @Test

@@ -53,7 +53,7 @@ class DefaultLibraryRepositoryTest {
     assertThat(tafsir.map { it.order }).containsExactly(10, 15, 20, 40, 50).inOrder()
     // other categories keep their own orders
     assertThat(repository.allBooks(LibraryCategory.TAJWEED).map { it.order })
-      .containsExactly(10, 20, 30).inOrder()
+      .containsExactly(10, 20, 30, 40).inOrder()
   }
 
   @Test

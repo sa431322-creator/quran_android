@@ -45,4 +45,13 @@ class LibraryBookTest {
     assertThat(book.order).isEqualTo(50)
     assertThat(book.bundledAssetPath).isEqualTo("books/tafsir-noor.pdf")
   }
+
+  @Test
+  fun tajweedAsanShipsWithTheApp() {
+    val book = MockLibraryData.BOOKS.single { it.id == "17" }
+    assertThat(book.category).isEqualTo(LibraryCategory.TAJWEED)
+    assertThat(book.published).isTrue()
+    assertThat(book.order).isEqualTo(40)
+    assertThat(book.bundledAssetPath).isEqualTo("books/tajweed-asan.pdf")
+  }
 }
