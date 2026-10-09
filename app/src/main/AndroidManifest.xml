@@ -75,6 +75,13 @@
     <activity android:name=".HelpActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"
         android:exported="false"/>
+    <!-- the live screens draw their own header in Compose; no ActionBar -->
+    <activity
+        android:name="com.quran.mobile.feature.livetv.LiveTvActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
+    <activity
+        android:name="com.quran.mobile.feature.livetv.radio.RadioActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
     <activity
         android:name=".ui.PagerActivity"
         android:launchMode="singleTop"
