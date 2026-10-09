@@ -23,13 +23,14 @@ class RadioActivity : AppCompatActivity() {
       ?.provideQuranApplicationComponent() as? LiveTvComponentInterface
     injector?.liveTvComponentFactory()?.generate()?.inject(this)
 
-    val stations = radioStationRepository.stations()
+    // Tasnim broadcasts a single station
+    val station = radioStationRepository.stations().first()
 
     enableEdgeToEdge()
 
     setContent {
       QuranTheme {
-        RadioScreen(stations = stations, onBack = onBackPressedDispatcher::onBackPressed)
+        RadioScreen(station = station, onBack = onBackPressedDispatcher::onBackPressed)
       }
     }
   }

@@ -32,7 +32,6 @@ data class TasnimPalette(
   /** Only for live badges and the video player. */
   val live = Color(0xFFB3261E)
   val videoBackground = Color(0xFF0E1518)
-  val thumbnail = Color(0xFF1A252A)
   val onVideo = Color(0xFFE8E0CC)
 }
 

@@ -5,25 +5,28 @@ import org.junit.Test
 
 class LocalLiveChannelRepositoryTest {
 
-  private val channels = LocalLiveChannelRepository().channels()
+  private val channel = LocalLiveChannelRepository().channel()
 
   @Test
-  fun everyChannelPlaysBundledSample() {
-    assertThat(channels).isNotEmpty()
-    val sample = LiveStreamSource.LocalAsset("second_stream.mp4")
-    channels.forEach { assertThat(it.source).isEqualTo(sample) }
+  fun channelPlaysBundledSample() {
+    assertThat(channel.source).isEqualTo(LiveStreamSource.LocalAsset("second_stream.mp4"))
   }
 
   @Test
-  fun channelIdsAreUnique() {
-    assertThat(channels.map { it.id }).containsNoDuplicates()
+  fun scheduleIsSortedWithinTheDay() {
+    val starts = channel.schedule.map { it.startMinute }
+    assertThat(starts).isNotEmpty()
+    assertThat(starts).isInStrictOrder()
+    starts.forEach { assertThat(it).isIn(0 until 24 * 60) }
   }
 
   @Test
-  fun scheduleStartsWithExactlyOneProgramOnAir() {
-    channels.forEach { channel ->
-      assertThat(channel.schedule.first().slot).isEqualTo(ScheduleSlot.NOW)
-      assertThat(channel.schedule.count { it.slot == ScheduleSlot.NOW }).isEqualTo(1)
+  fun stationScheduleIsSortedWithinTheDay() {
+    LocalRadioStationRepository().stations().forEach { station ->
+      val starts = station.schedule.map { it.startMinute }
+      assertThat(starts).isNotEmpty()
+      assertThat(starts).isInStrictOrder()
+      starts.forEach { assertThat(it).isIn(0 until 24 * 60) }
     }
   }
 }

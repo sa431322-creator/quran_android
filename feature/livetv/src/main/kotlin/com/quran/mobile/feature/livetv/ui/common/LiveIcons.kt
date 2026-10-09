@@ -22,7 +22,6 @@ object LiveIcons {
   val Fullscreen = stroked("M4 9 V4 H9 M15 4 H20 V9 M20 15 V20 H15 M9 20 H4 V15")
   val FullscreenExit = stroked("M9 4 V9 H4 M20 9 H15 V4 M15 20 V15 H20 M4 15 H9 V20")
   val Viewers = stroked("M2 12 Q12 3 22 12 Q12 21 2 12 Z", CIRCLE_3)
-  val VideoChannel = stroked("M5 6 H15 Q17 6 17 8 V16 Q17 18 15 18 H5 Q3 18 3 16 V8 Q3 6 5 6 Z", "M17 10 L21 7 V17 L17 14")
   val Share = stroked(
     "M15.5 5 a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0",
     "M3.5 12 a2.5 2.5 0 1 0 5 0 a2.5 2.5 0 1 0 -5 0",
@@ -30,10 +29,6 @@ object LiveIcons {
     "M8.2 10.9 L15.8 6.1 M8.2 13.1 L15.8 17.9"
   )
   val Bell = stroked("M6 16 V11 A6 6 0 0 1 18 11 V16 L20 18 H4 Z", "M10 21 H14")
-  val Station = stroked(
-    "M9.8 12 a2.2 2.2 0 1 0 4.4 0 a2.2 2.2 0 1 0 -4.4 0",
-    "M8 8 Q5 12 8 16 M16 8 Q19 12 16 16"
-  )
 }
 
 private const val CIRCLE_3 = "M9 12 a3 3 0 1 0 6 0 a3 3 0 1 0 -6 0"

@@ -8,20 +8,16 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.selection.selectable
-import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -40,7 +36,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -49,11 +44,9 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -69,21 +62,22 @@ import com.quran.mobile.feature.livetv.radio.RadioConnection
 import com.quran.mobile.feature.livetv.radio.RadioPlaybackState
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
+import com.quran.mobile.feature.livetv.ui.common.ScheduleSection
+import com.quran.mobile.feature.livetv.ui.common.rememberOnAirIndex
 
 /** The «پخش زنده» radio screen from the design canvas (Radio.dc.html). */
 @Composable
-fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
+fun RadioScreen(station: RadioStation, onBack: () -> Unit) {
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
   val connection = remember { RadioConnection(context) }
   val playback by connection.state.collectAsState()
-  val defaultStationId = stations.first().id
 
   // connected only while visible; playback itself continues in LiveRadioService
   DisposableEffect(lifecycleOwner, connection) {
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
-        Lifecycle.Event.ON_START -> connection.connect(defaultStationId)
+        Lifecycle.Event.ON_START -> connection.connect(station.id)
         Lifecycle.Event.ON_STOP -> connection.disconnect()
         else -> Unit
       }
@@ -94,8 +88,6 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
       connection.disconnect()
     }
   }
-
-  val current = stations.firstOrNull { it.id == playback.currentStationId } ?: stations.first()
 
   // the screen's copy is Persian, so lay it out right to left regardless of device locale
   CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
@@ -110,24 +102,15 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
       ) {
         LiveHeader(onBack = onBack) { PhaseChip() }
         NowPlayingCard(
-          station = current,
+          station = station,
           playback = playback,
           onTogglePlay = connection::togglePlayPause
         )
-        Column(
-          modifier = Modifier
-            .padding(start = 20.dp, end = 20.dp, bottom = 20.dp)
-            .selectableGroup(),
-          verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          stations.forEach { station ->
-            StationRow(
-              station = station,
-              selected = station.id == current.id,
-              onClick = { connection.play(station.id) }
-            )
-          }
-        }
+        ScheduleSection(
+          entries = station.schedule,
+          onAir = rememberOnAirIndex(station.schedule),
+          modifier = Modifier.padding(bottom = 20.dp)
+        )
       }
     }
   }
@@ -255,59 +238,5 @@ private fun WavingLogo(isPlaying: Boolean) {
         .size(120.dp)
         .clip(CircleShape)
     )
-  }
-}
-
-@Composable
-private fun StationRow(station: RadioStation, selected: Boolean, onClick: () -> Unit) {
-  val palette = LocalTasnimPalette.current
-  val shape = RoundedCornerShape(16.dp)
-  Row(
-    modifier = Modifier
-      .fillMaxWidth()
-      .heightIn(min = 64.dp)
-      .clip(shape)
-      .background(if (selected) palette.surface else Color.Transparent)
-      .border(
-        width = if (selected) 1.5.dp else 1.dp,
-        color = if (selected) palette.accent else palette.border,
-        shape = shape
-      )
-      .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
-      .padding(horizontal = 14.dp, vertical = 10.dp),
-    verticalAlignment = Alignment.CenterVertically,
-    horizontalArrangement = Arrangement.spacedBy(14.dp)
-  ) {
-    Box(
-      modifier = Modifier
-        .size(40.dp)
-        .background(palette.background, RoundedCornerShape(12.dp)),
-      contentAlignment = Alignment.Center
-    ) {
-      Icon(
-        imageVector = LiveIcons.Station,
-        contentDescription = null,
-        tint = palette.accent,
-        modifier = Modifier.size(22.dp)
-      )
-    }
-    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-      Text(
-        text = station.name,
-        color = palette.ink,
-        fontFamily = Vazirmatn,
-        fontSize = 15.sp,
-        fontWeight = FontWeight.SemiBold,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis
-      )
-      Text(
-        text = station.description,
-        color = palette.muted,
-        fontFamily = Vazirmatn,
-        fontSize = 12.sp
-      )
-    }
-    if (station.isLive) LiveMarker()
   }
 }

@@ -18,12 +18,11 @@ class RadioMediaItemsTest {
   private val repository = LocalRadioStationRepository()
 
   @Test
-  fun stationsAreUniqueAndPlayTheSample() {
+  fun singleStationPlaysTheSample() {
     val stations = repository.stations()
-    assertThat(stations).hasSize(4)
-    assertThat(stations.map { it.id }).containsNoDuplicates()
+    assertThat(stations).hasSize(1)
     val sample = LiveStreamSource.LocalAsset(LocalLiveChannelRepository.SAMPLE_ASSET)
-    stations.forEach { assertThat(it.source).isEqualTo(sample) }
+    assertThat(stations.single().source).isEqualTo(sample)
   }
 
   @Test

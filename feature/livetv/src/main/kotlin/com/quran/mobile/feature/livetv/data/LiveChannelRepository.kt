@@ -1,6 +1,6 @@
 package com.quran.mobile.feature.livetv.data
 
 interface LiveChannelRepository {
-  /** All channels, in display order. Never empty. */
-  fun channels(): List<LiveChannel>
+  /** Tasnim broadcasts a single video channel. */
+  fun channel(): LiveChannel
 }

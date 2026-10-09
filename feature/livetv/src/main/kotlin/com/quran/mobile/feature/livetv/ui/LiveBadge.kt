@@ -67,16 +67,3 @@ private fun Modifier.pulsing(): Modifier {
   )
   return this.alpha(dotAlpha)
 }
-
-/** The small «● زنده» marker used in channel and station rows. */
-@Composable
-fun LiveMarker(modifier: Modifier = Modifier) {
-  Text(
-    text = stringResource(R.string.livetv_live_marker),
-    color = LocalTasnimPalette.current.live,
-    fontFamily = Vazirmatn,
-    fontSize = 11.sp,
-    fontWeight = FontWeight.SemiBold,
-    modifier = modifier
-  )
-}

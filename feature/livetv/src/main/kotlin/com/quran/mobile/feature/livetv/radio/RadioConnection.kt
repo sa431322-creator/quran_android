@@ -12,7 +12,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
 data class RadioPlaybackState(
-  val currentStationId: String? = null,
   /** The user wants it playing, even if it is still buffering. */
   val playWhenReady: Boolean = false,
   val isPlaying: Boolean = false,
@@ -85,7 +84,6 @@ class RadioConnection(context: Context) {
 
   private fun updateState(player: Player) {
     _state.value = RadioPlaybackState(
-      currentStationId = player.currentMediaItem?.mediaId,
       playWhenReady = player.playWhenReady,
       isPlaying = player.isPlaying,
       isBuffering = player.playbackState == Player.STATE_BUFFERING,

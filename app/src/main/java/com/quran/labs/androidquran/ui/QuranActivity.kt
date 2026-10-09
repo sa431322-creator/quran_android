@@ -435,7 +435,7 @@ class QuranActivity : AppCompatActivity(),
     }
     findViewById<View>(R.id.live_card).setOnClickListener(openLiveTv)
     findViewById<TextView>(R.id.live_card_subtitle).text =
-      getString(R.string.tasnim_live_now, liveChannelRepository.channels().first().name)
+      getString(R.string.tasnim_live_now, liveChannelRepository.channel().name)
     findViewById<View>(R.id.radio_button).setOnClickListener {
       startActivity(Intent(this, RadioActivity::class.java))
     }

@@ -25,14 +25,14 @@ class LiveTvActivity : AppCompatActivity() {
       ?.provideQuranApplicationComponent() as? LiveTvComponentInterface
     injector?.liveTvComponentFactory()?.generate()?.inject(this)
 
-    val channels = liveChannelRepository.channels()
+    val channel = liveChannelRepository.channel()
 
     enableEdgeToEdge()
 
     setContent {
       QuranTheme {
         LiveTvScreen(
-          channels = channels,
+          channel = channel,
           onBack = onBackPressedDispatcher::onBackPressed,
           onOpenAudio = {
             // the switch swaps screens rather than stacking them

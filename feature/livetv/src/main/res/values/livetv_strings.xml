@@ -3,7 +3,6 @@
 <resources>
   <string name="livetv_title" translatable="false">پخش زنده</string>
   <string name="livetv_badge" translatable="false">زنده</string>
-  <string name="livetv_live_marker" translatable="false">● زنده</string>
   <string name="livetv_error" translatable="false">پخش در دسترس نیست</string>
   <string name="livetv_retry" translatable="false">تلاش دوباره</string>
   <string name="livetv_back" translatable="false">بازگشت</string>
@@ -24,11 +23,8 @@
   <string name="livetv_viewers_unknown" translatable="false">[تعداد]</string>
   <string name="livetv_share" translatable="false">اشتراک‌گذاری</string>
   <string name="livetv_share_text" translatable="false">%1$s — %2$s، پخش زنده در تسنیم</string>
-  <string name="livetv_tab_channels" translatable="false">شبکه‌ها</string>
-  <string name="livetv_tab_schedule" translatable="false">برنامهٔ امروز</string>
-  <string name="livetv_slot_now" translatable="false">اکنون</string>
-  <string name="livetv_slot_next" translatable="false">بعدی</string>
-  <string name="livetv_slot_later" translatable="false">سپس</string>
+  <string name="livetv_schedule_title" translatable="false">برنامهٔ امروز</string>
+  <string name="livetv_on_air" translatable="false">● در حال پخش</string>
   <string name="livetv_reminder" translatable="false">یادآوری %1$s</string>
   <string name="livetv_reminder_soon" translatable="false">یادآوری برنامه‌ها به‌زودی</string>
   <string name="livetv_phase_two" translatable="false">فاز ۲</string>
