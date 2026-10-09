@@ -49,12 +49,12 @@ import androidx.media3.ui.AspectRatioFrameLayout
 import androidx.media3.ui.PlayerView
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
+import com.quran.labs.androidquran.common.ui.core.formatPersianCount
 import com.quran.mobile.feature.livetv.R
 import com.quran.mobile.feature.livetv.data.LiveStreamSource
 import com.quran.mobile.feature.livetv.player.LivePlayerController
 import com.quran.mobile.feature.livetv.player.LivePlayerState
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
-import com.quran.mobile.feature.livetv.ui.common.formatPersianCount
 
 /**
  * The live video surface with its overlays: «زنده» badge, viewer count, logo watermark

@@ -4,7 +4,8 @@ package com.quran.mobile.feature.library.data
  * A library book. Field names match the API's JSON so a real backend maps one to one.
  *
  * [order] positions the book inside its [category] only (10, 20, 30…); it is not an id.
- * [fileUrl] is null while the book has no file yet.
+ * [fileUrl] is an http(s) link, a [BUNDLED_BOOK_PREFIX] path for a PDF shipped in the app, or
+ * null while the book has no file yet.
  */
 data class LibraryBook(
   val id: String,
@@ -41,3 +42,13 @@ data class LibraryBookPatch(
 
 /** One entry of `PATCH /api/library/reorder`. */
 data class OrderUpdate(val id: String, val order: Int)
+
+/** [LibraryBook.fileUrl] prefix of a PDF bundled in the app's assets. */
+const val BUNDLED_BOOK_PREFIX = "file:///android_asset/"
+
+/** The asset path of a book bundled with the app, or null when its file is elsewhere. */
+val LibraryBook.bundledAssetPath: String?
+  get() = fileUrl
+    ?.takeIf { it.startsWith(BUNDLED_BOOK_PREFIX) }
+    ?.removePrefix(BUNDLED_BOOK_PREFIX)
+    ?.takeIf { it.isNotEmpty() }

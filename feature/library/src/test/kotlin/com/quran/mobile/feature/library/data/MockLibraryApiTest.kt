@@ -2,6 +2,7 @@ package com.quran.mobile.feature.library.data
 
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.test.runTest
+import java.io.File
 import org.junit.Test
 
 class MockLibraryApiTest {
@@ -13,8 +14,13 @@ class MockLibraryApiTest {
     val books = MockLibraryData.BOOKS
     assertThat(books.map { it.id }).containsNoDuplicates()
     assertThat(books.map { it.category }.toSet()).containsExactlyElementsIn(LibraryCategory.entries)
-    // no made-up download links
-    books.forEach { assertThat(it.fileUrl).isNull() }
+    // no made-up download links: a book has no file, or a PDF that ships with the app
+    books.filter { it.fileUrl != null }.forEach { book ->
+      val assetPath = book.bundledAssetPath
+      assertThat(assetPath).isNotNull()
+      // unit tests run from the module directory
+      assertThat(File("src/main/assets/$assetPath").isFile).isTrue()
+    }
     books.groupBy { it.category }.values.forEach { inCategory ->
       assertThat(inCategory.map { it.order }).isEqualTo((1..inCategory.size).map { it * 10 })
     }
@@ -100,7 +106,7 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "x", description = "", published = true, category = "tafsir")
     )
-    assertThat(created.id).isEqualTo("14")
+    assertThat(created.id).isEqualTo("15")
   }
 
   @Test

@@ -16,4 +16,7 @@ dependencies {
   // implementation but removed for release builds
   implementation libs.compose.ui.tooling.preview
   implementation libs.compose.ui.tooling
+
+  testImplementation libs.junit
+  testImplementation libs.truth
 }

@@ -13,4 +13,8 @@
   <string name="library_retry" translatable="false">تلاش دوباره</string>
   <string name="library_loading" translatable="false">در حال بارگیری</string>
   <string name="library_file_unavailable" translatable="false">فایل این کتاب هنوز در دسترس نیست</string>
+  <string name="library_reader_error" translatable="false">باز کردن این کتاب ممکن نشد</string>
+  <!-- current page / page count, with Persian digits -->
+  <string name="library_reader_page" translatable="false">%1$s / %2$s</string>
+  <string name="library_reader_page_description" translatable="false">صفحهٔ %1$s</string>
 </resources>

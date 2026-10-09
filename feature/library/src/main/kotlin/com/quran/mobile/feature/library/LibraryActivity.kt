@@ -12,8 +12,10 @@ import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.mobile.di.QuranApplicationComponentProvider
 import com.quran.mobile.feature.library.data.LibraryBook
 import com.quran.mobile.feature.library.data.LibraryCategory
+import com.quran.mobile.feature.library.data.bundledAssetPath
 import com.quran.mobile.feature.library.di.LibraryComponentInterface
 import com.quran.mobile.feature.library.presenter.LibraryPresenter
+import com.quran.mobile.feature.library.reader.LibraryReaderActivity
 import com.quran.mobile.feature.library.ui.LibraryScreen
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.MainScope
@@ -60,8 +62,14 @@ class LibraryActivity : AppCompatActivity() {
     super.onDestroy()
   }
 
-  /** Opens a web link in the browser; there's no in-app reader yet, nor any local files. */
+  /** Opens a bundled book in the reader and a web link in the browser. */
   private fun openBook(book: LibraryBook) {
+    val assetPath = book.bundledAssetPath
+    if (assetPath != null) {
+      startActivity(LibraryReaderActivity.intent(this, book.id, book.bookTitle, assetPath))
+      return
+    }
+
     val uri = book.fileUrl?.let(Uri::parse)
     if (uri == null || uri.scheme?.lowercase() !in setOf("http", "https")) {
       Toast.makeText(this, R.string.library_file_unavailable, Toast.LENGTH_SHORT).show()

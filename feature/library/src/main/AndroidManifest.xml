@@ -3,5 +3,8 @@
     <activity
       android:name=".LibraryActivity"
       android:exported="false" />
+    <activity
+      android:name=".reader.LibraryReaderActivity"
+      android:exported="false" />
   </application>
 </manifest>

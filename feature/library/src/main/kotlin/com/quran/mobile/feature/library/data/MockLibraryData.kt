@@ -6,9 +6,9 @@ import com.quran.mobile.feature.library.data.LibraryCategory.TAFSIR
 import com.quran.mobile.feature.library.data.LibraryCategory.TAJWEED
 
 /**
- * Sample books for [MockLibraryApi]. The [bracketed] titles are placeholders for real books,
- * and none has a file yet, so every [LibraryBook.fileUrl] is null. Each category has one
- * unpublished book to exercise the published filter.
+ * Sample books for [MockLibraryApi]. The [bracketed] titles are placeholders for real books
+ * and have no file; real books carry the PDF bundled under assets/books. Each category has
+ * one unpublished book to exercise the published filter.
  */
 internal object MockLibraryData {
 
@@ -20,6 +20,17 @@ internal object MockLibraryData {
     book("4", QURAN_TRANSLATION, 10, "[ترجمه قرآن ۱]", "ترجمهٔ روان فارسی همراه با متن عربی"),
     book("5", QURAN_TRANSLATION, 20, "[ترجمه قرآن ۲]", "ترجمهٔ تحت‌اللفظی برای آموزش واژگان"),
     book("6", QURAN_TRANSLATION, 30, "[ترجمه قرآن ۳]", "ترجمهٔ همراه با توضیحات کوتاه", published = false),
+    book(
+      "14",
+      QURAN_TRANSLATION,
+      40,
+      "قرآن کریم و ترجمه معانی آن به زبان دری",
+      "ترجمه معانی آیات قرآن کریم است. جای تردید نیست که یکی از مهم‌ترین ابزارهای پژوهشی و " +
+        "راههای درک کامل پیام الله متعال، ترجمه صحیح و روان از معانی آیات کتاب خداست، و این کار، " +
+        "در اثر حاضر به خوبی انجام شده است. این ترجمه به زبان دری توسط مولوی محمد انور بدخشانی " +
+        "تدوین شده است و توسط دکتر عبدالغفور عبدالحق بلوچی و شيخ قريب الله مطيع مراجعه گردیده است.",
+      fileUrl = BUNDLED_BOOK_PREFIX + "books/quran-dari-translation.pdf"
+    ),
 
     book("7", TAJWEED, 10, "[کتاب تجوید ۱]", "مخارج حروف و صفات آن‌ها برای نوآموزان"),
     book("8", TAJWEED, 20, "[کتاب تجوید ۲]", "احکام نون ساکن، تنوین و مدّ"),
@@ -37,14 +48,15 @@ internal object MockLibraryData {
     order: Int,
     title: String,
     description: String,
-    published: Boolean = true
+    published: Boolean = true,
+    fileUrl: String? = null
   ) = LibraryBook(
     id = id,
     bookTitle = title,
     description = description,
     published = published,
     category = category,
-    fileUrl = null,
+    fileUrl = fileUrl,
     order = order
   )
 }

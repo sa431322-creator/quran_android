@@ -43,6 +43,7 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -241,7 +242,10 @@ private fun BookRow(book: LibraryBook, onClick: () -> Unit) {
           color = palette.muted,
           fontFamily = Vazirmatn,
           fontSize = 13.sp,
-          lineHeight = 20.sp
+          lineHeight = 20.sp,
+          // a long description is cut here; the book itself has the rest
+          maxLines = 3,
+          overflow = TextOverflow.Ellipsis
         )
       }
     }
