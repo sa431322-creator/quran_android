@@ -5,12 +5,13 @@ import com.google.common.truth.Truth.assertThat
 import com.quran.mobile.feature.library.data.DefaultLibraryRepository
 import com.quran.mobile.feature.library.data.LibraryCategory
 import com.quran.mobile.feature.library.data.MockLibraryApi
+import com.quran.mobile.feature.library.data.TestLibraryData
 import kotlinx.coroutines.test.runTest
 import org.junit.Test
 
 class LibraryPresenterTest {
 
-  private val api = MockLibraryApi()
+  private val api = MockLibraryApi(TestLibraryData.BOOKS)
   private val presenter = LibraryPresenter(DefaultLibraryRepository(api))
 
   @Test
@@ -22,7 +23,7 @@ class LibraryPresenterTest {
       val loaded = awaitItem()
       assertThat(loaded.selectedCategory).isEqualTo(LibraryCategory.QURAN_SCIENCES)
       val books = (loaded.books as BooksState.Loaded).books
-      assertThat(books.map { it.id }).containsExactly("1", "2", "15").inOrder()
+      assertThat(books.map { it.id }).containsExactly("1", "2").inOrder()
     }
   }
 
@@ -32,7 +33,7 @@ class LibraryPresenterTest {
     presenter.state.test {
       assertThat(awaitItem().selectedCategory).isEqualTo(LibraryCategory.TAJWEED)
       val books = (awaitItem().books as BooksState.Loaded).books
-      assertThat(books.map { it.id }).containsExactly("7", "8", "17").inOrder()
+      assertThat(books.map { it.id }).containsExactly("7", "8").inOrder()
     }
   }
 
@@ -49,7 +50,7 @@ class LibraryPresenterTest {
       assertThat(loading.books).isEqualTo(BooksState.Loading)
 
       val books = (awaitItem().books as BooksState.Loaded).books
-      assertThat(books.map { it.order }).containsExactly(10, 20, 30, 50).inOrder()
+      assertThat(books.map { it.order }).containsExactly(10, 20, 30).inOrder()
     }
   }
 

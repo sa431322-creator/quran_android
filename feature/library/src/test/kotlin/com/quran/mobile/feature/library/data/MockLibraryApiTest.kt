@@ -7,15 +7,16 @@ import org.junit.Test
 
 class MockLibraryApiTest {
 
-  private val api = MockLibraryApi()
+  private val api = MockLibraryApi(TestLibraryData.BOOKS)
 
   @Test
-  fun sampleDataFollowsTheLibraryRules() {
+  fun appCatalogFollowsTheLibraryRules() {
     val books = MockLibraryData.BOOKS
+    assertThat(books.all { it.published }).isTrue()
     assertThat(books.map { it.id }).containsNoDuplicates()
     assertThat(books.map { it.category }.toSet()).containsExactlyElementsIn(LibraryCategory.entries)
-    // no made-up download links: a book has no file, or a PDF that ships with the app
-    books.filter { it.fileUrl != null }.forEach { book ->
+    // no made-up download links: every book is a PDF that ships with the app
+    books.forEach { book ->
       val assetPath = book.bundledAssetPath
       assertThat(assetPath).isNotNull()
       // unit tests run from the module directory
@@ -41,10 +42,10 @@ class MockLibraryApiTest {
     assertThat(tafsir.any { !it.published }).isTrue()
 
     val publishedTafsir = api.getBooks(category = "tafsir", published = true)
-    assertThat(publishedTafsir.map { it.order }).containsExactly(10, 20, 30, 50).inOrder()
+    assertThat(publishedTafsir.map { it.order }).containsExactly(10, 20, 30).inOrder()
 
     val all = api.getBooks()
-    assertThat(all).hasSize(MockLibraryData.BOOKS.size)
+    assertThat(all).hasSize(TestLibraryData.BOOKS.size)
   }
 
   @Test
@@ -65,11 +66,11 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "  عنوان  ", description = "", published = true, category = "tajweed")
     )
-    assertThat(created.order).isEqualTo(50)
+    assertThat(created.order).isEqualTo(40)
     assertThat(created.bookTitle).isEqualTo("عنوان")
     assertThat(created.fileUrl).isNull()
     assertThat(api.getBook(created.id)).isEqualTo(created)
-    assertThat(created.id).isNotIn(MockLibraryData.BOOKS.map { it.id })
+    assertThat(created.id).isNotIn(TestLibraryData.BOOKS.map { it.id })
   }
 
   @Test
@@ -88,7 +89,7 @@ class MockLibraryApiTest {
     val updated = api.updateBook("1", LibraryBookPatch(published = false, order = 15))
     assertThat(updated.published).isFalse()
     assertThat(updated.order).isEqualTo(15)
-    assertThat(updated.bookTitle).isEqualTo(MockLibraryData.BOOKS[0].bookTitle)
+    assertThat(updated.bookTitle).isEqualTo(TestLibraryData.BOOKS[0].bookTitle)
   }
 
   @Test
@@ -106,14 +107,14 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "x", description = "", published = true, category = "tafsir")
     )
-    assertThat(created.id).isEqualTo("18")
+    assertThat(created.id).isEqualTo("14")
   }
 
   @Test
   fun movingToAnotherCategoryPutsTheBookLastThere() = runTest {
     val moved = api.updateBook("1", LibraryBookPatch(category = "tafsir"))
     assertThat(moved.category).isEqualTo(LibraryCategory.TAFSIR)
-    assertThat(moved.order).isEqualTo(60)
+    assertThat(moved.order).isEqualTo(50)
   }
 
   @Test

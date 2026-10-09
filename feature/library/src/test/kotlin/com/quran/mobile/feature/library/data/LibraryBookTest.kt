@@ -33,7 +33,7 @@ class LibraryBookTest {
     val book = MockLibraryData.BOOKS.single { it.id == "15" }
     assertThat(book.category).isEqualTo(LibraryCategory.QURAN_SCIENCES)
     assertThat(book.published).isTrue()
-    assertThat(book.order).isEqualTo(40)
+    assertThat(book.order).isEqualTo(10)
     assertThat(book.bundledAssetPath).isEqualTo("books/quran-and-modern-science.pdf")
   }
 
@@ -42,7 +42,7 @@ class LibraryBookTest {
     val book = MockLibraryData.BOOKS.single { it.id == "16" }
     assertThat(book.category).isEqualTo(LibraryCategory.TAFSIR)
     assertThat(book.published).isTrue()
-    assertThat(book.order).isEqualTo(50)
+    assertThat(book.order).isEqualTo(10)
     assertThat(book.bundledAssetPath).isEqualTo("books/tafsir-noor.pdf")
   }
 
@@ -51,7 +51,7 @@ class LibraryBookTest {
     val book = MockLibraryData.BOOKS.single { it.id == "17" }
     assertThat(book.category).isEqualTo(LibraryCategory.TAJWEED)
     assertThat(book.published).isTrue()
-    assertThat(book.order).isEqualTo(40)
+    assertThat(book.order).isEqualTo(10)
     assertThat(book.bundledAssetPath).isEqualTo("books/tajweed-asan.pdf")
   }
 }

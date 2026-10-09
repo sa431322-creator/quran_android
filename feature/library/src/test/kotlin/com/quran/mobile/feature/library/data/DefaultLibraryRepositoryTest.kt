@@ -6,7 +6,7 @@ import org.junit.Test
 
 class DefaultLibraryRepositoryTest {
 
-  private val api = MockLibraryApi()
+  private val api = MockLibraryApi(TestLibraryData.BOOKS)
   private val repository = DefaultLibraryRepository(api)
 
   @Test
@@ -36,32 +36,32 @@ class DefaultLibraryRepositoryTest {
   @Test
   fun allBooksIncludeUnpublished() = runTest {
     assertThat(repository.allBooks(LibraryCategory.TAFSIR).map { it.id })
-      .containsExactly("10", "11", "12", "13", "16").inOrder()
+      .containsExactly("10", "11", "12", "13").inOrder()
   }
 
   @Test
   fun equalOrdersSortById() = runTest {
     repository.updateBook("12", LibraryBookPatch(order = 10))
     assertThat(repository.publishedBooks(LibraryCategory.TAFSIR).map { it.id })
-      .containsExactly("10", "12", "11", "16").inOrder()
+      .containsExactly("10", "12", "11").inOrder()
   }
 
   @Test
   fun moveBookUsesTheGapAndLeavesOthersAlone() = runTest {
     val tafsir = repository.moveBook("12", toIndex = 1)
-    assertThat(tafsir.map { it.id }).containsExactly("10", "12", "11", "13", "16").inOrder()
-    assertThat(tafsir.map { it.order }).containsExactly(10, 15, 20, 40, 50).inOrder()
+    assertThat(tafsir.map { it.id }).containsExactly("10", "12", "11", "13").inOrder()
+    assertThat(tafsir.map { it.order }).containsExactly(10, 15, 20, 40).inOrder()
     // other categories keep their own orders
     assertThat(repository.allBooks(LibraryCategory.TAJWEED).map { it.order })
-      .containsExactly(10, 20, 30, 40).inOrder()
+      .containsExactly(10, 20, 30).inOrder()
   }
 
   @Test
   fun moveBookRenumbersWhenThereIsNoGap() = runTest {
     repository.updateBook("11", LibraryBookPatch(order = 11))
     val tafsir = repository.moveBook("12", toIndex = 1)
-    assertThat(tafsir.map { it.id }).containsExactly("10", "12", "11", "13", "16").inOrder()
-    assertThat(tafsir.map { it.order }).containsExactly(10, 20, 30, 40, 50).inOrder()
+    assertThat(tafsir.map { it.id }).containsExactly("10", "12", "11", "13").inOrder()
+    assertThat(tafsir.map { it.order }).containsExactly(10, 20, 30, 40).inOrder()
   }
 
   @Test

@@ -12,11 +12,15 @@ import kotlinx.coroutines.sync.withLock
  * An in-memory [LibraryApi] that behaves like the backend will: it validates requests,
  * answers after a short delay and keeps writes until the process dies. Swap the binding
  * to a Retrofit implementation once the real API exists.
+ *
+ * It serves [MockLibraryData] in the app; tests give it their own [seed].
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
-@Inject
-class MockLibraryApi : LibraryApi {
+class MockLibraryApi internal constructor(seed: List<LibraryBook>) : LibraryApi {
+
+  @Inject
+  constructor() : this(MockLibraryData.BOOKS)
 
   /** What the mock answers with, to try the screen's empty and error states. */
   enum class Scenario { NORMAL, EMPTY, ERROR }
@@ -25,8 +29,8 @@ class MockLibraryApi : LibraryApi {
   internal var latencyMillis = 400L
 
   private val mutex = Mutex()
-  private val books = MockLibraryData.BOOKS.associateBy { it.id }.toMutableMap()
-  private var nextId = books.keys.maxOf { it.toInt() } + 1
+  private val books = seed.associateBy { it.id }.toMutableMap()
+  private var nextId = (books.keys.maxOfOrNull { it.toInt() } ?: 0) + 1
 
   override suspend fun getBooks(category: String?, published: Boolean?): List<LibraryBook> =
     respond {
