@@ -2,7 +2,7 @@ package com.quran.mobile.feature.livetv
 
 import android.content.Intent
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
@@ -13,7 +13,7 @@ import com.quran.mobile.feature.livetv.radio.RadioActivity
 import com.quran.mobile.feature.livetv.ui.LiveTvScreen
 import dev.zacsweers.metro.Inject
 
-class LiveTvActivity : ComponentActivity() {
+class LiveTvActivity : AppCompatActivity() {
 
   @Inject
   lateinit var liveChannelRepository: LiveChannelRepository

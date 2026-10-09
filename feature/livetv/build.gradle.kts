@@ -15,6 +15,8 @@ dependencies {
   implementation(project(":common:ui:core"))
 
   implementation(libs.androidx.activity.compose)
+  // AppCompatActivity applies the app's own light/dark choice (AppCompatDelegate)
+  implementation(libs.androidx.appcompat)
 
   // compose
   implementation(libs.compose.animation)

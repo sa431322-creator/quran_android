@@ -1,7 +1,7 @@
 package com.quran.mobile.feature.livetv.radio
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
@@ -11,7 +11,7 @@ import com.quran.mobile.feature.livetv.di.LiveTvComponentInterface
 import com.quran.mobile.feature.livetv.ui.RadioScreen
 import dev.zacsweers.metro.Inject
 
-class RadioActivity : ComponentActivity() {
+class RadioActivity : AppCompatActivity() {
 
   @Inject
   lateinit var radioStationRepository: RadioStationRepository
