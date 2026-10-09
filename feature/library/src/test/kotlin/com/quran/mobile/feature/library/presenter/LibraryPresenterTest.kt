@@ -22,7 +22,7 @@ class LibraryPresenterTest {
       val loaded = awaitItem()
       assertThat(loaded.selectedCategory).isEqualTo(LibraryCategory.QURAN_SCIENCES)
       val books = (loaded.books as BooksState.Loaded).books
-      assertThat(books.map { it.id }).containsExactly("1", "2").inOrder()
+      assertThat(books.map { it.id }).containsExactly("1", "2", "15").inOrder()
     }
   }
 

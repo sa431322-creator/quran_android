@@ -27,4 +27,13 @@ class LibraryBookTest {
     assertThat(dari.published).isTrue()
     assertThat(dari.bundledAssetPath).isEqualTo("books/quran-dari-translation.pdf")
   }
+
+  @Test
+  fun theModernScienceBookShipsWithTheApp() {
+    val book = MockLibraryData.BOOKS.single { it.id == "15" }
+    assertThat(book.category).isEqualTo(LibraryCategory.QURAN_SCIENCES)
+    assertThat(book.published).isTrue()
+    assertThat(book.order).isEqualTo(40)
+    assertThat(book.bundledAssetPath).isEqualTo("books/quran-and-modern-science.pdf")
+  }
 }
