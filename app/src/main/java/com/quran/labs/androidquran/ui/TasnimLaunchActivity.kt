@@ -64,12 +64,12 @@ class TasnimLaunchActivity : AppCompatActivity() {
     }
     findViewById<View>(R.id.launch_menu).setOnClickListener { showMenu(it) }
     findViewById<ImageButton>(R.id.launch_night).apply {
-      // moon switches to dark mode, sun switches back to light mode
+      // the icon shows the current mode (moon in dark, sun in light); tapping toggles it
       if (isNightMode()) {
-        setImageResource(R.drawable.ic_tasnim_sun)
+        setImageResource(R.drawable.ic_tasnim_moon)
         contentDescription = getString(R.string.tasnim_day_mode)
       } else {
-        setImageResource(R.drawable.ic_tasnim_moon)
+        setImageResource(R.drawable.ic_tasnim_sun)
         contentDescription = getString(R.string.tasnim_night_mode)
       }
       setOnClickListener { toggleNightMode() }
