@@ -49,7 +49,7 @@ class LibraryPresenterTest {
       assertThat(loading.books).isEqualTo(BooksState.Loading)
 
       val books = (awaitItem().books as BooksState.Loaded).books
-      assertThat(books.map { it.order }).containsExactly(10, 20, 30).inOrder()
+      assertThat(books.map { it.order }).containsExactly(10, 20, 30, 50).inOrder()
     }
   }
 

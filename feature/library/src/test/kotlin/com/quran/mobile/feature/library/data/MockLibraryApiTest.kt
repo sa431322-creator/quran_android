@@ -41,7 +41,7 @@ class MockLibraryApiTest {
     assertThat(tafsir.any { !it.published }).isTrue()
 
     val publishedTafsir = api.getBooks(category = "tafsir", published = true)
-    assertThat(publishedTafsir.map { it.order }).containsExactly(10, 20, 30).inOrder()
+    assertThat(publishedTafsir.map { it.order }).containsExactly(10, 20, 30, 50).inOrder()
 
     val all = api.getBooks()
     assertThat(all).hasSize(MockLibraryData.BOOKS.size)
@@ -106,14 +106,14 @@ class MockLibraryApiTest {
     val created = api.createBook(
       NewLibraryBook(bookTitle = "x", description = "", published = true, category = "tafsir")
     )
-    assertThat(created.id).isEqualTo("16")
+    assertThat(created.id).isEqualTo("17")
   }
 
   @Test
   fun movingToAnotherCategoryPutsTheBookLastThere() = runTest {
     val moved = api.updateBook("1", LibraryBookPatch(category = "tafsir"))
     assertThat(moved.category).isEqualTo(LibraryCategory.TAFSIR)
-    assertThat(moved.order).isEqualTo(50)
+    assertThat(moved.order).isEqualTo(60)
   }
 
   @Test
