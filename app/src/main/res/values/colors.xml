@@ -97,7 +97,8 @@
   <color name="tasnim_on_primary">#fff7f0e1</color>
   <!-- text on surfaces that stay dark in both modes (start screen, continue card) -->
   <color name="tasnim_cream">#fff7f0e1</color>
-  <color name="tasnim_icon_background">#ff3c6b6d</color>
+  <!-- cream behind the launcher icon artwork; matches the logo file background -->
+  <color name="tasnim_launcher_background">#fffffcef</color>
   <color name="tasnim_water">#ff5fa9c1</color>
   <color name="tasnim_gold">#ffc8a45e</color>
   <color name="tasnim_gold_light">#ffe3c58a</color>

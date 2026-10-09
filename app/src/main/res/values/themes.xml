@@ -43,7 +43,7 @@
   <!-- the launcher activity: Tasnim teal behind the Android 12+ splash icon -->
   <style name="QuranToolBarDayNight.Splash">
     <item name="android:windowSplashScreenBackground" tools:targetApi="s">@color/tasnim_launch_background</item>
-    <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">@color/tasnim_icon_background</item>
+    <item name="android:windowSplashScreenIconBackgroundColor" tools:targetApi="s">@color/tasnim_launcher_background</item>
   </style>
 
   <style name="QuranToolBarActionButton" parent="Widget.AppCompat.ActionButton">
