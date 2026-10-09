@@ -3,7 +3,6 @@
 <resources>
   <string name="tasnim_tagline" translatable="false">چشمه‌ای از کلام وحی</string>
   <string name="tasnim_footer" translatable="false">تسنیم… چشمه‌ای از کلام وحی</string>
-  <string name="tasnim_riwaya" translatable="false">روایت حفص از عاصم</string>
   <string name="tasnim_logo_description" translatable="false">نشانهٔ تسنیم</string>
 
   <string name="tasnim_section_mushaf" translatable="false">مصحف</string>
