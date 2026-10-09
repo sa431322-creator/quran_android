@@ -7,6 +7,7 @@ import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -62,7 +63,17 @@ class TasnimLaunchActivity : AppCompatActivity() {
       startActivity(Intent(this, RadioActivity::class.java))
     }
     findViewById<View>(R.id.launch_menu).setOnClickListener { showMenu(it) }
-    findViewById<View>(R.id.launch_night).setOnClickListener { toggleNightMode() }
+    findViewById<ImageButton>(R.id.launch_night).apply {
+      // moon switches to dark mode, sun switches back to light mode
+      if (isNightMode()) {
+        setImageResource(R.drawable.ic_tasnim_sun)
+        contentDescription = getString(R.string.tasnim_day_mode)
+      } else {
+        setImageResource(R.drawable.ic_tasnim_moon)
+        contentDescription = getString(R.string.tasnim_night_mode)
+      }
+      setOnClickListener { toggleNightMode() }
+    }
 
     findViewById<View>(R.id.launch_website).setOnClickListener { openLink(R.string.tasnim_url_website) }
     findViewById<View>(R.id.launch_email).setOnClickListener { openLink(R.string.tasnim_url_email) }
@@ -93,10 +104,12 @@ class TasnimLaunchActivity : AppCompatActivity() {
     popup.show()
   }
 
-  private fun toggleNightMode() {
-    val isNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
+  private fun isNightMode(): Boolean =
+    (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) ==
         Configuration.UI_MODE_NIGHT_YES
-    val theme = if (isNight) Constants.THEME_LIGHT else Constants.THEME_DARK
+
+  private fun toggleNightMode() {
+    val theme = if (isNightMode()) Constants.THEME_LIGHT else Constants.THEME_DARK
     PreferenceManager.getDefaultSharedPreferences(this).edit {
       putString(Constants.PREF_APP_THEME, theme)
     }
