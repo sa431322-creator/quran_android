@@ -1277,8 +1277,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
     }
 
-    // hidden when the user chose a fixed orientation or the system ignores app requests
-    menu.findItem(R.id.rotate_screen)?.isVisible = !quranSettings.isLockOrientation &&
+    // hidden only when the system ignores app orientation requests
+    menu.findItem(R.id.rotate_screen)?.isVisible =
       OrientationLockUtils.isOrientationLockSupported(resources.configuration)
 
     val nightMode = menu.findItem(R.id.night_mode)
@@ -1318,6 +1318,12 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     } else if (itemId == R.id.rotate_screen) {
       // works even when the phone's auto-rotate is off
       val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+      if (quranSettings.isLockOrientation) {
+        // keep the locked orientation in sync so the next launch doesn't undo the tap
+        PreferenceManager.getDefaultSharedPreferences(this).edit()
+          .putBoolean(Constants.PREF_LANDSCAPE_ORIENTATION, !isLandscape)
+          .apply()
+      }
       requestedOrientation = if (isLandscape) {
         ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
       } else {
