@@ -15,10 +15,32 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.IOException
 
+/**
+ * [selectedCategory] is null for «همه», every category. [books] holds every published book;
+ * [visibleBooks] is what the chosen category and [query] leave of it.
+ */
 data class LibraryUiState(
-  val selectedCategory: LibraryCategory = LibraryCategory.entries.first(),
+  val selectedCategory: LibraryCategory? = null,
+  val query: String = "",
   val books: BooksState = BooksState.Loading
-)
+) {
+  val visibleBooks: List<LibraryBook>
+    get() {
+      val all = (books as? BooksState.Loaded)?.books ?: return emptyList()
+      val terms = normalize(query).split(' ').filter { it.isNotEmpty() }
+      return all.filter { book ->
+        (selectedCategory == null || book.category == selectedCategory) &&
+          terms.all { term -> book.searchText.contains(term) }
+      }
+    }
+
+  /** How many books each category has, whatever the query. */
+  val categoryCounts: Map<LibraryCategory, Int>
+    get() = ((books as? BooksState.Loaded)?.books ?: emptyList()).groupingBy { it.category }.eachCount()
+
+  val totalCount: Int
+    get() = (books as? BooksState.Loaded)?.books?.size ?: 0
+}
 
 sealed interface BooksState {
   data object Loading : BooksState
@@ -27,7 +49,7 @@ sealed interface BooksState {
   data class Loaded(val books: List<LibraryBook>) : BooksState
 }
 
-/** Loads the published books of the selected category. */
+/** Loads every published book once; choosing a category or searching filters them in place. */
 @ActivityScope
 class LibraryPresenter @Inject constructor(private val repository: LibraryRepository) {
 
@@ -38,29 +60,34 @@ class LibraryPresenter @Inject constructor(private val repository: LibraryReposi
   private var loadJob: Job? = null
 
   /**
-   * Starts loading [category] (the first one when null) in [scope]; the presenter stops when
-   * [scope] is cancelled.
+   * Starts loading in [scope] with [category] selected (null for every category); the
+   * presenter stops when [scope] is cancelled.
    */
   fun bind(scope: CoroutineScope, category: LibraryCategory? = null) {
     this.scope = scope
-    load(category ?: _state.value.selectedCategory)
+    _state.update { it.copy(selectedCategory = category) }
+    load()
   }
 
-  fun selectCategory(category: LibraryCategory) {
-    if (category == _state.value.selectedCategory && _state.value.books != BooksState.Error) return
-    load(category)
+  fun selectCategory(category: LibraryCategory?) {
+    _state.update { it.copy(selectedCategory = category) }
+    // choosing a category after a failed load tries again, as it always has
+    if (_state.value.books == BooksState.Error) load()
+  }
+
+  fun search(query: String) {
+    _state.update { it.copy(query = query) }
   }
 
   fun retry() = load()
 
-  private fun load(category: LibraryCategory = _state.value.selectedCategory) {
+  private fun load() {
     loadJob?.cancel()
-    // one update, so the category and its loading state are never seen apart
-    _state.update { it.copy(selectedCategory = category, books = BooksState.Loading) }
+    _state.update { it.copy(books = BooksState.Loading) }
     val scope = scope ?: return
     loadJob = scope.launch {
       val books = try {
-        val books = repository.publishedBooks(category)
+        val books = repository.publishedBooks()
         if (books.isEmpty()) BooksState.Empty else BooksState.Loaded(books)
       } catch (_: LibraryApiException) {
         BooksState.Error
@@ -72,3 +99,21 @@ class LibraryPresenter @Inject constructor(private val repository: LibraryReposi
     }
   }
 }
+
+/** Everything a search matches against, normalized like the query. */
+private val LibraryBook.searchText: String
+  get() = normalize(
+    listOfNotNull(bookTitle, author, translator, description, tags.joinToString(" "))
+      .joinToString(" ")
+  )
+
+/** Folds Arabic letter forms into Persian ones and drops case, so «كتاب» finds «کتاب». */
+internal fun normalize(text: String): String =
+  text.lowercase()
+    .replace('ك', 'ک')
+    .replace('ي', 'ی')
+    .replace('ى', 'ی')
+    .replace('ة', 'ه')
+    .replace(Char(0x200C), ' ') // zero-width non-joiner
+    .replace(Regex("""\s+"""), " ")
+    .trim()

@@ -6,6 +6,9 @@ package com.quran.mobile.feature.library.data
  * [order] positions the book inside its [category] only (10, 20, 30…); it is not an id.
  * [fileUrl] is an http(s) link, a [BUNDLED_BOOK_PREFIX] path for a PDF shipped in the app, or
  * null while the book has no file yet.
+ *
+ * The fields after [order] describe the book for its details page; any of them may be missing,
+ * and the page leaves out what isn't known.
  */
 data class LibraryBook(
   val id: String,
@@ -14,8 +17,18 @@ data class LibraryBook(
   val published: Boolean,
   val category: LibraryCategory,
   val fileUrl: String?,
-  val order: Int
+  val order: Int,
+  val author: String? = null,
+  val translator: String? = null,
+  val language: String? = null,
+  val pageCount: Int? = null,
+  val fileSizeBytes: Long? = null,
+  val tags: List<String> = emptyList(),
+  val chapters: List<LibraryChapter> = emptyList()
 )
+
+/** A chapter of a book; [page] is 1-based, as printed in the book. */
+data class LibraryChapter(val title: String, val page: Int)
 
 /** Body of `POST /api/library`. [category] is a [LibraryCategory.id]; a null [order] goes last. */
 data class NewLibraryBook(

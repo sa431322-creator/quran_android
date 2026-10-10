@@ -6,15 +6,82 @@
   <string name="library_categories" translatable="false">دسته‌ها</string>
   <string name="library_category_quran_sciences" translatable="false">علوم قرآن کریم</string>
   <string name="library_category_quran_translation" translatable="false">ترجمه قرآن کریم</string>
-  <string name="library_category_tajweed" translatable="false">تجوید القرآن الکریم</string>
+  <string name="library_category_tajweed" translatable="false">تجوید قرآن کریم</string>
   <string name="library_category_tafsir" translatable="false">تفسیر قرآن کریم</string>
+  <string name="library_all" translatable="false">همه</string>
+  <string name="library_all_books" translatable="false">همه کتاب‌ها</string>
   <string name="library_empty" translatable="false">کتابی در این دسته نیست</string>
   <string name="library_error" translatable="false">بارگیری کتاب‌ها ممکن نشد</string>
   <string name="library_retry" translatable="false">تلاش دوباره</string>
   <string name="library_loading" translatable="false">در حال بارگیری</string>
   <string name="library_file_unavailable" translatable="false">فایل این کتاب هنوز در دسترس نیست</string>
+
+  <!-- library home -->
+  <string name="library_search_hint" translatable="false">جستجوی کتاب، نویسنده یا موضوع</string>
+  <string name="library_search_clear" translatable="false">پاک کردن جستجو</string>
+  <string name="library_no_results" translatable="false">کتابی با این مشخصات پیدا نشد</string>
+  <string name="library_continue_reading" translatable="false">ادامه مطالعه</string>
+  <!-- page / page count, with Persian digits -->
+  <string name="library_page_of" translatable="false">صفحهٔ %1$s از %2$s</string>
+  <!-- a book's page count, with Persian digits -->
+  <string name="library_pages" translatable="false">%1$s صفحه</string>
+  <string name="library_offline" translatable="false">آفلاین</string>
+  <string name="library_available_offline" translatable="false">بدون اینترنت در دسترس است</string>
+  <string name="library_bookmarks" translatable="false">نشانه‌ها</string>
+  <string name="library_saved_books" translatable="false">کتاب‌های ذخیره‌شده</string>
+  <string name="library_bookmarked_pages" translatable="false">صفحه‌های نشانه‌گذاری‌شده</string>
+  <string name="library_bookmarks_empty" translatable="false">هنوز نشانه‌ای ندارید. هنگام مطالعه نماد نشانه را بزنید، یا کتابی را ذخیره کنید.</string>
+
+  <!-- book details -->
+  <string name="library_author" translatable="false">مؤلف: %1$s</string>
+  <string name="library_translator" translatable="false">مترجم: %1$s</string>
+  <string name="library_stat_pages" translatable="false">صفحه</string>
+  <string name="library_stat_time" translatable="false">مطالعه</string>
+  <string name="library_stat_size" translatable="false">حجم</string>
+  <string name="library_stat_language" translatable="false">زبان</string>
+  <string name="library_minutes" translatable="false">%1$s دقیقه</string>
+  <string name="library_hours" translatable="false">%1$s ساعت</string>
+  <string name="library_megabytes" translatable="false">%1$s مگابایت</string>
+  <string name="library_kilobytes" translatable="false">%1$s کیلوبایت</string>
+  <string name="library_your_progress" translatable="false">پیشرفت شما</string>
+  <string name="library_last_read" translatable="false">آخرین مطالعه: صفحهٔ %1$s</string>
+  <string name="library_start_reading" translatable="false">شروع مطالعه</string>
+  <string name="library_continue_from" translatable="false">ادامه از صفحهٔ %1$s</string>
+  <string name="library_download" translatable="false">دانلود</string>
+  <string name="library_downloading" translatable="false">در حال دانلود</string>
+  <string name="library_download_failed" translatable="false">دانلود ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
+  <string name="library_download_first" translatable="false">برای مطالعه، ابتدا کتاب را دانلود کنید</string>
+  <string name="library_about" translatable="false">درباره کتاب</string>
+  <string name="library_more" translatable="false">بیشتر</string>
+  <string name="library_less" translatable="false">کمتر</string>
+  <string name="library_contents" translatable="false">فهرست مطالب</string>
+  <string name="library_chapter_count" translatable="false">%1$s فصل</string>
+  <string name="library_show_all_chapters" translatable="false">نمایش همه فصل‌ها</string>
+  <string name="library_show_fewer_chapters" translatable="false">نمایش کمتر</string>
+  <string name="library_chapter_read" translatable="false">خوانده‌شده</string>
+  <string name="library_chapter_current" translatable="false">در حال مطالعه</string>
+  <string name="library_similar" translatable="false">کتاب‌های مشابه</string>
+  <string name="library_save" translatable="false">ذخیره کتاب</string>
+  <string name="library_unsave" translatable="false">حذف از ذخیره‌ها</string>
+  <string name="library_share" translatable="false">اشتراک‌گذاری</string>
+  <string name="library_book_not_found" translatable="false">این کتاب پیدا نشد</string>
+
+  <!-- reader -->
   <string name="library_reader_error" translatable="false">باز کردن این کتاب ممکن نشد</string>
   <!-- current page / page count, with Persian digits -->
   <string name="library_reader_page" translatable="false">%1$s / %2$s</string>
   <string name="library_reader_page_description" translatable="false">صفحهٔ %1$s</string>
+  <string name="library_reader_contents" translatable="false">فهرست</string>
+  <string name="library_reader_bookmark_add" translatable="false">نشانه‌گذاری این صفحه</string>
+  <string name="library_reader_bookmark_remove" translatable="false">برداشتن نشانه</string>
+  <string name="library_reader_bookmarks" translatable="false">نشانه‌های این کتاب</string>
+  <string name="library_reader_bookmarks_empty" translatable="false">این کتاب هنوز نشانه‌ای ندارد</string>
+  <string name="library_reader_night_on" translatable="false">حالت شب</string>
+  <string name="library_reader_night_off" translatable="false">حالت روز</string>
+  <string name="library_reader_go_to_page" translatable="false">رفتن به صفحه</string>
+  <string name="library_reader_go" translatable="false">برو</string>
+  <string name="library_reader_cancel" translatable="false">انصراف</string>
+  <string name="library_reader_page_hint" translatable="false">از ۱ تا %1$s</string>
+  <string name="library_reader_page_invalid" translatable="false">عددی بین ۱ و %1$s وارد کنید</string>
+  <string name="library_reader_slider" translatable="false">صفحه‌ها</string>
 </resources>

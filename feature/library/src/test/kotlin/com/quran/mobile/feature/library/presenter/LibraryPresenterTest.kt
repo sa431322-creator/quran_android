@@ -15,15 +15,22 @@ class LibraryPresenterTest {
   private val presenter = LibraryPresenter(DefaultLibraryRepository(api))
 
   @Test
-  fun loadsTheFirstCategoryOnBind() = runTest {
+  fun loadsEveryPublishedBookOnBind() = runTest {
     presenter.state.test {
       assertThat(awaitItem().books).isEqualTo(BooksState.Loading)
       presenter.bind(backgroundScope)
 
       val loaded = awaitItem()
-      assertThat(loaded.selectedCategory).isEqualTo(LibraryCategory.QURAN_SCIENCES)
-      val books = (loaded.books as BooksState.Loaded).books
-      assertThat(books.map { it.id }).containsExactly("1", "2").inOrder()
+      assertThat(loaded.selectedCategory).isNull()
+      assertThat(loaded.visibleBooks.map { it.id })
+        .containsExactly("1", "2", "4", "5", "7", "8", "10", "11", "12").inOrder()
+      assertThat(loaded.totalCount).isEqualTo(9)
+      assertThat(loaded.categoryCounts).containsExactly(
+        LibraryCategory.QURAN_SCIENCES, 2,
+        LibraryCategory.QURAN_TRANSLATION, 2,
+        LibraryCategory.TAJWEED, 2,
+        LibraryCategory.TAFSIR, 3
+      )
     }
   }
 
@@ -32,25 +39,42 @@ class LibraryPresenterTest {
     presenter.bind(backgroundScope, LibraryCategory.TAJWEED)
     presenter.state.test {
       assertThat(awaitItem().selectedCategory).isEqualTo(LibraryCategory.TAJWEED)
-      val books = (awaitItem().books as BooksState.Loaded).books
-      assertThat(books.map { it.id }).containsExactly("7", "8").inOrder()
+      assertThat(awaitItem().visibleBooks.map { it.id }).containsExactly("7", "8").inOrder()
     }
   }
 
   @Test
-  fun selectingACategoryLoadsItsBooks() = runTest {
+  fun selectingACategoryFiltersWithoutReloading() = runTest {
     presenter.bind(backgroundScope)
     presenter.state.test {
       skipItems(1)
-      awaitItem() // first category loaded
+      awaitItem() // every book loaded
 
       presenter.selectCategory(LibraryCategory.TAFSIR)
-      val loading = awaitItem()
-      assertThat(loading.selectedCategory).isEqualTo(LibraryCategory.TAFSIR)
-      assertThat(loading.books).isEqualTo(BooksState.Loading)
+      val tafsir = awaitItem()
+      assertThat(tafsir.books).isInstanceOf(BooksState.Loaded::class.java)
+      assertThat(tafsir.visibleBooks.map { it.order }).containsExactly(10, 20, 30).inOrder()
 
-      val books = (awaitItem().books as BooksState.Loaded).books
-      assertThat(books.map { it.order }).containsExactly(10, 20, 30).inOrder()
+      presenter.selectCategory(null)
+      assertThat(awaitItem().visibleBooks).hasSize(9)
+    }
+  }
+
+  @Test
+  fun searchMatchesTitleAndDescriptionAcrossLetterForms() = runTest {
+    presenter.bind(backgroundScope)
+    presenter.state.test {
+      skipItems(2)
+
+      // Arabic «ي» and «ك» find the Persian letters in «تفسیر» and «کوتاه»
+      presenter.search("تفسير كوتاه")
+      assertThat(awaitItem().visibleBooks.map { it.id }).containsExactly("10")
+
+      presenter.selectCategory(LibraryCategory.TAJWEED)
+      assertThat(awaitItem().visibleBooks).isEmpty()
+
+      presenter.search("")
+      assertThat(awaitItem().visibleBooks.map { it.id }).containsExactly("7", "8").inOrder()
     }
   }
 
