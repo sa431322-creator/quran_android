@@ -23,6 +23,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.FrameLayout
+import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
@@ -96,6 +97,7 @@ import com.quran.labs.androidquran.service.util.PermissionUtil.havePostNotificat
 import com.quran.labs.androidquran.service.util.ServiceIntentHelper.getDownloadIntent
 import com.quran.labs.androidquran.ui.fragment.AddTagDialog
 import com.quran.labs.androidquran.ui.fragment.JumpFragment
+import com.quran.labs.androidquran.ui.fragment.SuraJumpSheet
 import com.quran.labs.androidquran.ui.fragment.TabletFragment
 import com.quran.labs.androidquran.ui.fragment.TagBookmarkDialog.OnBookmarkTagsUpdateListener
 import com.quran.labs.androidquran.ui.fragment.TranslationFragment
@@ -183,7 +185,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   QuranReadingPageComponentProvider, AyahToolBarInjector, QariListWrapperInjector,
   AudioBarInjector, AyahBookmarkWrapperInjector, ReadingBookmarkSheetWrapperInjector,
   ActivityCompat.OnRequestPermissionsResultCallback, AudioPresenterScreen,
-  ReadingBookmarkPresenter.Screen {
+  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host {
   private var lastPopupTime: Long = 0
   private var isActionBarHidden = true
   private var shouldReconnect = false
@@ -216,6 +218,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var toolBarArea: View
   private lateinit var readerModeMushaf: TextView
   private lateinit var readerModePersian: TextView
+  private lateinit var pageSliderArea: View
+  private lateinit var pageSlider: SeekBar
+  private lateinit var pageSliderBubble: TextView
+  private var isDraggingPageSlider = false
 
   private var requestPermissionLauncher: ActivityResultLauncher<String>? = null
 
@@ -238,8 +244,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   @Inject lateinit var quranAppUtils: QuranAppUtils
   @Inject lateinit var shareUtil: ShareUtil
   @Inject lateinit var audioUtils: AudioUtils
-  @Inject lateinit var quranDisplayData: QuranDisplayData
-  @Inject lateinit var quranInfo: QuranInfo
+  @Inject override lateinit var quranDisplayData: QuranDisplayData
+  @Inject override lateinit var quranInfo: QuranInfo
   @Inject lateinit var quranFileUtils: QuranFileUtils
   @Inject lateinit var audioPresenter: AudioPresenter
   @Inject lateinit var quranEventLogger: QuranEventLogger
@@ -470,6 +476,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
     supportActionBar?.setDisplayShowHomeEnabled(true)
     supportActionBar?.setDisplayHomeAsUpEnabled(true)
+    // tapping the sura name opens the sura / juz list
+    toolbar.setOnClickListener { showSuraJumpSheet() }
 
     initAyahActionPanel()
     initReaderModeToggle()
@@ -570,6 +578,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         } else {
           refreshActionBarSpinner()
         }
+        updatePageSlider(page)
 
         // If we're more than 1 page away from ayah selection end ayah mode
         val suraAyah: SuraAyah? = selectionStart
@@ -583,6 +592,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
     }
     viewPager.addOnPageChangeListener(onPageChangeListener)
+    initPageSlider()
 
     setUiVisibilityListener()
     audioStatusBar.visibility = View.VISIBLE
@@ -601,6 +611,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
     val pageIndex = quranInfo.getPositionFromPage(page, isDualPageVisible)
     viewPager.setCurrentItem(pageIndex)
+    updatePageSlider(page)
     if (page == 0) {
       onPageChangeListener.onPageSelected(0)
     }
@@ -874,6 +885,78 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       .translationY((if (visible) 0 else audioStatusBar.height).toFloat())
       .setDuration(250)
       .start()
+
+    // and the page slider, which sits just above the audio bar
+    pageSliderArea.animate()
+      .translationY(pageSliderTranslation(visible))
+      .setDuration(250)
+      .start()
+  }
+
+  private fun pageSliderTranslation(visible: Boolean): Float {
+    return if (visible) {
+      -audioStatusBar.height.toFloat()
+    } else {
+      // layoutParams holds the fixed height, which is known even before the first layout
+      val params = pageSliderArea.layoutParams as ViewGroup.MarginLayoutParams
+      (params.height + params.bottomMargin).toFloat()
+    }
+  }
+
+  private fun initPageSlider() {
+    pageSliderArea = findViewById(R.id.page_slider_area)
+    pageSlider = findViewById(R.id.page_slider)
+    pageSliderBubble = findViewById(R.id.page_slider_bubble)
+    findViewById<TextView>(R.id.page_slider_first).text = QuranUtils.getLocalizedNumber(1)
+    findViewById<TextView>(R.id.page_slider_last).text =
+      QuranUtils.getLocalizedNumber(quranInfo.numberOfPages)
+    pageSlider.max = quranInfo.numberOfPages - 1
+
+    // the audio bar's height changes (e.g. while playing), so keep the slider above it
+    audioStatusBar.addOnLayoutChangeListener { _, _, top, _, bottom, _, oldTop, _, oldBottom ->
+      if (bottom - top != oldBottom - oldTop) {
+        pageSliderArea.translationY = pageSliderTranslation(!isActionBarHidden)
+        pageSliderBubble.translationY = -audioStatusBar.height.toFloat()
+      }
+    }
+
+    pageSlider.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+      override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
+        if (fromUser) {
+          val page = progress + 1
+          pageSliderBubble.text = quranDisplayData.getSuraNameFromPage(this@PagerActivity, page, true) +
+              " · " + quranDisplayData.getPageSubtitle(this@PagerActivity, page)
+        }
+      }
+
+      override fun onStartTrackingTouch(seekBar: SeekBar) {
+        isDraggingPageSlider = true
+        handler.removeMessages(MSG_HIDE_ACTIONBAR)
+        pageSliderBubble.translationY = -audioStatusBar.height.toFloat()
+        onProgressChanged(seekBar, seekBar.progress, true)
+        pageSliderBubble.visibility = View.VISIBLE
+      }
+
+      override fun onStopTrackingTouch(seekBar: SeekBar) {
+        isDraggingPageSlider = false
+        pageSliderBubble.visibility = View.GONE
+        var page = seekBar.progress + 1
+        while (!quranInfo.isValidPage(page) && page < quranInfo.numberOfPages) page++
+        viewPager.currentItem = quranInfo.getPositionFromPage(page, isDualPageVisible)
+      }
+    })
+  }
+
+  private fun updatePageSlider(page: Int) {
+    if (!isDraggingPageSlider) {
+      pageSlider.progress = page - 1
+    }
+  }
+
+  private fun showSuraJumpSheet() {
+    if (supportFragmentManager.findFragmentByTag(SuraJumpSheet.TAG) == null) {
+      SuraJumpSheet.newInstance(currentPage).show(supportFragmentManager, SuraJumpSheet.TAG)
+    }
   }
 
   override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
@@ -1337,7 +1420,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     if (actionBar != null) {
       translationsSpinner.visibility = View.GONE
       actionBar.setDisplayShowTitleEnabled(true)
-      actionBar.title = sura
+      // the arrow hints that the title opens the sura list
+      actionBar.title = if (sura.isEmpty()) sura else "$sura ▾"
       val desc = quranDisplayData.getPageSubtitle(this, page)
       actionBar.subtitle = desc
     }

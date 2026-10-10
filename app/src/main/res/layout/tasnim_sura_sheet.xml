@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasnim: sura / juz list opened by tapping the reader title -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/tasnim_sheet_background"
+    android:orientation="vertical"
+    android:paddingTop="8dp"
+    >
+
+  <View
+      android:layout_width="36dp"
+      android:layout_height="4dp"
+      android:layout_gravity="center_horizontal"
+      android:layout_marginBottom="12dp"
+      android:background="@drawable/tasnim_sheet_handle"
+      />
+
+  <EditText
+      android:id="@+id/sura_sheet_search"
+      style="@style/TasnimUiText"
+      android:layout_width="match_parent"
+      android:layout_height="44dp"
+      android:layout_marginStart="16dp"
+      android:layout_marginEnd="16dp"
+      android:background="@drawable/tasnim_segment_track"
+      android:drawableStart="@drawable/ic_tasnim_search"
+      android:drawablePadding="8dp"
+      android:hint="@string/tasnim_sura_sheet_search"
+      android:imeOptions="actionSearch"
+      android:importantForAutofill="no"
+      android:inputType="text"
+      android:maxLines="1"
+      android:paddingStart="14dp"
+      android:paddingEnd="14dp"
+      android:textColor="@color/title_color"
+      android:textColorHint="@color/tasnim_muted"
+      android:textSize="14sp"
+      />
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginStart="16dp"
+      android:layout_marginTop="10dp"
+      android:layout_marginEnd="16dp"
+      android:layout_marginBottom="6dp"
+      android:background="@drawable/tasnim_segment_track"
+      android:orientation="horizontal"
+      android:padding="4dp"
+      >
+    <TextView
+        android:id="@+id/sura_sheet_tab_suras"
+        style="@style/TasnimSegment"
+        android:text="@string/tasnim_sura_sheet_suras"
+        />
+    <TextView
+        android:id="@+id/sura_sheet_tab_juz"
+        style="@style/TasnimSegment"
+        android:layout_marginStart="4dp"
+        android:text="@string/tasnim_sura_sheet_juz"
+        />
+  </LinearLayout>
+
+  <androidx.recyclerview.widget.RecyclerView
+      android:id="@+id/sura_sheet_list"
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_weight="1"
+      android:clipToPadding="false"
+      android:paddingBottom="16dp"
+      />
+</LinearLayout>

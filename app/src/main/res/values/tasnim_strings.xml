@@ -41,4 +41,10 @@
 
   <string name="tasnim_reader_mushaf" translatable="false">مصحف</string>
   <string name="tasnim_reader_persian" translatable="false">ترجمه و تفسیر فارسی</string>
+
+  <string name="tasnim_sura_sheet_search" translatable="false">جستجوی سوره یا شماره</string>
+  <string name="tasnim_sura_sheet_suras" translatable="false">سوره‌ها</string>
+  <string name="tasnim_sura_sheet_juz" translatable="false">جزءها</string>
+  <string name="tasnim_sura_sheet_ayahs" translatable="false">%1$s آیه</string>
+  <string name="tasnim_sura_sheet_page" translatable="false">صفحهٔ %1$s</string>
 </resources>
