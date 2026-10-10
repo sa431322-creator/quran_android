@@ -1277,6 +1277,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
     }
 
+    // hidden when the user chose a fixed orientation or the system ignores app requests
+    menu.findItem(R.id.rotate_screen)?.isVisible = !quranSettings.isLockOrientation &&
+      OrientationLockUtils.isOrientationLockSupported(resources.configuration)
+
     val nightMode = menu.findItem(R.id.night_mode)
     if (nightMode != null) {
       val prefs = PreferenceManager.getDefaultSharedPreferences(this)
@@ -1310,6 +1314,15 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       item.setIcon(if (isNightMode) R.drawable.ic_night_mode else R.drawable.ic_day_mode)
       item.isChecked = isNightMode
       refreshQuranPages()
+      return true
+    } else if (itemId == R.id.rotate_screen) {
+      // works even when the phone's auto-rotate is off
+      val isLandscape = resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+      requestedOrientation = if (isLandscape) {
+        ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
+      } else {
+        ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+      }
       return true
     } else if (itemId == R.id.settings) {
       val i = Intent(this, QuranPreferenceActivity::class.java)
