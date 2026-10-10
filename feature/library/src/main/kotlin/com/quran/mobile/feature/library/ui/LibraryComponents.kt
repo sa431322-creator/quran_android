@@ -1,12 +1,16 @@
 package com.quran.mobile.feature.library.ui
 
+import android.graphics.Bitmap
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -15,10 +19,15 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.produceState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.compose.ui.semantics.heading
@@ -26,6 +35,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -37,6 +47,7 @@ import com.quran.labs.androidquran.common.ui.core.toPersianDigits
 import com.quran.mobile.feature.library.R
 import com.quran.mobile.feature.library.data.LibraryBook
 import com.quran.mobile.feature.library.data.LibraryCategory
+import com.quran.mobile.feature.library.data.LibraryCovers
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -52,7 +63,10 @@ internal fun coverColor(category: LibraryCategory): Color = when (category) {
   LibraryCategory.TAFSIR -> Color(0xFF2A2620)
 }
 
-/** A drawn cover: the category's color, a darker spine on the right and a gold frame. */
+/**
+ * A book's cover: its image when it has one, otherwise a drawn cover. The drawn one also shows
+ * while the image loads and if it can't be read.
+ */
 @Composable
 internal fun BookCover(
   book: LibraryBook,
@@ -60,11 +74,55 @@ internal fun BookCover(
   titleSize: TextUnit = 14.sp,
   spine: Dp = 6.dp
 ) {
+  val url = book.coverUrl
+  if (url == null) {
+    DrawnCover(book, modifier, titleSize, spine)
+    return
+  }
+  val context = LocalContext.current
+  BoxWithConstraints(modifier.clearAndSetSemantics { }) {
+    val widthPx = constraints.maxWidth.takeIf { it != Constraints.Infinity } ?: 600
+    val bitmap by produceState<Bitmap?>(null, url, widthPx) {
+      value = LibraryCovers.load(context, url, widthPx)
+    }
+    val image = bitmap
+    if (image == null) {
+      DrawnCover(book, Modifier.fillMaxSize(), titleSize, spine)
+    } else {
+      Box(Modifier.fillMaxSize().clip(CoverShape)) {
+        Image(
+          bitmap = image.asImageBitmap(),
+          contentDescription = null,
+          contentScale = ContentScale.Crop,
+          modifier = Modifier.fillMaxSize()
+        )
+        // a shaded spine on the right, so a photo reads as a book like the drawn covers
+        Box(
+          Modifier
+            .align(Alignment.CenterStart)
+            .width(spine)
+            .fillMaxHeight()
+            .background(Color.Black.copy(alpha = 0.22f))
+        )
+      }
+    }
+  }
+}
+
+private val CoverShape = RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp, topEnd = 8.dp, bottomEnd = 8.dp)
+
+/** A drawn cover: the category's color, a darker spine on the right and a gold frame. */
+@Composable
+private fun DrawnCover(
+  book: LibraryBook,
+  modifier: Modifier = Modifier,
+  titleSize: TextUnit = 14.sp,
+  spine: Dp = 6.dp
+) {
   val palette = LocalTasnimPalette.current
-  val shape = RoundedCornerShape(topStart = 3.dp, bottomStart = 3.dp, topEnd = 8.dp, bottomEnd = 8.dp)
   Row(
     modifier = modifier
-      .clip(shape)
+      .clip(CoverShape)
       .background(coverColor(book.category))
       // decoration only; the title is read out by the card around it
       .clearAndSetSemantics { }

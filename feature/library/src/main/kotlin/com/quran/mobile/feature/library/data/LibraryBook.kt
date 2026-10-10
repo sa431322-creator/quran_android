@@ -7,8 +7,9 @@ package com.quran.mobile.feature.library.data
  * [fileUrl] is an http(s) link, a [BUNDLED_BOOK_PREFIX] path for a PDF shipped in the app, or
  * null while the book has no file yet.
  *
- * The fields after [order] describe the book for its details page; any of them may be missing,
- * and the page leaves out what isn't known.
+ * The fields after [order] describe the book for its shelf and details page; any of them may
+ * be missing, and the screens leave out what isn't known. [coverUrl] is a link or a
+ * [BUNDLED_BOOK_PREFIX] path like [fileUrl]; without it the cover is drawn.
  */
 data class LibraryBook(
   val id: String,
@@ -18,6 +19,7 @@ data class LibraryBook(
   val category: LibraryCategory,
   val fileUrl: String?,
   val order: Int,
+  val coverUrl: String? = null,
   val author: String? = null,
   val translator: String? = null,
   val language: String? = null,

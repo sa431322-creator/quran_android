@@ -29,6 +29,7 @@ internal object MockLibraryData {
         "این رشته‌های علمی عبارتند از: اخترشناسی، فیزیک، جغرافیا، زیست شناسی گیاهی و جانوری، " +
         "پزشکی، فیزیولوژی، جنین شناسی و جاور شناسی.",
       fileUrl = BUNDLED_BOOK_PREFIX + "books/quran-and-modern-science.pdf",
+      coverUrl = BUNDLED_BOOK_PREFIX + "books/covers/quran-and-modern-science.jpg",
       author = "دکتر ذاکر نایک",
       translator = "انس محمودی",
       language = "فارسی",
@@ -47,6 +48,7 @@ internal object MockLibraryData {
         "در اثر حاضر به خوبی انجام شده است. این ترجمه به زبان دری توسط مولوی محمد انور بدخشانی " +
         "تدوین شده است و توسط دکتر عبدالغفور عبدالحق بلوچی و شيخ قريب الله مطيع مراجعه گردیده است.",
       fileUrl = BUNDLED_BOOK_PREFIX + "books/quran-dari-translation.pdf",
+      coverUrl = BUNDLED_BOOK_PREFIX + "books/covers/quran-dari-translation.jpg",
       translator = "مولوی محمد انور بدخشانی",
       language = "دری",
       pageCount = 1249,
@@ -68,6 +70,7 @@ internal object MockLibraryData {
         "درس، مجموعه تمریناتی برای درک و به یادسپاری بهتر مطالب ارائه شده است. کتاب، با بیان " +
         "نکاتی درباره اوصاف و ویژگی‌های قرآن و آداب و شرایط تلاوت آن خاتمه می‌یابد.",
       fileUrl = BUNDLED_BOOK_PREFIX + "books/tajweed-asan.pdf",
+      coverUrl = BUNDLED_BOOK_PREFIX + "books/covers/tajweed-asan.jpg",
       author = "دکتر ابو عاصم عبدالعزیز عبدالفتاح قاری",
       translator = "عبدالکریم محمدی",
       language = "فارسی",
@@ -88,6 +91,8 @@ internal object MockLibraryData {
         "الذکر است، در قالب 5 جلد عرضه شده است. تفسیر نور نیز در 5 جلد ارائه شده و نویسنده کوشیده " +
         "است تا الفاظ مشکل و تعابیر دقیق آیات را با زبانی ساده و شفاف بیان نماید.",
       fileUrl = BUNDLED_BOOK_PREFIX + "books/tafsir-noor.pdf",
+      coverUrl = BUNDLED_BOOK_PREFIX + "books/covers/tafsir-noor.gif",
+      author = "دکتر مصطفی خرم‌دل",
       language = "فارسی",
       pageCount = 2029,
       fileSizeBytes = 23_026_158,
@@ -102,6 +107,7 @@ internal object MockLibraryData {
     title: String,
     description: String,
     fileUrl: String,
+    coverUrl: String? = null,
     author: String? = null,
     translator: String? = null,
     language: String? = null,
@@ -117,6 +123,7 @@ internal object MockLibraryData {
     category = category,
     fileUrl = fileUrl,
     order = order,
+    coverUrl = coverUrl,
     author = author,
     translator = translator,
     language = language,
