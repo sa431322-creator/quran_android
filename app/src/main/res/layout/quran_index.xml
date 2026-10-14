@@ -263,9 +263,9 @@
         app:drawableTopCompat="@drawable/ic_tasnim_camera" />
 
     <TextView
-        android:id="@+id/nav_more"
+        android:id="@+id/nav_library"
         style="@style/TasnimNavItem"
-        android:text="@string/tasnim_nav_more"
-        app:drawableTopCompat="@drawable/ic_tasnim_more" />
+        android:text="@string/tasnim_nav_library"
+        app:drawableTopCompat="@drawable/ic_tasnim_library" />
   </LinearLayout>
 </LinearLayout>

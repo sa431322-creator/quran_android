@@ -37,7 +37,7 @@
   <string name="tasnim_nav_quran" translatable="false">قرآن</string>
   <string name="tasnim_nav_listen" translatable="false">شنیدن</string>
   <string name="tasnim_nav_live" translatable="false">پخش زنده</string>
-  <string name="tasnim_nav_more" translatable="false">بیشتر</string>
+  <string name="tasnim_nav_library" translatable="false">کتابخانه</string>
 
   <string name="tasnim_reader_mushaf" translatable="false">مصحف</string>
   <string name="tasnim_reader_persian" translatable="false">ترجمه و تفسیر فارسی</string>

@@ -64,6 +64,7 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.di.ExtraScreenProvider
+import com.quran.mobile.feature.library.LibraryActivity
 import com.quran.mobile.feature.livetv.LiveTvActivity
 import com.quran.mobile.feature.livetv.data.LiveChannelRepository
 import com.quran.mobile.feature.livetv.radio.RadioActivity
@@ -188,7 +189,7 @@ class QuranActivity : AppCompatActivity(),
     ab?.setTitle(R.string.app_name)
     // the toolbar shows the Tasnim logo and name instead of the plain title
     ab?.setDisplayShowTitleEnabled(false)
-    setupTasnimHome(tb)
+    setupTasnimHome()
 
     val pager = findViewById<ViewPager>(R.id.index_pager)
     pager.offscreenPageLimit = 3
@@ -428,7 +429,7 @@ class QuranActivity : AppCompatActivity(),
     super.onSaveInstanceState(outState)
   }
 
-  private fun setupTasnimHome(toolbar: Toolbar) {
+  private fun setupTasnimHome() {
     findViewById<View>(R.id.continue_card).setOnClickListener { jumpToLastPage() }
     val openLiveTv = View.OnClickListener {
       startActivity(Intent(this, LiveTvActivity::class.java))
@@ -441,7 +442,9 @@ class QuranActivity : AppCompatActivity(),
     }
     findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
-    findViewById<View>(R.id.nav_more).setOnClickListener { toolbar.showOverflowMenu() }
+    findViewById<View>(R.id.nav_library).setOnClickListener {
+      startActivity(Intent(this, LibraryActivity::class.java))
+    }
     // the selected item's icon carries its own colors
     TextViewCompat.setCompoundDrawableTintList(findViewById(R.id.nav_quran), null)
 
