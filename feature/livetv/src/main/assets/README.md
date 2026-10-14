@@ -1,11 +1,11 @@
 # Live TV sample clip
 
-`second_stream.mp4` (~1.09 GB) in this folder is the mock "live" broadcast. Every Live TV
-channel loops it, and every radio station plays its audio, until the real streaming
-backend exists.
+`al_fatiha.mp4` (~3 MB) in this folder is the mock "live" broadcast. The Live TV channel
+loops it, and every radio station plays its audio, until the real streaming backend exists.
 
-The file is **gitignored** (GitHub rejects files over 100 MB). Copy it here locally
-before building, otherwise the Live TV screen shows its "stream unavailable" state.
+The file is **gitignored**: it is a third-party recitation video, so it is not pushed to
+GitHub. Copy it here locally before building, otherwise the Live TV screen shows its
+"stream unavailable" state.
 
-**Before any Play release**, replace it with a short, compressed clip (~10–20 MB),
+To change the clip, replace the file and update `LocalLiveChannelRepository.SAMPLE_ASSET`,
 or switch `LocalLiveChannelRepository` and `LocalRadioStationRepository` to remote sources.

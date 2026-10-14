@@ -17,7 +17,7 @@ class LocalLiveChannelRepository : LiveChannelRepository {
   override fun channel(): LiveChannel = CHANNEL
 
   companion object {
-    const val SAMPLE_ASSET = "second_stream.mp4"
+    const val SAMPLE_ASSET = "al_fatiha.mp4"
 
     private val CHANNEL = LiveChannel(
       id = "channel-main",

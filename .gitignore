@@ -24,5 +24,6 @@ com_crashlytics_export_strings.xml
 extras
 app/google-services.json
 
-# Live TV mock broadcast clip: too large for GitHub, kept local only
+# Live TV mock broadcast clips: kept local only (size / third-party content)
 feature/livetv/src/main/assets/second_stream.mp4
+feature/livetv/src/main/assets/al_fatiha.mp4
