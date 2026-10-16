@@ -65,6 +65,10 @@
         android:theme="@style/QuranToolBarDayNight.TasnimLaunch"
         android:exported="false"/>
     <activity
+        android:name=".ui.whatsnew.AnnouncementActivity"
+        android:theme="@style/QuranToolBarDayNight"
+        android:exported="false"/>
+    <activity
         android:name=".ui.QuranActivity"
         android:theme="@style/QuranToolBarDayNight"
         android:exported="false"/>
