@@ -78,7 +78,7 @@ For each conflicted file, read **both sides** (`git diff`, or `git show :2:<file
 | Upstream feature announcements / "what's new" / new-icon announcements for quran.com branding | Keep the code, but make sure it does not show quran.com branding or override our icon; disable or re-word it for Tasnim if needed. |
 | Other languages' `strings.xml` | Take upstream; keep any keys we added. |
 | `AndroidManifest.xml` | Keep our activities/permissions/app label and icon; add upstream's new entries. |
-| Version code / name | Keep our versioning; do not adopt upstream's `Bump version` values. |
+| Version code / name | If we set our own version, keep it. While we still use upstream's numbering (true as of 2026-10-16), take their bump so updates install over older builds. |
 
 After resolving, make sure no conflict markers remain:
 
@@ -91,9 +91,9 @@ git grep -nE '^(<<<<<<<|>>>>>>>)( |$)' -- . ':!*.md' || echo "no markers"
 
 1. **Build** (compiles Kotlin + Java):
    ```bash
-   JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac -q
+   JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac -q --max-workers=2 -Dorg.gradle.jvmargs=-Xmx1536m -Pkotlin.compiler.execution.strategy=in-process
    ```
-   Not `--offline` here: upstream may have bumped dependencies that must be downloaded. Run it in the background if slow. Fix any errors (usually API changes in code we touched) and commit the fixes on the sync branch.
+   Not `--offline` here: upstream may have bumped dependencies that must be downloaded. The low-memory flags matter on this PC: the default 4G heap fails with "paging file is too small". Expect errors where upstream renamed/removed functions our code calls — switch to the replacement that gives the same behavior. Run it in the background if slow. Fix any errors (usually API changes in code we touched) and commit the fixes on the sync branch.
 2. **Our features still present** — quick sanity check that the merge did not drop our work:
    ```bash
    git diff --stat "$BR" HEAD -- . ':!**/values-*/strings.xml' | tail -5
