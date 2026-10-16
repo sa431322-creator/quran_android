@@ -467,7 +467,7 @@ class QuranActivity : AppCompatActivity(),
       if (hasPage) R.string.tasnim_continue_reading else R.string.tasnim_start_reading
     )
     findViewById<TextView>(R.id.continue_sura).text =
-      quranDisplayData.getSuraNameString(this, page)
+      quranDisplayData.getSuraNameFromPage(this, page, wantTitle = true)
     findViewById<TextView>(R.id.continue_details).text = getString(
       R.string.tasnim_page_juz,
       QuranUtils.getLocalizedNumber(page),
