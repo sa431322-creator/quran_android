@@ -60,7 +60,6 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
  *  * Check that we have permission to write to external storage (if we need this permission)
  * and if not, ask the user for permission
  *  * Verify that we have the necessary Quran data downloaded on the device
- *  * Show any unseen announcement on a normal launch, after data setup finishes
  *
  * The logic is split between [QuranDataActivity] and [QuranDataPresenter],
  * and [QuranDownloadService] is (mostly) used to perform the actual downloading of
