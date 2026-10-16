@@ -62,3 +62,7 @@ Give the user a short summary (in Arabic if they wrote in Arabic):
 - build check result
 - commit hash + branch
 - push result with the GitHub link: `https://github.com/sa431322-creator/quran_android/tree/<branch>`
+
+## 7. Sync with the original repo
+
+After a successful push, invoke the `sync-upstream` skill to merge new commits from the original `quran/quran_android` into this branch, keeping our features on top. Skip it (and say why) if the review, build, or push above failed. If upstream has nothing new it finishes in one step.
