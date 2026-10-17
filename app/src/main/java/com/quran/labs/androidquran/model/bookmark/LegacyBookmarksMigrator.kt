@@ -5,6 +5,7 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.mobile.bookmark.importdata.MobileSyncImporter
 import com.quran.mobile.bookmark.migration.LegacyBookmarkMigrationNormalizer
 import com.quran.mobile.bookmark.migration.LegacyBookmarksDataSource
+import com.quran.mobile.bookmark.migration.PreviousMobileSyncDatabaseMigration
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.CancellationException
@@ -19,11 +20,16 @@ class LegacyBookmarksMigrator @Inject constructor(
   private val quranSettings: QuranSettings,
   private val legacyBookmarksDataSource: LegacyBookmarksDataSource,
   private val normalizer: LegacyBookmarkMigrationNormalizer,
-  private val mobileSyncImporter: MobileSyncImporter
+  private val mobileSyncImporter: MobileSyncImporter,
+  private val previousMobileSyncDatabaseMigration: PreviousMobileSyncDatabaseMigration
 ) {
   private val migrationMutex = Mutex()
 
   suspend fun migrateIfNeeded(): Boolean {
+    // bookmarks saved with mobile-sync before 0.1.36 live in its old quran.db
+    if (!previousMobileSyncDatabaseMigration.migrateIfNeeded()) {
+      Timber.e("Unable to migrate the previous mobile-sync database.")
+    }
     if (quranSettings.haveMigratedLegacyBookmarksToMobileSync()) return true
 
     return migrationMutex.withLock {

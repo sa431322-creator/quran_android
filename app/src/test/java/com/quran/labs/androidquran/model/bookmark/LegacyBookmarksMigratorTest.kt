@@ -15,6 +15,7 @@ import com.quran.mobile.bookmark.importdata.MobileSyncImporter
 import com.quran.mobile.bookmark.migration.LegacyBookmarkMigrationNormalizer
 import com.quran.mobile.bookmark.migration.LegacyBookmarksDataSource
 import com.quran.mobile.bookmark.migration.LegacyBookmarksSnapshot
+import com.quran.mobile.bookmark.migration.PreviousMobileSyncDatabaseMigration
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -50,7 +51,10 @@ class LegacyBookmarksMigratorTest {
       quranSettings = quranSettings,
       legacyBookmarksDataSource = dataSource,
       normalizer = LegacyBookmarkMigrationNormalizer(context, QuranInfo(MadaniDataSource())),
-      mobileSyncImporter = importer
+      mobileSyncImporter = importer,
+      previousMobileSyncDatabaseMigration = object : PreviousMobileSyncDatabaseMigration {
+        override suspend fun migrateIfNeeded() = true
+      }
     )
   }
 
