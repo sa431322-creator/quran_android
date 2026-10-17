@@ -1,5 +1,6 @@
 plugins {
   id("quran.android.library.compose")
+  alias(libs.plugins.metro)
 }
 
 android {
@@ -8,6 +9,9 @@ android {
 }
 
 dependencies {
+  implementation(project(":common:data"))
+  implementation(project(":common:di"))
+  implementation(project(":common:persiantafsir"))
   implementation(project(":common:ui:core"))
 
   implementation(libs.androidx.activity.compose)

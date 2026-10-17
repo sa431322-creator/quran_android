@@ -83,11 +83,18 @@ class TajweedRepository(context: Context) {
         firstAyah = first.getInt(0) to first.getInt(1),
         lines = (0 until lines.length()).associate { i ->
           val line = lines.getJSONArray(i)
-          line.getInt(0) to line.getString(1).split(' ')
+          line.getInt(0) to line.getString(1).split('|')
         },
         suraStarts = List(starts.length()) { i ->
           val start = starts.getJSONArray(i)
           start.getInt(0) to start.getInt(1)
+        },
+        wordAyahs = buildList {
+          val runs = page.getJSONArray("w")
+          for (i in 0 until runs.length()) {
+            val run = runs.getJSONArray(i)
+            repeat(run.getInt(2)) { add(ayahKey(run.getInt(0), run.getInt(1))) }
+          }
         }
       )
     }

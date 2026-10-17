@@ -53,7 +53,12 @@ for (let page = 1; page <= PAGES; page++) {
   if (words.length === 0) throw new Error(`no words on page ${page}`);
   const lines = new Map();
   const suraStarts = [];
+  // each word's ayah in reading order, as runs of [sura, ayah, word count]
+  const wordAyahs = [];
   for (const word of words) {
+    const last = wordAyahs[wordAyahs.length - 1];
+    if (last && last[0] === word.sura && last[1] === word.ayah) last[2]++;
+    else wordAyahs.push([word.sura, word.ayah, 1]);
     if (!lines.has(word.line_number)) lines.set(word.line_number, []);
     lines.get(word.line_number).push(word.code_v2);
     if (word.ayah === 1 && word.index === 0) suraStarts.push([word.sura, word.line_number]);
@@ -64,10 +69,11 @@ for (let page = 1; page <= PAGES; page++) {
     j: words[0].juz,
     // [sura, ayah] of the page's first word, to move between this and other mushaf layouts
     f: [words[0].sura, words[0].ayah],
-    // [line number, words separated by a space]
-    l: [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([n, w]) => [n, w.join(' ')]),
+    // [line number, words separated by "|" (a word's glyphs can include a space)]
+    l: [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([n, w]) => [n, w.join('|')]),
     // [sura, line of its first ayah]
     h: suraStarts,
+    w: wordAyahs,
   });
 }
 

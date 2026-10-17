@@ -59,6 +59,8 @@ import com.quran.mobile.feature.tajweed.data.TAJWEED_PAGE_COUNT
 import com.quran.mobile.feature.tajweed.data.TajweedData
 import com.quran.mobile.feature.tajweed.data.TajweedPage
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
+import com.quran.mobile.feature.tajweed.data.ayahKeyAyah
+import com.quran.mobile.feature.tajweed.data.ayahKeySura
 import com.quran.mobile.feature.tajweed.data.pageFor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
@@ -76,7 +78,9 @@ fun TajweedMushafScreen(
   /** the sura and ayah the current page starts with, to return to the same place */
   onPositionChanged: (Pair<Int, Int>) -> Unit = {},
   /** shows a «مصحف | تجوید» switch; its mushaf side calls this */
-  onMushaf: (() -> Unit)? = null
+  onMushaf: (() -> Unit)? = null,
+  /** what a tapped ayah offers; without it, ayat are not tappable */
+  ayahActions: TajweedAyahActions? = null
 ) {
   val palette = LocalTasnimPalette.current
   var dataAttempt by remember { mutableIntStateOf(0) }
@@ -92,6 +96,7 @@ fun TajweedMushafScreen(
   }
   val scope = rememberCoroutineScope()
   var showSuras by remember { mutableStateOf(false) }
+  var selectedAyah by rememberSaveable { mutableStateOf<Int?>(null) }
   // the reader's ayah is only known once the pages are loaded; jump to it once. The pager is not
   // laid out yet, so the jump is requested for its first layout rather than awaited here.
   var startHandled by rememberSaveable { mutableStateOf(startAyah == null) }
@@ -158,9 +163,27 @@ fun TajweedMushafScreen(
           modifier = Modifier.fillMaxSize(),
           beyondViewportPageCount = 1
         ) { index ->
-          TajweedPageContent(loaded.pages[index], repository, basmalaFont, suraNames)
+          TajweedPageContent(
+            page = loaded.pages[index],
+            repository = repository,
+            basmalaFont = basmalaFont,
+            suraNames = suraNames,
+            selectedAyah = selectedAyah,
+            onAyahTap = { key -> if (ayahActions != null) selectedAyah = key }
+          )
         }
       }
+    }
+
+    val selected = selectedAyah
+    if (selected != null && ayahActions != null) {
+      AyahSheet(
+        sura = ayahKeySura(selected),
+        ayah = ayahKeyAyah(selected),
+        suraNames = suraNames,
+        actions = ayahActions,
+        onDismiss = { selectedAyah = null }
+      )
     }
 
     val loaded = data?.getOrNull()
@@ -198,7 +221,9 @@ private fun TajweedPageContent(
   page: TajweedPage,
   repository: TajweedRepository,
   basmalaFont: FontFamily,
-  suraNames: List<String>
+  suraNames: List<String>,
+  selectedAyah: Int?,
+  onAyahTap: (Int) -> Unit
 ) {
   var attempt by remember { mutableIntStateOf(0) }
   val cached = remember(page.page) {
@@ -214,7 +239,14 @@ private fun TajweedPageContent(
   }
 
   when (val current = state) {
-    is FontState.Ready -> TajweedPageView(page, current.family, basmalaFont, suraNames)
+    is FontState.Ready -> TajweedPageView(
+      page = page,
+      pageFont = current.family,
+      basmalaFont = basmalaFont,
+      suraNames = suraNames,
+      selectedAyah = selectedAyah,
+      onAyahTap = onAyahTap
+    )
     FontState.Loading -> PageMessage(stringResource(R.string.tajweed_loading), showProgress = true)
     FontState.Failed -> PageMessage(
       stringResource(R.string.tajweed_error),

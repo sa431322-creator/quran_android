@@ -9,7 +9,11 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.ui.text.font.FontFamily
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
+import com.quran.data.model.SuraAyah
+import com.quran.mobile.di.QuranApplicationComponentProvider
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
+import com.quran.mobile.feature.tajweed.di.TajweedComponentInterface
+import com.quran.mobile.feature.tajweed.ui.TajweedAyahActions
 import com.quran.mobile.feature.tajweed.ui.TajweedMushafScreen
 
 /**
@@ -45,6 +49,20 @@ class TajweedMushafActivity : AppCompatActivity() {
     val ayah = intent.getIntExtra(EXTRA_AYAH, 0)
     val startAyah = if (sura > 0 && ayah > 0) sura to ayah else null
 
+    val dependencies = (application as? QuranApplicationComponentProvider)
+      ?.provideQuranApplicationComponent() as? TajweedComponentInterface
+    val ayahActions = dependencies?.let { component ->
+      val tafsirRepository = component.persianTafsirRepository()
+      val audio = component.tajweedAudio()
+      TajweedAyahActions(
+        tafsir = { sura, ayah ->
+          tafsirRepository.tafsir(SuraAyah(sura, ayah), SuraAyah(sura, ayah))?.firstOrNull()?.text
+        },
+        play = { sura, ayah, allowMobileDownload -> audio.playFrom(this, sura, ayah, allowMobileDownload) },
+        stop = { audio.stop(this) }
+      )
+    }
+
     setContent {
       QuranTheme {
         TasnimPaletteProvider {
@@ -59,7 +77,8 @@ class TajweedMushafActivity : AppCompatActivity() {
               if (startPosition == null) startPosition = current
               position = current
             },
-            onMushaf = if (startAyah != null) ::finish else null
+            onMushaf = if (startAyah != null) ::finish else null,
+            ayahActions = ayahActions
           )
         }
       }

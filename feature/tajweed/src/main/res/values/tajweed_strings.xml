@@ -13,5 +13,13 @@
   <string name="tajweed_sura_header" translatable="false">سورة %1$s</string>
   <string name="tajweed_mushaf" translatable="false">مصحف</string>
   <string name="tajweed_mode" translatable="false">تجوید</string>
+  <string name="tajweed_ayah_title" translatable="false">سورهٔ %1$s، آیهٔ %2$s</string>
+  <string name="tajweed_play" translatable="false">تلاوت از این آیه</string>
+  <string name="tajweed_stop" translatable="false">توقف</string>
+  <string name="tajweed_audio_downloading" translatable="false">فایل‌های صوتی این قاری در حال دریافت است. پس از پایان دریافت، دوباره «تلاوت» را بزنید.</string>
+  <string name="tajweed_audio_mobile_data" translatable="false">برای تلاوت، فایل‌های صوتی این قاری باید دریافت شود و اکنون به Wi-Fi وصل نیستید.</string>
+  <string name="tajweed_audio_download" translatable="false">دریافت با اینترنت همراه</string>
+  <string name="tajweed_tafsir" translatable="false">ترجمه و تفسیر فارسی</string>
+  <string name="tajweed_tafsir_unavailable" translatable="false">تفسیر این آیه در دسترس نیست.</string>
   <string name="tajweed_close" translatable="false">بستن</string>
 </resources>

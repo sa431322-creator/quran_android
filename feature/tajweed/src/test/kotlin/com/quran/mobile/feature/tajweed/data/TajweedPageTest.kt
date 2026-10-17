@@ -12,6 +12,21 @@ class TajweedPageTest {
     TajweedPage(page, sura, 1, sura to ayah, emptyList())
 
   @Test
+  fun eachWordGetsItsAyahInReadingOrder() {
+    val raw = RawTajweedPage(
+      page = 3, sura = 2, juz = 1, firstAyah = 2 to 6,
+      lines = mapOf(2 to listOf("c", "d"), 1 to listOf("a", "b", "x")),
+      suraStarts = emptyList(),
+      wordAyahs = listOf(ayahKey(2, 6), ayahKey(2, 6), ayahKey(2, 7), ayahKey(2, 7), ayahKey(2, 8))
+    )
+    val lines = buildTajweedPages(listOf(raw(1, 1..1), raw(2, 1..1), raw)).last().lines
+    assertThat((lines[0] as TajweedLine.Text).ayahs).containsExactly(ayahKey(2, 6), ayahKey(2, 6), ayahKey(2, 7)).inOrder()
+    assertThat((lines[1] as TajweedLine.Text).ayahs).containsExactly(ayahKey(2, 7), ayahKey(2, 8)).inOrder()
+    assertThat(ayahKeySura(ayahKey(114, 6))).isEqualTo(114)
+    assertThat(ayahKeyAyah(ayahKey(114, 6))).isEqualTo(6)
+  }
+
+  @Test
   fun pageForFindsThePageWhereTheAyahIs() {
     // first ayahs of pages 1, 2, 3, 76, 77 and 604 in the V4 layout
     val pages = listOf(page(1, 1, 1), page(2, 2, 1), page(3, 2, 6), page(76, 3, 195), page(77, 4, 1), page(604, 112, 1))

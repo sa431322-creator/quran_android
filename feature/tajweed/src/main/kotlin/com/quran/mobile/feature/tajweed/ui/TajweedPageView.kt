@@ -15,11 +15,20 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.TransformOrigin
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -63,7 +72,10 @@ fun TajweedPageView(
   pageFont: FontFamily,
   basmalaFont: FontFamily,
   suraNames: List<String>,
-  modifier: Modifier = Modifier
+  modifier: Modifier = Modifier,
+  /** the [com.quran.mobile.feature.tajweed.data.ayahKey] to highlight, if any */
+  selectedAyah: Int? = null,
+  onAyahTap: (Int) -> Unit = {}
 ) {
   BoxWithConstraints(
     modifier
@@ -95,7 +107,15 @@ fun TajweedPageView(
       page.lines.forEach { line ->
         val rowModifier = Modifier.fillMaxWidth().height(rowHeight)
         when (line) {
-          is TajweedLine.Text -> PageLine(line.words, textStyle, page.isOpening, rowModifier)
+          is TajweedLine.Text -> PageLine(
+            words = line.words,
+            ayahs = line.ayahs,
+            style = textStyle,
+            centered = page.isOpening,
+            selectedAyah = selectedAyah,
+            onAyahTap = onAyahTap,
+            modifier = rowModifier
+          )
           is TajweedLine.SuraHeader -> SuraHeader(
             name = suraNames.getOrElse(line.sura - 1) { line.sura.toString() },
             rowHeight = rowHeight,
@@ -109,14 +129,61 @@ fun TajweedPageView(
   }
 }
 
+/** Where each word of a line was placed, for highlighting and for finding the tapped word. */
+private class WordBounds {
+  var lefts = FloatArray(0)
+  var rights = FloatArray(0)
+
+  fun wordAt(x: Float): Int? {
+    if (lefts.isEmpty()) return null
+    lefts.indices.firstOrNull { x >= lefts[it] && x <= rights[it] }?.let { return it }
+    // between words: the nearest one
+    return lefts.indices.minBy { minOf(kotlin.math.abs(x - lefts[it]), kotlin.math.abs(x - rights[it])) }
+  }
+}
+
 /**
  * Lays the words out right to left. Full lines are justified edge to edge like the printed
- * page; short lines are centered with a word space between words.
+ * page; short lines are centered with a word space between words. A tap reports the tapped
+ * word's ayah, and the words of [selectedAyah] are highlighted, with the gaps between them.
  */
 @Composable
-private fun PageLine(words: List<String>, style: TextStyle, centered: Boolean, modifier: Modifier) {
+private fun PageLine(
+  words: List<String>,
+  ayahs: List<Int>,
+  style: TextStyle,
+  centered: Boolean,
+  selectedAyah: Int?,
+  onAyahTap: (Int) -> Unit,
+  modifier: Modifier
+) {
+  val bounds = remember { WordBounds() }
+  val highlight = LocalTasnimPalette.current.gold.copy(alpha = 0.28f)
+  // read the latest values from the long-lived tap detector instead of restarting it
+  val currentAyahs by rememberUpdatedState(ayahs)
+  val currentOnAyahTap by rememberUpdatedState(onAyahTap)
   Layout(
-    modifier = modifier,
+    modifier = modifier
+      .pointerInput(Unit) {
+        detectTapGestures { offset ->
+          bounds.wordAt(offset.x)?.let { word -> currentAyahs.getOrNull(word)?.let(currentOnAyahTap) }
+        }
+      }
+      .drawBehind {
+        if (selectedAyah == null) return@drawBehind
+        val inset = size.height * 0.06f
+        for (word in bounds.lefts.indices) {
+          if (ayahs.getOrNull(word) != selectedAyah) continue
+          // words run right to left, so the next word is on the left; cover the gap up to it
+          val left = if (ayahs.getOrNull(word + 1) == selectedAyah) bounds.rights[word + 1] else bounds.lefts[word]
+          drawRoundRect(
+            color = highlight,
+            topLeft = Offset(left, inset),
+            size = Size(bounds.rights[word] - left, size.height - inset * 2),
+            cornerRadius = CornerRadius(inset, inset)
+          )
+        }
+      },
     content = {
       words.forEach { Text(text = it, style = style, softWrap = false, maxLines = 1) }
     }
@@ -132,10 +199,14 @@ private fun PageLine(words: List<String>, style: TextStyle, centered: Boolean, m
     val justify = !centered && gaps > 0 && total >= width * JUSTIFY_THRESHOLD
     val gap = if (justify) (width - total) / gaps else wordSpace
     val used = total + gap * gaps
+    bounds.lefts = FloatArray(placeables.size)
+    bounds.rights = FloatArray(placeables.size)
     layout(width, height) {
       var right = if (justify) width.toFloat() else width - (width - used) / 2f
-      placeables.forEach { placeable ->
+      placeables.forEachIndexed { index, placeable ->
+        bounds.rights[index] = right
         right -= placeable.width * scale
+        bounds.lefts[index] = right
         val y = (height - placeable.height) / 2
         if (scale < 1f) {
           placeable.placeWithLayer(right.toInt(), y) {
