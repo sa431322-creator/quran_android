@@ -11,7 +11,13 @@ interface TajweedAudio {
    * download starts on Wi-Fi or with [allowMobileDownload]; otherwise the user is asked first,
    * like the reader does.
    */
-  fun playFrom(activity: Activity, sura: Int, ayah: Int, allowMobileDownload: Boolean): TajweedPlayResult
+  fun playFrom(
+    activity: Activity,
+    sura: Int,
+    ayah: Int,
+    allowMobileDownload: Boolean,
+    options: TajweedPlayOptions = TajweedPlayOptions()
+  ): TajweedPlayResult
 
   fun pause(context: Context)
 
@@ -25,6 +31,15 @@ interface TajweedAudio {
   /** emits each time a download of recitation audio finishes */
   val audioDownloaded: Flow<Unit>
 }
+
+/** The reader's playback options that the tajweed mushaf offers. */
+data class TajweedPlayOptions(
+  /** extra plays of each ayah: 0 plays it once, -1 repeats it until stopped */
+  val verseRepeat: Int = 0,
+  val speed: Float = 1f,
+  /** recite to the end of the sura and stop there, instead of the reader's usual range */
+  val toEndOfSura: Boolean = false
+)
 
 data class TajweedPlayback(val sura: Int, val ayah: Int, val paused: Boolean)
 

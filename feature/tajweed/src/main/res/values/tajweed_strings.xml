@@ -22,6 +22,16 @@
   <string name="tajweed_resume" translatable="false">ادامهٔ تلاوت</string>
   <string name="tajweed_audio_mobile_data" translatable="false">برای تلاوت، فایل‌های صوتی این قاری باید دریافت شود و اکنون به Wi-Fi وصل نیستید.</string>
   <string name="tajweed_audio_download" translatable="false">دریافت با اینترنت همراه</string>
+  <string name="tajweed_bookmark" translatable="false">نشانک و برجسته‌سازی</string>
+  <string name="tajweed_copy" translatable="false">کپی آیه</string>
+  <string name="tajweed_share_text" translatable="false">اشتراک متن</string>
+  <string name="tajweed_share_link" translatable="false">اشتراک پیوند</string>
+  <string name="tajweed_text_missing" translatable="false">متن عربی قرآن هنوز دریافت نشده است. یک بار مصحف اصلی را باز کنید تا فایل‌های لازم دریافت شوند.</string>
+  <string name="tajweed_repeat_ayah" translatable="false">تکرار هر آیه</string>
+  <string name="tajweed_repeat_times" translatable="false">%1$s بار</string>
+  <string name="tajweed_repeat_forever" translatable="false">بی‌پایان</string>
+  <string name="tajweed_speed" translatable="false">سرعت</string>
+  <string name="tajweed_to_end_of_sura" translatable="false">تا پایان سوره</string>
   <string name="tajweed_tafsir" translatable="false">ترجمه و تفسیر فارسی</string>
   <string name="tajweed_tafsir_unavailable" translatable="false">تفسیر این آیه در دسترس نیست.</string>
   <string name="tajweed_close" translatable="false">بستن</string>

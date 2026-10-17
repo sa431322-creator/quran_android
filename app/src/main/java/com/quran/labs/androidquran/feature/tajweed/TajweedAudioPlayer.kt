@@ -22,6 +22,7 @@ import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.common.download.DownloadInfo
 import com.quran.mobile.common.download.DownloadInfoStreams
 import com.quran.mobile.feature.tajweed.TajweedAudio
+import com.quran.mobile.feature.tajweed.TajweedPlayOptions
 import com.quran.mobile.feature.tajweed.TajweedPlayResult
 import com.quran.mobile.feature.tajweed.TajweedPlayback
 import dev.zacsweers.metro.ContributesBinding
@@ -63,7 +64,8 @@ class TajweedAudioPlayer @Inject constructor(
     activity: Activity,
     sura: Int,
     ayah: Int,
-    allowMobileDownload: Boolean
+    allowMobileDownload: Boolean,
+    options: TajweedPlayOptions
   ): TajweedPlayResult {
     var result = TajweedPlayResult.PLAYING
     val screen = object : AudioPresenterScreen {
@@ -93,16 +95,19 @@ class TajweedAudioPlayer @Inject constructor(
     try {
       val start = SuraAyah(sura, ayah)
       val page = quranInfo.getPageFromSuraAyah(sura, ayah)
-      val end = audioUtils.getLastAyahToPlay(start, page, quranSettings.preferredDownloadAmount, false)
-        ?: return TajweedPlayResult.PLAYING
+      val end = if (options.toEndOfSura) {
+        SuraAyah(sura, quranInfo.getNumberOfAyahs(sura))
+      } else {
+        audioUtils.getLastAyahToPlay(start, page, quranSettings.preferredDownloadAmount, false)
+      } ?: return TajweedPlayResult.PLAYING
       audioPresenter.play(
         start,
         end,
         fromQari(activity, qariManager.currentQari()),
-        verseRepeat = 0,
+        verseRepeat = options.verseRepeat,
         rangeRepeat = 0,
-        enforceRange = false,
-        playbackSpeed = 1.0f,
+        enforceRange = options.toEndOfSura,
+        playbackSpeed = options.speed,
         shouldStream = quranSettings.shouldStream()
       )
     } finally {

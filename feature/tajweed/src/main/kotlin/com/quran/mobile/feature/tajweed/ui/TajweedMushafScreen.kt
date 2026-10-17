@@ -33,6 +33,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.listSaver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -61,6 +62,8 @@ import com.quran.mobile.feature.tajweed.data.TAJWEED_PAGE_COUNT
 import com.quran.mobile.feature.tajweed.data.TajweedData
 import com.quran.mobile.feature.tajweed.data.TajweedPage
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
+import com.quran.mobile.feature.tajweed.TajweedPlayOptions
+import com.quran.data.model.highlight.HighlightColor
 import com.quran.mobile.feature.tajweed.data.ayahKey
 import com.quran.mobile.feature.tajweed.data.ayahKeyAyah
 import com.quran.mobile.feature.tajweed.data.ayahKeySura
@@ -104,6 +107,10 @@ fun TajweedMushafScreen(
   val scope = rememberCoroutineScope()
   var showSuras by remember { mutableStateOf(false) }
   var selectedAyah by rememberSaveable { mutableStateOf<Int?>(null) }
+  // kept while the screen is open (and across rotation), like the reader's playback settings
+  var playOptions by rememberSaveable(stateSaver = PlayOptionsSaver) { mutableStateOf(TajweedPlayOptions()) }
+  val highlightsFlow = remember(ayahActions) { ayahActions?.highlights ?: flowOf(emptyMap()) }
+  val highlights by highlightsFlow.collectAsState(emptyMap())
   // the reader's ayah is only known once the pages are loaded; jump to it once. The pager is not
   // laid out yet, so the jump is requested for its first layout rather than awaited here.
   var startHandled by rememberSaveable { mutableStateOf(startAyah == null) }
@@ -139,10 +146,9 @@ fun TajweedMushafScreen(
   var pendingPlay by rememberSaveable { mutableStateOf<Int?>(null) }
   val sheetActions = remember(ayahActions) {
     ayahActions?.let { actions ->
-      TajweedAyahActions(
-        tafsir = actions.tafsir,
-        play = { sura, ayah, allowMobileDownload ->
-          actions.play(sura, ayah, allowMobileDownload).also { result ->
+      actions.copy(
+        play = { sura, ayah, allowMobileDownload, options ->
+          actions.play(sura, ayah, allowMobileDownload, options).also { result ->
             pendingPlay = if (result == TajweedPlayResult.DOWNLOADING) ayahKey(sura, ayah) else null
           }
         },
@@ -159,7 +165,7 @@ fun TajweedMushafScreen(
       val key = pendingPlay ?: return@collect
       // the first download may only be the timing data; then the audio itself downloads next.
       // When it cannot start (the app is in the background), it stays pending for the next one.
-      runCatching { ayahActions.play(ayahKeySura(key), ayahKeyAyah(key), true) }.onSuccess { result ->
+      runCatching { ayahActions.play(ayahKeySura(key), ayahKeyAyah(key), true, playOptions) }.onSuccess { result ->
         if (result != TajweedPlayResult.DOWNLOADING) pendingPlay = null
       }
     }
@@ -223,6 +229,7 @@ fun TajweedMushafScreen(
               suraNames = suraNames,
               // the tapped ayah while its sheet is open, otherwise the recited one
               selectedAyah = selectedAyah ?: playingKey,
+              highlights = highlights,
               onAyahTap = { key -> if (ayahActions != null) selectedAyah = key }
             )
           }
@@ -249,6 +256,8 @@ fun TajweedMushafScreen(
         ayah = ayahKeyAyah(selected),
         suraNames = suraNames,
         actions = sheetActions,
+        options = playOptions,
+        onOptionsChange = { playOptions = it },
         onDismiss = { selectedAyah = null }
       )
     }
@@ -266,6 +275,11 @@ fun TajweedMushafScreen(
     }
   }
 }
+
+private val PlayOptionsSaver = listSaver<TajweedPlayOptions, Any>(
+  save = { listOf(it.verseRepeat, it.speed, it.toEndOfSura) },
+  restore = { TajweedPlayOptions(it[0] as Int, it[1] as Float, it[2] as Boolean) }
+)
 
 /** Runs [block], returning null when it fails; cancellation still propagates. */
 private suspend fun <T : Any> orNull(block: suspend () -> T): T? =
@@ -290,6 +304,7 @@ private fun TajweedPageContent(
   basmalaFont: FontFamily,
   suraNames: List<String>,
   selectedAyah: Int?,
+  highlights: Map<Int, HighlightColor>,
   onAyahTap: (Int) -> Unit
 ) {
   var attempt by remember { mutableIntStateOf(0) }
@@ -312,6 +327,7 @@ private fun TajweedPageContent(
       basmalaFont = basmalaFont,
       suraNames = suraNames,
       selectedAyah = selectedAyah,
+      highlights = highlights,
       onAyahTap = onAyahTap
     )
     FontState.Loading -> PageMessage(stringResource(R.string.tajweed_loading), showProgress = true)

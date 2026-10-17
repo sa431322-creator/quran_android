@@ -13,6 +13,8 @@ dependencies {
   implementation(project(":common:di"))
   implementation(project(":common:persiantafsir"))
   implementation(project(":common:ui:core"))
+  // the reader's bookmark sheet (collections, highlight colors, reading bookmarks)
+  implementation(project(":feature:ayahbookmark"))
 
   implementation(libs.androidx.activity.compose)
   // AppCompatActivity applies the app's own light/dark choice (AppCompatDelegate)

@@ -40,6 +40,8 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.data.model.highlight.HighlightColor
+import com.quran.labs.androidquran.common.ui.core.HighlightColors
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.NotoKufiArabic
 import com.quran.mobile.feature.tajweed.R
@@ -75,6 +77,8 @@ fun TajweedPageView(
   modifier: Modifier = Modifier,
   /** the [com.quran.mobile.feature.tajweed.data.ayahKey] to highlight, if any */
   selectedAyah: Int? = null,
+  /** highlighted ayat ([com.quran.mobile.feature.tajweed.data.ayahKey]) and their colors */
+  highlights: Map<Int, HighlightColor> = emptyMap(),
   onAyahTap: (Int) -> Unit = {}
 ) {
   BoxWithConstraints(
@@ -113,6 +117,7 @@ fun TajweedPageView(
             style = textStyle,
             centered = page.isOpening,
             selectedAyah = selectedAyah,
+            highlights = highlights,
             onAyahTap = onAyahTap,
             modifier = rowModifier
           )
@@ -154,6 +159,7 @@ private fun PageLine(
   style: TextStyle,
   centered: Boolean,
   selectedAyah: Int?,
+  highlights: Map<Int, HighlightColor>,
   onAyahTap: (Int) -> Unit,
   modifier: Modifier
 ) {
@@ -170,14 +176,18 @@ private fun PageLine(
         }
       }
       .drawBehind {
-        if (selectedAyah == null) return@drawBehind
         val inset = size.height * 0.06f
         for (word in bounds.lefts.indices) {
-          if (ayahs.getOrNull(word) != selectedAyah) continue
+          val key = ayahs.getOrNull(word) ?: continue
+          // the selected (or recited) ayah over the reader's highlight colors
+          val color = when {
+            key == selectedAyah -> highlight
+            else -> highlights[key]?.let { HighlightColors[it].color.copy(alpha = 0.55f) } ?: continue
+          }
           // words run right to left, so the next word is on the left; cover the gap up to it
-          val left = if (ayahs.getOrNull(word + 1) == selectedAyah) bounds.rights[word + 1] else bounds.lefts[word]
+          val left = if (ayahs.getOrNull(word + 1) == key) bounds.rights[word + 1] else bounds.lefts[word]
           drawRoundRect(
-            color = highlight,
+            color = color,
             topLeft = Offset(left, inset),
             size = Size(bounds.rights[word] - left, size.height - inset * 2),
             cornerRadius = CornerRadius(inset, inset)
