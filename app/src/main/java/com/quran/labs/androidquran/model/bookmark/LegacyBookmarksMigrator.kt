@@ -27,8 +27,8 @@ class LegacyBookmarksMigrator @Inject constructor(
 
   suspend fun migrateIfNeeded(): Boolean {
     // bookmarks saved with mobile-sync before 0.1.36 live in its old quran.db
-    if (!previousMobileSyncDatabaseMigration.migrateIfNeeded()) {
-      Timber.e("Unable to migrate the previous mobile-sync database.")
+    previousMobileSyncDatabaseMigration.migrateIfNeeded()?.let { failure ->
+      Timber.e(failure, "Unable to migrate the previous mobile-sync database.")
     }
     if (quranSettings.haveMigratedLegacyBookmarksToMobileSync()) return true
 

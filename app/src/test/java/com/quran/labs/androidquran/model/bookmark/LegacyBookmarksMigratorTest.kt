@@ -53,7 +53,7 @@ class LegacyBookmarksMigratorTest {
       normalizer = LegacyBookmarkMigrationNormalizer(context, QuranInfo(MadaniDataSource())),
       mobileSyncImporter = importer,
       previousMobileSyncDatabaseMigration = object : PreviousMobileSyncDatabaseMigration {
-        override suspend fun migrateIfNeeded() = true
+        override suspend fun migrateIfNeeded(): Throwable? = null
       }
     )
   }

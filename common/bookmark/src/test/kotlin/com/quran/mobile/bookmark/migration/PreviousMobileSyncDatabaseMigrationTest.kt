@@ -48,7 +48,8 @@ class PreviousMobileSyncDatabaseMigrationTest {
     context = RuntimeEnvironment.getApplication().applicationContext as Context
     context.deleteDatabase("user_data.db")
     context.deleteDatabase("quran.db")
-    context.getDatabasePath("quran.db.migrated").delete()
+    context.getDatabasePath("quran.db.migrated").deleteRecursively()
+    context.getSharedPreferences("previous_mobile_sync_migration", Context.MODE_PRIVATE).edit().clear().commit()
     previousDatabase = context.getDatabasePath("quran.db")
     mobileSyncDatabase = MobileSyncDatabase(context)
     appCoroutineScope = AppCoroutineScope()
@@ -82,7 +83,7 @@ class PreviousMobileSyncDatabaseMigrationTest {
 
   @Test
   fun `without an old database there is nothing to do`() = runTest {
-    assertThat(migration.migrateIfNeeded()).isTrue()
+    assertThat(migration.migrateIfNeeded()).isNull()
     assertThat(bookmarksDao.bookmarks()).isEmpty()
   }
 
@@ -108,7 +109,7 @@ class PreviousMobileSyncDatabaseMigrationTest {
       execSQL("INSERT INTO reading_session (chapter_number, verse_number, modified_at) VALUES (19, 5, 10000)")
     }
 
-    assertThat(migration.migrateIfNeeded()).isTrue()
+    assertThat(migration.migrateIfNeeded()).isNull()
 
     val bookmarks = bookmarksDao.bookmarks()
     assertThat(bookmarks.map { it.sura to it.ayah }).containsExactly(2 to 255, 18 to 10)
@@ -134,7 +135,7 @@ class PreviousMobileSyncDatabaseMigrationTest {
 
     assertThat(previousDatabase.exists()).isFalse()
     assertThat(context.getDatabasePath("quran.db.migrated").isFile).isTrue()
-    assertThat(migration.migrateIfNeeded()).isTrue()
+    assertThat(migration.migrateIfNeeded()).isNull()
     assertThat(bookmarksDao.bookmarks()).hasSize(2)
   }
 
@@ -143,8 +144,52 @@ class PreviousMobileSyncDatabaseMigrationTest {
     previousDatabase.parentFile?.mkdirs()
     previousDatabase.writeText("not a database")
 
-    assertThat(migration.migrateIfNeeded()).isFalse()
+    assertThat(migration.migrateIfNeeded()).isNotNull()
     assertThat(previousDatabase.isFile).isTrue()
+  }
+
+  @Test
+  fun `reads an older schema without timestamps or soft deletes`() = runTest {
+    previousDatabase.parentFile?.mkdirs()
+    SQLiteDatabase.openOrCreateDatabase(previousDatabase, null).use { db ->
+      db.execSQL("CREATE TABLE collection(local_id INTEGER PRIMARY KEY, name TEXT NOT NULL, is_default INTEGER NOT NULL DEFAULT 0, is_system INTEGER NOT NULL DEFAULT 0)")
+      db.execSQL("CREATE TABLE bookmark(local_id INTEGER PRIMARY KEY, sura INTEGER NOT NULL, ayah INTEGER NOT NULL)")
+      db.execSQL("CREATE TABLE bookmark_collection(bookmark_local_id INTEGER NOT NULL, collection_local_id INTEGER NOT NULL)")
+      db.execSQL("INSERT INTO collection (local_id, name, is_default, is_system) VALUES (1, 'Favorites', 1, 1), (2, 'Hifz', 0, 0)")
+      db.execSQL("INSERT INTO bookmark (local_id, sura, ayah) VALUES (10, 1, 1), (11, 112, 1)")
+      db.execSQL("INSERT INTO bookmark_collection VALUES (10, 1), (11, 2)")
+    }
+
+    assertThat(migration.migrateIfNeeded()).isNull()
+
+    val bookmarks = bookmarksDao.bookmarks()
+    assertThat(bookmarks.map { it.sura to it.ayah }).containsExactly(1 to 1, 112 to 1)
+    val hifz = bookmarksDao.tags().single { it.name == "Hifz" }
+    assertThat(bookmarks.single { it.sura == 112 }.tags).contains(hifz.id)
+  }
+
+  @Test
+  fun `a failed rename is retried without importing over newer changes`() = runTest {
+    createPreviousDatabase {
+      execSQL("INSERT INTO reading_bookmark (slot, bookmark_type, page, mushaf_id, modified_at) VALUES (1, 'PAGE', 42, 1, 8000)")
+    }
+    // a non-empty directory in the way makes the rename fail
+    val blocker = context.getDatabasePath("quran.db.migrated")
+    blocker.mkdirs()
+    File(blocker, "in-the-way").writeText("x")
+
+    assertThat(migration.migrateIfNeeded()).isNotNull()
+    val repository = ReadingBookmarksRepositoryImpl(mobileSyncDatabase.database.synced)
+    assertThat((repository.getReadingBookmarks().single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
+      .isEqualTo(42)
+    repository.setPageReadingBookmark(ReadingBookmarkSlot.TEAL, 100)
+
+    blocker.deleteRecursively()
+    assertThat(migration.migrateIfNeeded()).isNull()
+
+    assertThat((repository.getReadingBookmarks().single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
+      .isEqualTo(100)
+    assertThat(previousDatabase.exists()).isFalse()
   }
 
   /** The tables and columns mobile-sync 0.1.20–0.1.35 created, as far as the migration reads them. */

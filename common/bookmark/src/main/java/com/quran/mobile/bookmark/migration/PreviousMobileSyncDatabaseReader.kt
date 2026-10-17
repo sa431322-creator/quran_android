@@ -23,8 +23,9 @@ data class PreviousMobileSyncData(
 
 /**
  * Reads `quran.db` from mobile-sync 0.1.14–0.1.35 with plain SQL, since 0.1.36 can no longer open it.
- * Those versions share the tables read here (0.1.30 only added collection.name_key, unused here);
- * a table or column that is missing is skipped instead of failing the whole read.
+ * 0.1.20–0.1.35 share the tables read here (0.1.30 only added collection.name_key, unused here).
+ * Older versions are read with whatever of those columns they have: a missing filter or timestamp
+ * column is left out, and only a table without its core columns is skipped.
  */
 internal object PreviousMobileSyncDatabaseReader {
 
@@ -34,18 +35,27 @@ internal object PreviousMobileSyncDatabaseReader {
       val collectionBookmarks = mutableListOf<MobileSyncImportCollectionBookmark>()
       val highlights = mutableMapOf<SuraAyah, HighlightColor>()
 
-      if (db.hasColumns("bookmark", "local_id", "sura", "ayah", "deleted") &&
-        db.hasColumns("bookmark_collection", "bookmark_local_id", "collection_local_id", "is_active", "modified_at") &&
-        db.hasColumns("collection", "local_id", "name", "deleted", "is_default", "is_system")
+      val bookmarkColumns = db.columns("bookmark")
+      val membershipColumns = db.columns("bookmark_collection")
+      val collectionColumns = db.columns("collection")
+      if (bookmarkColumns.containsAll(listOf("local_id", "sura", "ayah")) &&
+        membershipColumns.containsAll(listOf("bookmark_local_id", "collection_local_id")) &&
+        collectionColumns.containsAll(listOf("local_id", "name", "is_default", "is_system"))
       ) {
+        val timestamp = membershipColumns.timestamp("bc")
+        val conditions = listOfNotNull(
+          "bc.is_active = 1".takeIf { "is_active" in membershipColumns },
+          "b.deleted = 0".takeIf { "deleted" in bookmarkColumns },
+          "c.deleted = 0".takeIf { "deleted" in collectionColumns }
+        )
         db.rawQuery(
           """
-          SELECT c.name, c.is_default, c.is_system, b.sura, b.ayah, bc.modified_at
+          SELECT c.name, c.is_default, c.is_system, b.sura, b.ayah, $timestamp
           FROM bookmark_collection bc
           JOIN bookmark b ON b.local_id = bc.bookmark_local_id
           JOIN collection c ON c.local_id = bc.collection_local_id
-          WHERE bc.is_active = 1 AND b.deleted = 0 AND c.deleted = 0
-          ORDER BY bc.modified_at
+          ${conditions.where()}
+          ORDER BY 6
           """.trimIndent(),
           null
         ).use { cursor ->
@@ -64,21 +74,34 @@ internal object PreviousMobileSyncDatabaseReader {
         }
       }
 
-      val collections = if (db.hasColumns("collection", "name", "modified_at", "deleted", "is_default", "is_system")) {
-        db.rawQuery(
-          "SELECT name, modified_at FROM collection WHERE deleted = 0 AND is_default = 0 AND is_system = 0",
-          null
-        ).use { cursor ->
-          cursor.map { MobileSyncImportCollection(it.getString(0), it.getLong(1)) }
-        }
-      } else {
-        emptyList()
-      }
-
-      val readingSessions =
-        if (db.hasColumns("reading_session", "chapter_number", "verse_number", "modified_at", "deleted")) {
+      val savedCollections =
+        if (collectionColumns.containsAll(listOf("name", "is_default", "is_system"))) {
+          val conditions = listOfNotNull(
+            "deleted = 0".takeIf { "deleted" in collectionColumns },
+            "is_default = 0",
+            "is_system = 0"
+          )
           db.rawQuery(
-            "SELECT chapter_number, verse_number, modified_at FROM reading_session WHERE deleted = 0",
+            "SELECT name, ${collectionColumns.timestamp()} FROM collection ${conditions.where()}",
+            null
+          ).use { cursor ->
+            cursor.map { MobileSyncImportCollection(it.getString(0), it.getLong(1)) }
+          }
+        } else {
+          emptyList()
+        }
+      // the importer only creates listed collections, so every collection with an ayah is listed
+      val collections = savedCollections + collectionBookmarks
+        .filter { membership -> savedCollections.none { it.name == membership.collectionName } }
+        .groupBy { it.collectionName }
+        .map { (name, memberships) -> MobileSyncImportCollection(name, memberships.minOf { it.timestampMillis }) }
+
+      val sessionColumns = db.columns("reading_session")
+      val readingSessions =
+        if (sessionColumns.containsAll(listOf("chapter_number", "verse_number"))) {
+          val conditions = listOfNotNull("deleted = 0".takeIf { "deleted" in sessionColumns })
+          db.rawQuery(
+            "SELECT chapter_number, verse_number, ${sessionColumns.timestamp()} FROM reading_session ${conditions.where()}",
             null
           ).use { cursor ->
             cursor.map { MobileSyncImportReadingSession(it.getInt(0), it.getInt(1), it.getLong(2)) }
@@ -87,11 +110,12 @@ internal object PreviousMobileSyncDatabaseReader {
           emptyList()
         }
 
+      val readingBookmarkColumns = db.columns("reading_bookmark")
       val readingBookmarks =
-        if (db.hasColumns("reading_bookmark", "slot", "name", "bookmark_type", "sura", "ayah", "page", "modified_at")) {
+        if (readingBookmarkColumns.containsAll(listOf("slot", "name", "bookmark_type", "sura", "ayah", "page"))) {
           db.rawQuery(
             """
-            SELECT slot, name, bookmark_type, sura, ayah, page, modified_at
+            SELECT slot, name, bookmark_type, sura, ayah, page, ${readingBookmarkColumns.timestamp()}
             FROM reading_bookmark WHERE bookmark_type IS NOT NULL
             """.trimIndent(),
             null
@@ -145,12 +169,23 @@ internal object PreviousMobileSyncDatabaseReader {
     }
   }
 
-  private fun SQLiteDatabase.hasColumns(table: String, vararg columns: String): Boolean {
-    val present = rawQuery("PRAGMA table_info($table)", null).use { cursor ->
+  private fun SQLiteDatabase.columns(table: String): Set<String> =
+    rawQuery("PRAGMA table_info($table)", null).use { cursor ->
       cursor.map { it.getString(it.getColumnIndexOrThrow("name")) }.toSet()
     }
-    return present.containsAll(columns.toList())
+
+  /** The newest timestamp column a table has; mobile-sync's oldest tables may have neither. */
+  private fun Set<String>.timestamp(alias: String? = null): String {
+    val prefix = alias?.let { "$it." }.orEmpty()
+    return when {
+      "modified_at" in this -> prefix + "modified_at"
+      "created_at" in this -> prefix + "created_at"
+      else -> "0"
+    }
   }
+
+  private fun List<String>.where(): String =
+    if (isEmpty()) "" else joinToString(" AND ", prefix = "WHERE ")
 
   private inline fun <T> Cursor.map(transform: (Cursor) -> T): List<T> {
     val result = ArrayList<T>(count)
