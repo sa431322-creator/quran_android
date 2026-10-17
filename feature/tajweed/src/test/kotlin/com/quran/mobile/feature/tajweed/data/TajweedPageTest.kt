@@ -6,7 +6,23 @@ import org.junit.Test
 class TajweedPageTest {
 
   private fun raw(page: Int, lines: Iterable<Int>, starts: List<Pair<Int, Int>> = emptyList()) =
-    RawTajweedPage(page, 1, 1, lines.associateWith { listOf("x") }, starts)
+    RawTajweedPage(page, 1, 1, 1 to 1, lines.associateWith { listOf("x") }, starts)
+
+  private fun page(page: Int, sura: Int, ayah: Int) =
+    TajweedPage(page, sura, 1, sura to ayah, emptyList())
+
+  @Test
+  fun pageForFindsThePageWhereTheAyahIs() {
+    // first ayahs of pages 1, 2, 3, 76, 77 and 604 in the V4 layout
+    val pages = listOf(page(1, 1, 1), page(2, 2, 1), page(3, 2, 6), page(76, 3, 195), page(77, 4, 1), page(604, 112, 1))
+    assertThat(pages.pageFor(1, 7)).isEqualTo(1)
+    assertThat(pages.pageFor(2, 1)).isEqualTo(2)
+    assertThat(pages.pageFor(2, 5)).isEqualTo(2)
+    assertThat(pages.pageFor(2, 6)).isEqualTo(3)
+    assertThat(pages.pageFor(3, 200)).isEqualTo(76)
+    assertThat(pages.pageFor(4, 1)).isEqualTo(77)
+    assertThat(pages.pageFor(114, 6)).isEqualTo(604)
+  }
 
   @Test
   fun fatihaHasHeaderButNoSeparateBasmala() {

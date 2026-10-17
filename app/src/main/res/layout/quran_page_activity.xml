@@ -69,6 +69,12 @@
           android:layout_marginStart="4dp"
           android:text="@string/tasnim_reader_persian"
           />
+      <TextView
+          android:id="@+id/reader_mode_tajweed"
+          style="@style/TasnimSegment"
+          android:layout_marginStart="4dp"
+          android:text="@string/tasnim_reader_tajweed"
+          />
     </LinearLayout>
   </LinearLayout>
 

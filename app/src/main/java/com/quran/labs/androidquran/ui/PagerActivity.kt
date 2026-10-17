@@ -139,6 +139,7 @@ import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkShee
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.di.ReadingBookmarkSheetWrapperInjector
 import com.quran.mobile.feature.qarilist.QariListWrapper
 import com.quran.mobile.feature.qarilist.di.QariListWrapperInjector
+import com.quran.mobile.feature.tajweed.TajweedMushafContract
 import com.quran.mobile.translation.model.LocalTranslation
 import com.quran.page.common.data.QuranNaming
 import com.quran.page.common.factory.PageViewFactoryProvider
@@ -216,6 +217,18 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var toolBarArea: View
   private lateinit var readerModeMushaf: TextView
   private lateinit var readerModePersian: TextView
+  private lateinit var readerModeTajweed: TextView
+
+  // the tajweed mushaf has its own page layout, so the two hand each other an ayah, not a page
+  private var tajweedOpen = false
+  private val tajweedLauncher = registerForActivityResult(TajweedMushafContract()) { position ->
+    tajweedOpen = false
+    setReaderMode(ReaderMode.MUSHAF)
+    position?.let { (sura, ayah) ->
+      val page = quranInfo.getPageFromSuraAyah(sura, ayah)
+      viewPager.currentItem = quranInfo.getPositionFromPage(page, isDualPageVisible)
+    }
+  }
   private lateinit var pageSliderArea: View
   private lateinit var pageSlider: SeekBar
   private lateinit var pageSliderBubble: TextView
@@ -2050,31 +2063,56 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     shareUtil.shareAyahLink(this, start, end)
   }
 
+  private enum class ReaderMode { MUSHAF, PERSIAN, TAJWEED }
+
   /**
-   * The Tasnim "mushaf / Persian translation and tafsir" toggle. The Persian side opens the
-   * Persian tafsir panel for the selected ayah, or for the first ayah on the page.
+   * The Tasnim "mushaf / Persian translation and tafsir / tajweed" toggle. The Persian side opens
+   * the Persian tafsir panel and the tajweed side opens the tajweed mushaf, both at the selected
+   * ayah or the first ayah on the page.
    */
   private fun initReaderModeToggle() {
     readerModeMushaf = findViewById(R.id.reader_mode_mushaf)
     readerModePersian = findViewById(R.id.reader_mode_persian)
+    readerModeTajweed = findViewById(R.id.reader_mode_tajweed)
     readerModeMushaf.setOnClickListener {
       if (slidingPanel.isPaneVisible) {
         slidingPanel.collapsePane()
       }
-      setPersianModeSelected(false)
+      setReaderMode(ReaderMode.MUSHAF)
     }
     readerModePersian.setOnClickListener { openPersianTafsir() }
-    setPersianModeSelected(false)
+    readerModeTajweed.setOnClickListener { openTajweedMushaf() }
+    setReaderMode(ReaderMode.MUSHAF)
   }
 
-  private fun setPersianModeSelected(persian: Boolean) {
+  private fun setReaderMode(mode: ReaderMode) {
     val selectedText = ContextCompat.getColor(this, R.color.tasnim_on_primary)
     val normalText = ContextCompat.getColor(this, R.color.title_color)
-    listOf(readerModeMushaf to !persian, readerModePersian to persian).forEach { (view, selected) ->
+    listOf(
+      readerModeMushaf to ReaderMode.MUSHAF,
+      readerModePersian to ReaderMode.PERSIAN,
+      readerModeTajweed to ReaderMode.TAJWEED
+    ).forEach { (view, viewMode) ->
+      val selected = viewMode == mode
       view.isSelected = selected
       view.setBackgroundResource(if (selected) R.drawable.tasnim_segment_selected else 0)
       view.setTextColor(if (selected) selectedText else normalText)
     }
+  }
+
+  private fun openTajweedMushaf() {
+    // a second tap while it opens would stack another copy
+    if (tajweedOpen) return
+    tajweedOpen = true
+    val start = selectionStart?.let { it.sura to it.ayah } ?: run {
+      val bounds = quranInfo.getPageBounds(currentPage)
+      bounds[0] to bounds[1]
+    }
+    if (slidingPanel.isPaneVisible) {
+      slidingPanel.collapsePane()
+    }
+    setReaderMode(ReaderMode.TAJWEED)
+    tajweedLauncher.launch(start)
   }
 
   private fun openPersianTafsir() {
@@ -2082,7 +2120,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       val bounds = quranInfo.getPageBounds(currentPage)
       readingEventPresenterBridge.setSelection(bounds[0], bounds[1], false)
     }
-    setPersianModeSelected(true)
+    setReaderMode(ReaderMode.PERSIAN)
     val tafsirPage =
       slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
     // let the selection reach the panel fragments before the panel opens
@@ -2149,14 +2187,15 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
       slidingPanel.hidePane()
       readingEventPresenter.onPanelClosed()
-      setPersianModeSelected(false)
+      setReaderMode(ReaderMode.MUSHAF)
     }
 
     override fun onPanelExpanded(panel: View) {
       readingEventPresenter.onPanelOpened()
-      setPersianModeSelected(
-        slidingPager.currentItem ==
-            slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
+      setReaderMode(
+        if (slidingPager.currentItem ==
+          slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
+        ) ReaderMode.PERSIAN else ReaderMode.MUSHAF
       )
     }
 

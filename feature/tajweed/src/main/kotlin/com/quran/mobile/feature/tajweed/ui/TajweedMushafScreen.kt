@@ -32,17 +32,22 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -54,6 +59,7 @@ import com.quran.mobile.feature.tajweed.data.TAJWEED_PAGE_COUNT
 import com.quran.mobile.feature.tajweed.data.TajweedData
 import com.quran.mobile.feature.tajweed.data.TajweedPage
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
+import com.quran.mobile.feature.tajweed.data.pageFor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import com.quran.mobile.common.ui.core.R as coreR
@@ -64,7 +70,13 @@ fun TajweedMushafScreen(
   basmalaFont: FontFamily,
   initialPage: Int,
   onPageChanged: (Int) -> Unit,
-  onBack: () -> Unit
+  onBack: () -> Unit,
+  /** sura and ayah to open at instead of [initialPage], when opened from the mushaf reader */
+  startAyah: Pair<Int, Int>? = null,
+  /** the sura and ayah the current page starts with, to return to the same place */
+  onPositionChanged: (Pair<Int, Int>) -> Unit = {},
+  /** shows a «مصحف | تجوید» switch; its mushaf side calls this */
+  onMushaf: (() -> Unit)? = null
 ) {
   val palette = LocalTasnimPalette.current
   var dataAttempt by remember { mutableIntStateOf(0) }
@@ -80,8 +92,27 @@ fun TajweedMushafScreen(
   }
   val scope = rememberCoroutineScope()
   var showSuras by remember { mutableStateOf(false) }
+  // the reader's ayah is only known once the pages are loaded; jump to it once. The pager is not
+  // laid out yet, so the jump is requested for its first layout rather than awaited here.
+  var startHandled by rememberSaveable { mutableStateOf(startAyah == null) }
+  var startIndex by remember { mutableStateOf<Int?>(null) }
+  val loadedPages = data?.getOrNull()?.pages
+  LaunchedEffect(loadedPages) {
+    if (!startHandled && startAyah != null && loadedPages != null) {
+      val index = loadedPages.pageFor(startAyah.first, startAyah.second) - 1
+      startIndex = index
+      pagerState.requestScrollToPage(index)
+    }
+  }
+  LaunchedEffect(pagerState.currentPage, startIndex) {
+    if (!startHandled && pagerState.currentPage == startIndex) startHandled = true
+  }
+  LaunchedEffect(loadedPages, pagerState.currentPage, startHandled) {
+    if (startHandled) loadedPages?.getOrNull(pagerState.currentPage)?.let { onPositionChanged(it.firstAyah) }
+  }
 
-  LaunchedEffect(pagerState.currentPage) {
+  LaunchedEffect(pagerState.currentPage, startHandled) {
+    if (!startHandled) return@LaunchedEffect
     val page = pagerState.currentPage + 1
     onPageChanged(page)
     // fetch the neighbours so turning the page does not wait for the network
@@ -110,6 +141,7 @@ fun TajweedMushafScreen(
         onBack = onBack,
         onSuras = { showSuras = true }
       )
+      if (onMushaf != null) ModeSwitch(onMushaf)
 
       val result = data
       val loaded = result?.getOrNull()
@@ -254,6 +286,44 @@ private fun Header(subtitle: String, onBack: () -> Unit, onSuras: () -> Unit) {
     IconButton(onClick = onSuras, modifier = Modifier.size(44.dp)) {
       Icon(TajweedIcons.List, contentDescription = stringResource(R.string.tajweed_suras), tint = palette.ink)
     }
+  }
+}
+
+/** «مصحف | تجوید», like the reader's mode toggle, with tajweed selected. */
+@Composable
+private fun ModeSwitch(onMushaf: () -> Unit) {
+  val palette = LocalTasnimPalette.current
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .padding(horizontal = 14.dp, vertical = 4.dp)
+      .background(palette.track, RoundedCornerShape(50))
+      .padding(4.dp),
+    horizontalArrangement = Arrangement.spacedBy(4.dp)
+  ) {
+    Text(
+      text = stringResource(R.string.tajweed_mushaf),
+      color = palette.ink,
+      fontSize = 14.sp,
+      textAlign = TextAlign.Center,
+      modifier = Modifier
+        .weight(1f)
+        .clip(RoundedCornerShape(50))
+        .clickable(role = Role.Tab, onClick = onMushaf)
+        .padding(vertical = 8.dp)
+    )
+    Text(
+      text = stringResource(R.string.tajweed_mode),
+      color = palette.onPrimary,
+      fontSize = 14.sp,
+      fontWeight = FontWeight.Bold,
+      textAlign = TextAlign.Center,
+      modifier = Modifier
+        .weight(1f)
+        .background(palette.primary, RoundedCornerShape(50))
+        .semantics { selected = true }
+        .padding(vertical = 8.dp)
+    )
   }
 }
 

@@ -13,6 +13,8 @@ data class TajweedPage(
   val page: Int,
   val sura: Int,
   val juz: Int,
+  /** sura and ayah of the page's first word */
+  val firstAyah: Pair<Int, Int>,
   val lines: List<TajweedLine>
 ) {
   /** The first two pages are short and centered, like the printed mushaf. */
@@ -24,6 +26,8 @@ data class RawTajweedPage(
   val page: Int,
   val sura: Int,
   val juz: Int,
+  /** sura and ayah of the page's first word */
+  val firstAyah: Pair<Int, Int>,
   /** line number (1-15) to words */
   val lines: Map<Int, List<String>>,
   /** sura to the line of its first ayah */
@@ -70,8 +74,23 @@ fun buildTajweedPages(raw: List<RawTajweedPage>): List<TajweedPage> {
   }
 
   return raw.mapIndexed { index, page ->
-    TajweedPage(page.page, page.sura, page.juz, slots[index].toList())
+    TajweedPage(page.page, page.sura, page.juz, page.firstAyah, slots[index].toList())
   }
+}
+
+/**
+ * The tajweed page showing [sura]:[ayah]: the last page whose first ayah is not after it. Pages
+ * follow the V4 (1441H) layout, so this, not the page number, is how to move from another mushaf.
+ */
+fun List<TajweedPage>.pageFor(sura: Int, ayah: Int): Int {
+  var low = 0
+  var high = lastIndex
+  while (low < high) {
+    val middle = (low + high + 1) / 2
+    val (pageSura, pageAyah) = this[middle].firstAyah
+    if (pageSura < sura || (pageSura == sura && pageAyah <= ayah)) low = middle else high = middle - 1
+  }
+  return this[low].page
 }
 
 /** The page showing each sura's header, which is the page before its text for some suras. */

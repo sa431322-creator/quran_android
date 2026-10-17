@@ -75,10 +75,12 @@ class TajweedRepository(context: Context) {
       val page = pageArray.getJSONObject(index)
       val lines = page.getJSONArray("l")
       val starts = page.getJSONArray("h")
+      val first = page.getJSONArray("f")
       RawTajweedPage(
         page = page.getInt("p"),
         sura = page.getInt("s"),
         juz = page.getInt("j"),
+        firstAyah = first.getInt(0) to first.getInt(1),
         lines = (0 until lines.length()).associate { i ->
           val line = lines.getJSONArray(i)
           line.getInt(0) to line.getString(1).split(' ')

@@ -41,6 +41,7 @@
   <string name="tasnim_nav_library" translatable="false">کتابخانه</string>
 
   <string name="tasnim_reader_mushaf" translatable="false">مصحف</string>
+  <string name="tasnim_reader_tajweed" translatable="false">تجوید</string>
   <string name="tasnim_reader_persian" translatable="false">ترجمه و تفسیر فارسی</string>
 
   <string name="tasnim_sura_sheet_search" translatable="false">جستجوی سوره یا شماره</string>

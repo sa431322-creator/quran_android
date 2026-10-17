@@ -62,6 +62,8 @@ for (let page = 1; page <= PAGES; page++) {
     p: page,
     s: words[0].sura,
     j: words[0].juz,
+    // [sura, ayah] of the page's first word, to move between this and other mushaf layouts
+    f: [words[0].sura, words[0].ayah],
     // [line number, words separated by a space]
     l: [...lines.entries()].sort((a, b) => a[0] - b[0]).map(([n, w]) => [n, w.join(' ')]),
     // [sura, line of its first ayah]

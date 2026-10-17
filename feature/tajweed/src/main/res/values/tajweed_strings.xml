@@ -11,5 +11,7 @@
   <string name="tajweed_data_error" translatable="false">بارگذاری صفحه‌های مصحف ممکن نشد.</string>
   <string name="tajweed_retry" translatable="false">تلاش دوباره</string>
   <string name="tajweed_sura_header" translatable="false">سورة %1$s</string>
+  <string name="tajweed_mushaf" translatable="false">مصحف</string>
+  <string name="tajweed_mode" translatable="false">تجوید</string>
   <string name="tajweed_close" translatable="false">بستن</string>
 </resources>
