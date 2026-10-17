@@ -15,4 +15,27 @@
   <string name="ayahbookmark_not_saved">ذخیره‌نشده</string>
   <string name="ayahbookmark_highlight_title">برجسته‌سازی</string>
   <string name="ayahbookmark_highlight_none">بدون</string>
+  <string name="ayahbookmark_highlight_saved_on_close">با بستن این برگه ذخیره می‌شود</string>
+  <string name="ayahbookmark_reading_bookmark_is_here">%1$s روی این آیه است</string>
+  <string name="ayahbookmark_reading_bookmark_move_here">انتقال %1$s به اینجا</string>
+  <string name="ayahbookmark_reading_bookmark_set_here">قرار دادن %1$s در اینجا</string>
+  <string name="ayahbookmark_reading_bookmark_move">انتقال</string>
+  <string name="ayahbookmark_reading_bookmark_set">قرار دادن</string>
+  <string name="ayahbookmark_other_reading_bookmark">نشانک مطالعه دیگر</string>
+
+  <string name="readingbookmark_title">نشانک‌های مطالعه</string>
+  <string name="readingbookmark_subtitle">هر نشانک یک جا را علامت می‌زند؛ همراه با مطالعه جابه‌جایش کنید</string>
+  <string name="readingbookmark_placing_on">قرار دادن روی %1$s</string>
+  <string name="readingbookmark_at_location">در %1$s</string>
+  <string name="readingbookmark_ayah_location">%1$s · صفحه %2$d</string>
+  <string name="readingbookmark_not_placed">هنوز قرار داده نشده</string>
+  <string name="readingbookmark_on_this_page">در این صفحه</string>
+  <string name="readingbookmark_on_this_ayah">روی این آیه</string>
+  <string name="readingbookmark_move_here">انتقال به اینجا</string>
+  <string name="readingbookmark_set_here">قرار دادن در اینجا</string>
+  <string name="readingbookmark_clear">پاک کردن</string>
+  <string name="readingbookmark_back">بازگشت</string>
+  <string name="readingbookmark_edit">ویرایش</string>
+  <string name="readingbookmark_done_editing">پایان ویرایش</string>
+  <string name="readingbookmark_editing_subtitle">برای هر نشانک نامی بگذارید که آن را بشناسید</string>
 </resources>

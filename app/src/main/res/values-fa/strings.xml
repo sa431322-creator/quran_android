@@ -253,6 +253,25 @@
   <string name="reading_bookmark_movable_education_body">ذخیره نشانک مطالعه، نشانک قبلی را جایگزین می‌کند. برای ذخیره چند آیه، روی یک آیه فشار طولانی دهید و آن را به یک مجموعه اضافه کنید.</string>
   <string name="reading_bookmark_moved_from">جابجا شده از %1$s</string>
   <string name="reading_bookmark_dismiss_education">رد کردن</string>
+  <string name="reading_bookmark">نشانک مطالعه</string>
+  <string name="reading_bookmarks">نشانک‌های مطالعه</string>
+  <string name="reading_bookmark_moved_to_title">%1$s به %2$s منتقل شد</string>
+  <string name="reading_bookmark_placed_title">%1$s در %2$s قرار گرفت</string>
+  <string name="reading_bookmark_cleared_title">%1$s پاک شد</string>
+  <string name="reading_bookmark_was_at">قبلاً در %1$s بود</string>
+  <string name="highlights">برجسته‌ها</string>
+  <string name="ayahs">آیه‌ها</string>
+  <string name="highlights_empty">هنوز آیه‌ای با این رنگ برجسته نشده است.</string>
+  <string name="collection_empty">هنوز نشانکی در این مجموعه وجود ندارد.</string>
+  <string name="expand_collection">گسترش</string>
+  <string name="collapse_collection">جمع کردن</string>
+  <string name="open_collection">باز کردن مجموعه</string>
+  <plurals name="removed_highlights">
+    <item quantity="one">یک برجسته‌سازی حذف شد</item>
+    <item quantity="other">%d برجسته‌سازی حذف شد</item>
+  </plurals>
+  <string name="remove_highlight">حذف برجسته‌سازی</string>
+  <string name="sura_and_ayah">سوره و آیه</string>
   <string name="warning">هشدار</string>
 
   <!-- m permissions stuff -->
