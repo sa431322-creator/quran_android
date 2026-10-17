@@ -12,6 +12,9 @@ import androidx.compose.ui.unit.dp
 object TajweedIcons {
   val Back = stroked("M9 6 L15 12 L9 18")
   val List = stroked("M5 7 H19", "M5 12 H19", "M5 17 H13")
+  val Play = stroked("M8 5 L18 12 L8 19 Z")
+  val Pause = stroked("M9 6 V18", "M15 6 V18")
+  val Stop = stroked("M7 7 H17 V17 H7 Z")
 }
 
 private fun stroked(vararg paths: String): ImageVector =

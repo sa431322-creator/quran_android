@@ -113,3 +113,20 @@ fun suraHeaderPages(pages: List<TajweedPage>): Map<Int, Int> =
   pages.flatMap { page ->
     page.lines.filterIsInstance<TajweedLine.SuraHeader>().map { it.sura to page.page }
   }.toMap()
+
+/** Whether any word of the ayah [key] (an [ayahKey]) is on this page. */
+fun TajweedPage.hasAyah(key: Int): Boolean =
+  lines.any { it is TajweedLine.Text && key in it.ayahs }
+
+/**
+ * The page index to turn to while [sura]:[ayah] is recited, or null when the page at
+ * [currentIndex] already shows some of it. An ayah running over a page turn is followed from the
+ * page it starts on, which is the one before [pageFor]'s when the next page starts with it.
+ */
+fun List<TajweedPage>.indexToFollow(sura: Int, ayah: Int, currentIndex: Int): Int? {
+  if (isEmpty()) return null
+  val key = ayahKey(sura, ayah)
+  if (getOrNull(currentIndex)?.hasAyah(key) == true) return null
+  val index = indexOfFirst { it.page == pageFor(sura, ayah) }.takeIf { it >= 0 } ?: return null
+  return if (index > 0 && this[index - 1].hasAyah(key)) index - 1 else index
+}

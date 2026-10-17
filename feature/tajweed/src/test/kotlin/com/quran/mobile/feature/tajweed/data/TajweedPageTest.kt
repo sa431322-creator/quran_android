@@ -77,4 +77,24 @@ class TajweedPageTest {
     )
     assertThat(suraHeaderPages(pages)).containsExactly(1, 1, 2, 2, 4, 3)
   }
+
+  private fun textPage(page: Int, vararg ayahs: Pair<Int, Int>) = TajweedPage(
+    page, ayahs.first().first, 1, ayahs.first(),
+    listOf(TajweedLine.Text(ayahs.map { "x" }, ayahs.map { (sura, ayah) -> ayahKey(sura, ayah) }))
+  )
+
+  @Test
+  fun followingPlaybackTurnsToThePageOfTheRecitedAyah() {
+    // 2:5 runs from the end of page 2 onto page 3
+    val pages = listOf(textPage(1, 1 to 1, 1 to 7), textPage(2, 2 to 1, 2 to 5), textPage(3, 2 to 5, 2 to 6))
+    assertThat(pages.indexToFollow(1, 7, currentIndex = 0)).isNull()
+    assertThat(pages.indexToFollow(2, 1, currentIndex = 0)).isEqualTo(1)
+    assertThat(pages.indexToFollow(2, 6, currentIndex = 1)).isEqualTo(2)
+    // an ayah over a page turn starts on the page before, and either page already shows it
+    assertThat(pages.indexToFollow(2, 5, currentIndex = 0)).isEqualTo(1)
+    assertThat(pages.indexToFollow(2, 5, currentIndex = 1)).isNull()
+    assertThat(pages.indexToFollow(2, 5, currentIndex = 2)).isNull()
+    assertThat(pages.indexToFollow(1, 1, currentIndex = 2)).isEqualTo(0)
+    assertThat(emptyList<TajweedPage>().indexToFollow(1, 1, currentIndex = 0)).isNull()
+  }
 }

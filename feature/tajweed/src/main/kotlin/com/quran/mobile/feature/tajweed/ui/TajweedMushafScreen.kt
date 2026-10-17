@@ -26,6 +26,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -55,14 +56,18 @@ import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.NotoKufiArabic
 import com.quran.labs.androidquran.common.ui.core.toPersianDigits
 import com.quran.mobile.feature.tajweed.R
+import com.quran.mobile.feature.tajweed.TajweedPlayResult
 import com.quran.mobile.feature.tajweed.data.TAJWEED_PAGE_COUNT
 import com.quran.mobile.feature.tajweed.data.TajweedData
 import com.quran.mobile.feature.tajweed.data.TajweedPage
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
+import com.quran.mobile.feature.tajweed.data.ayahKey
 import com.quran.mobile.feature.tajweed.data.ayahKeyAyah
 import com.quran.mobile.feature.tajweed.data.ayahKeySura
+import com.quran.mobile.feature.tajweed.data.indexToFollow
 import com.quran.mobile.feature.tajweed.data.pageFor
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 import com.quran.mobile.common.ui.core.R as coreR
 
@@ -80,7 +85,9 @@ fun TajweedMushafScreen(
   /** shows a «مصحف | تجوید» switch; its mushaf side calls this */
   onMushaf: (() -> Unit)? = null,
   /** what a tapped ayah offers; without it, ayat are not tappable */
-  ayahActions: TajweedAyahActions? = null
+  ayahActions: TajweedAyahActions? = null,
+  /** the recitation to follow (highlight and turn pages) and control from a bar */
+  playbackControls: TajweedPlaybackControls? = null
 ) {
   val palette = LocalTasnimPalette.current
   var dataAttempt by remember { mutableIntStateOf(0) }
@@ -114,6 +121,51 @@ fun TajweedMushafScreen(
   }
   LaunchedEffect(loadedPages, pagerState.currentPage, startHandled) {
     if (startHandled) loadedPages?.getOrNull(pagerState.currentPage)?.let { onPositionChanged(it.firstAyah) }
+  }
+
+  // follow the recitation like the reader does: highlight the recited ayah and turn to its page
+  // when it changes, leaving the reader free to look at other pages in between
+  val playbackFlow = remember(playbackControls) { playbackControls?.playback ?: flowOf(null) }
+  val playing by playbackFlow.collectAsState(null)
+  val playingKey = playing?.let { ayahKey(it.sura, it.ayah) }
+  LaunchedEffect(playingKey, loadedPages, startHandled) {
+    val recited = playing ?: return@LaunchedEffect
+    if (!startHandled || loadedPages == null) return@LaunchedEffect
+    loadedPages.indexToFollow(recited.sura, recited.ayah, pagerState.currentPage)
+      ?.let { pagerState.animateScrollToPage(it) }
+  }
+
+  // an ayah whose audio is downloading plays once the download finishes
+  var pendingPlay by rememberSaveable { mutableStateOf<Int?>(null) }
+  val sheetActions = remember(ayahActions) {
+    ayahActions?.let { actions ->
+      TajweedAyahActions(
+        tafsir = actions.tafsir,
+        play = { sura, ayah, allowMobileDownload ->
+          actions.play(sura, ayah, allowMobileDownload).also { result ->
+            pendingPlay = if (result == TajweedPlayResult.DOWNLOADING) ayahKey(sura, ayah) else null
+          }
+        },
+        stop = {
+          pendingPlay = null
+          actions.stop()
+        }
+      )
+    }
+  }
+  LaunchedEffect(playbackControls, ayahActions) {
+    if (playbackControls == null || ayahActions == null) return@LaunchedEffect
+    playbackControls.audioDownloaded.collect {
+      val key = pendingPlay ?: return@collect
+      // the first download may only be the timing data; then the audio itself downloads next.
+      // When it cannot start (the app is in the background), it stays pending for the next one.
+      runCatching { ayahActions.play(ayahKeySura(key), ayahKeyAyah(key), true) }.onSuccess { result ->
+        if (result != TajweedPlayResult.DOWNLOADING) pendingPlay = null
+      }
+    }
+  }
+  LaunchedEffect(playingKey) {
+    if (playingKey != null && playingKey == pendingPlay) pendingPlay = null
   }
 
   LaunchedEffect(pagerState.currentPage, startHandled) {
@@ -150,38 +202,53 @@ fun TajweedMushafScreen(
 
       val result = data
       val loaded = result?.getOrNull()
-      when {
-        result == null ->
-          Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
-        loaded == null -> PageMessage(
-          stringResource(R.string.tajweed_data_error),
-          action = stringResource(R.string.tajweed_retry),
-          onAction = { dataAttempt++ }
-        )
-        else -> HorizontalPager(
-          state = pagerState,
-          modifier = Modifier.fillMaxSize(),
-          beyondViewportPageCount = 1
-        ) { index ->
-          TajweedPageContent(
-            page = loaded.pages[index],
-            repository = repository,
-            basmalaFont = basmalaFont,
-            suraNames = suraNames,
-            selectedAyah = selectedAyah,
-            onAyahTap = { key -> if (ayahActions != null) selectedAyah = key }
+      Box(Modifier.weight(1f)) {
+        when {
+          result == null ->
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
+          loaded == null -> PageMessage(
+            stringResource(R.string.tajweed_data_error),
+            action = stringResource(R.string.tajweed_retry),
+            onAction = { dataAttempt++ }
           )
+          else -> HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            beyondViewportPageCount = 1
+          ) { index ->
+            TajweedPageContent(
+              page = loaded.pages[index],
+              repository = repository,
+              basmalaFont = basmalaFont,
+              suraNames = suraNames,
+              // the tapped ayah while its sheet is open, otherwise the recited one
+              selectedAyah = selectedAyah ?: playingKey,
+              onAyahTap = { key -> if (ayahActions != null) selectedAyah = key }
+            )
+          }
         }
+      }
+      if (playbackControls != null && (playing != null || pendingPlay != null)) {
+        PlaybackBar(
+          playback = playing,
+          suraNames = suraNames,
+          onPause = playbackControls.pause,
+          onResume = playbackControls.resume,
+          onStop = {
+            pendingPlay = null
+            playbackControls.stop()
+          }
+        )
       }
     }
 
     val selected = selectedAyah
-    if (selected != null && ayahActions != null) {
+    if (selected != null && sheetActions != null) {
       AyahSheet(
         sura = ayahKeySura(selected),
         ayah = ayahKeyAyah(selected),
         suraNames = suraNames,
-        actions = ayahActions,
+        actions = sheetActions,
         onDismiss = { selectedAyah = null }
       )
     }

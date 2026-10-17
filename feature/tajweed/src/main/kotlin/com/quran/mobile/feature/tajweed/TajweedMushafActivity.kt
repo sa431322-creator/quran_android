@@ -15,6 +15,7 @@ import com.quran.mobile.feature.tajweed.data.TajweedRepository
 import com.quran.mobile.feature.tajweed.di.TajweedComponentInterface
 import com.quran.mobile.feature.tajweed.ui.TajweedAyahActions
 import com.quran.mobile.feature.tajweed.ui.TajweedMushafScreen
+import com.quran.mobile.feature.tajweed.ui.TajweedPlaybackControls
 
 /**
  * A separate, experimental tajweed mushaf (QPC V4 tajweed fonts from QUL). It does not touch the
@@ -51,15 +52,26 @@ class TajweedMushafActivity : AppCompatActivity() {
 
     val dependencies = (application as? QuranApplicationComponentProvider)
       ?.provideQuranApplicationComponent() as? TajweedComponentInterface
-    val ayahActions = dependencies?.let { component ->
-      val tafsirRepository = component.persianTafsirRepository()
-      val audio = component.tajweedAudio()
+    val audio = dependencies?.tajweedAudio()
+    val ayahActions = if (dependencies != null && audio != null) {
+      val tafsirRepository = dependencies.persianTafsirRepository()
       TajweedAyahActions(
         tafsir = { sura, ayah ->
           tafsirRepository.tafsir(SuraAyah(sura, ayah), SuraAyah(sura, ayah))?.firstOrNull()?.text
         },
         play = { sura, ayah, allowMobileDownload -> audio.playFrom(this, sura, ayah, allowMobileDownload) },
         stop = { audio.stop(this) }
+      )
+    } else {
+      null
+    }
+    val playbackControls = audio?.let { player ->
+      TajweedPlaybackControls(
+        playback = player.playback,
+        audioDownloaded = player.audioDownloaded,
+        pause = { player.pause(this) },
+        resume = { player.resume(this) },
+        stop = { player.stop(this) }
       )
     }
 
@@ -78,7 +90,8 @@ class TajweedMushafActivity : AppCompatActivity() {
               position = current
             },
             onMushaf = if (startAyah != null) ::finish else null,
-            ayahActions = ayahActions
+            ayahActions = ayahActions,
+            playbackControls = playbackControls
           )
         }
       }

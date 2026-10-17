@@ -2,6 +2,7 @@ package com.quran.mobile.feature.tajweed
 
 import android.app.Activity
 import android.content.Context
+import kotlinx.coroutines.flow.Flow
 
 /** Recitation for the tajweed mushaf, played by the app's audio service with the reader's qari. */
 interface TajweedAudio {
@@ -12,8 +13,20 @@ interface TajweedAudio {
    */
   fun playFrom(activity: Activity, sura: Int, ayah: Int, allowMobileDownload: Boolean): TajweedPlayResult
 
+  fun pause(context: Context)
+
+  fun resume(context: Context)
+
   fun stop(context: Context)
+
+  /** the ayah being recited, as the reader follows it, or null when nothing is playing */
+  val playback: Flow<TajweedPlayback?>
+
+  /** emits each time a download of recitation audio finishes */
+  val audioDownloaded: Flow<Unit>
 }
+
+data class TajweedPlayback(val sura: Int, val ayah: Int, val paused: Boolean)
 
 enum class TajweedPlayResult {
   PLAYING,

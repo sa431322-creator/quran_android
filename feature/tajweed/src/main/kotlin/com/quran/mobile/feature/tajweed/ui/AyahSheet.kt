@@ -66,6 +66,11 @@ internal fun AyahSheet(
 ) {
   val palette = LocalTasnimPalette.current
   var playResult by remember(sura, ayah) { mutableStateOf<TajweedPlayResult?>(null) }
+  // once it plays, the sheet makes way for the page, which follows the recitation
+  val play = { allowMobileDownload: Boolean ->
+    playResult = actions.play(sura, ayah, allowMobileDownload)
+    if (playResult == TajweedPlayResult.PLAYING) onDismiss()
+  }
   val tafsir by produceState<TafsirState>(TafsirState.Loading, sura, ayah) {
     value = TafsirState.Loaded(
       try {
@@ -100,7 +105,7 @@ internal fun AyahSheet(
       )
       Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         Button(
-          onClick = { playResult = actions.play(sura, ayah, false) },
+          onClick = { play(false) },
           colors = ButtonDefaults.buttonColors(
             containerColor = palette.primary,
             contentColor = palette.onPrimary
@@ -117,7 +122,7 @@ internal fun AyahSheet(
           Text(stringResource(R.string.tajweed_audio_downloading), fontSize = 13.sp, color = palette.muted)
         TajweedPlayResult.NEEDS_DOWNLOAD_CONSENT -> Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
           Text(stringResource(R.string.tajweed_audio_mobile_data), fontSize = 13.sp, color = palette.muted)
-          TextButton(onClick = { playResult = actions.play(sura, ayah, true) }) {
+          TextButton(onClick = { play(true) }) {
             Text(stringResource(R.string.tajweed_audio_download), color = palette.primary, fontWeight = FontWeight.Bold)
           }
         }
