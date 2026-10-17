@@ -139,7 +139,6 @@ import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkShee
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.di.ReadingBookmarkSheetWrapperInjector
 import com.quran.mobile.feature.qarilist.QariListWrapper
 import com.quran.mobile.feature.qarilist.di.QariListWrapperInjector
-import com.quran.mobile.feature.tajweed.TajweedMushafContract
 import com.quran.mobile.translation.model.LocalTranslation
 import com.quran.page.common.data.QuranNaming
 import com.quran.page.common.factory.PageViewFactoryProvider
@@ -221,12 +220,26 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   // the tajweed mushaf has its own page layout, so the two hand each other an ayah, not a page
   private var tajweedOpen = false
-  private val tajweedLauncher = registerForActivityResult(TajweedMushafContract()) { position ->
+  private val tajweedLauncher = registerForActivityResult(TajweedReaderActivity.Contract()) { result ->
     tajweedOpen = false
     setReaderMode(ReaderMode.MUSHAF)
-    position?.let { (sura, ayah) ->
+    result?.let { (sura, ayah, panel) ->
       val page = quranInfo.getPageFromSuraAyah(sura, ayah)
       viewPager.currentItem = quranInfo.getPositionFromPage(page, isDualPageVisible)
+      // tajweed's Persian and translation buttons open this reader's own panels at the ayah
+      when (panel) {
+        TajweedReaderActivity.Panel.PERSIAN_TAFSIR -> {
+          readingEventPresenterBridge.setSelection(sura, ayah, false)
+          openPersianTafsir()
+        }
+        TajweedReaderActivity.Panel.TRANSLATION -> {
+          readingEventPresenterBridge.setSelection(sura, ayah, false)
+          val translationPage = slidingPagerAdapter.getPagePosition(SlidingPagerAdapter.TRANSLATION_PAGE)
+          handler.post { showSlider(translationPage) }
+        }
+        TajweedReaderActivity.Panel.TRANSLATION_MODE -> if (translations != null) switchToTranslation()
+        TajweedReaderActivity.Panel.NONE -> Unit
+      }
     }
   }
   private lateinit var pageSliderArea: View

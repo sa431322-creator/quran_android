@@ -1,6 +1,5 @@
 plugins {
   id("quran.android.library.compose")
-  alias(libs.plugins.metro)
 }
 
 android {
@@ -10,15 +9,6 @@ android {
 
 dependencies {
   implementation(project(":common:data"))
-  implementation(project(":common:di"))
-  implementation(project(":common:persiantafsir"))
-  implementation(project(":common:ui:core"))
-  // the reader's bookmark sheet (collections, highlight colors, reading bookmarks)
-  implementation(project(":feature:ayahbookmark"))
-
-  implementation(libs.androidx.activity.compose)
-  // AppCompatActivity applies the app's own light/dark choice (AppCompatDelegate)
-  implementation(libs.androidx.appcompat)
 
   // compose
   implementation(libs.compose.foundation)

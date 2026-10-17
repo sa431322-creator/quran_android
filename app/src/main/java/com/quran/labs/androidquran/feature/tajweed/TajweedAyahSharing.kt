@@ -1,33 +1,32 @@
 package com.quran.labs.androidquran.feature.tajweed
 
 import android.app.Activity
-import com.quran.data.di.AppScope
 import com.quran.data.model.SuraAyah
 import com.quran.data.model.QuranText
 import com.quran.labs.androidquran.model.translation.ArabicDatabaseUtils
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.ShareUtil
-import com.quran.mobile.feature.tajweed.TajweedSharing
-import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 
-/** Copies and shares a tajweed ayah with the reader's [ShareUtil] and Arabic text database. */
-@ContributesBinding(AppScope::class)
+/**
+ * Copies and shares an ayah from the tajweed mushaf the way the reader does, with its [ShareUtil]
+ * and Arabic text database. Copy and text sharing return false when that text is not downloaded.
+ */
 class TajweedAyahSharing @Inject constructor(
   private val arabicDatabaseUtils: ArabicDatabaseUtils,
   private val shareUtil: ShareUtil,
   private val quranFileUtils: QuranFileUtils
-) : TajweedSharing {
+) {
 
-  override fun copy(activity: Activity, sura: Int, ayah: Int): Boolean =
+  fun copy(activity: Activity, sura: Int, ayah: Int): Boolean =
     withVerse(sura, ayah) { shareUtil.copyVerses(activity, it) }
 
-  override fun shareText(activity: Activity, sura: Int, ayah: Int): Boolean =
+  fun shareText(activity: Activity, sura: Int, ayah: Int): Boolean =
     withVerse(sura, ayah) { shareUtil.shareVerses(activity, it) }
 
-  override fun shareLink(activity: Activity, sura: Int, ayah: Int) {
+  fun shareLink(activity: Activity, sura: Int, ayah: Int) {
     val suraAyah = SuraAyah(sura, ayah)
     shareUtil.shareAyahLink(activity, suraAyah, suraAyah)
   }

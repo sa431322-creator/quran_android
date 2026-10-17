@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The tajweed mushaf in the reader's chrome: a copy of quran_page_activity.xml with the tajweed
+     pages in place of the page images, so the two readers look and work the same. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:keepScreenOn="true"
+    >
+
+  <!-- the tajweed pages (Compose); everything around them is the reader's own chrome -->
+  <androidx.compose.ui.platform.ComposeView
+      android:id="@+id/tajweed_pages"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      />
+
+  <com.quran.page.common.toolbar.AyahToolBar
+      android:id="@+id/ayah_toolbar"
+      android:layout_width="wrap_content"
+      android:layout_height="@dimen/toolbar_total_height"
+      android:visibility="gone"
+      />
+
+  <LinearLayout
+      android:id="@+id/toolbar_area"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:background="@color/toolbar"
+      android:elevation="4dp"
+      android:orientation="vertical"
+      >
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/ToolbarStyle"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.DayNight"
+        app:titleTextAppearance="@style/ToolbarTitleText"
+        app:subtitleTextAppearance="@style/ToolbarSubtitleText"
+        >
+      <com.quran.labs.androidquran.view.QuranSpinner
+          android:id="@+id/spinner"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:visibility="gone"
+          />
+    </androidx.appcompat.widget.Toolbar>
+
+    <!-- Tasnim: mushaf / Persian translation and tafsir toggle (Reader artboard) -->
+    <LinearLayout
+        android:id="@+id/reader_mode_toggle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/tasnim_segment_track"
+        android:orientation="horizontal"
+        android:padding="4dp"
+        >
+      <TextView
+          android:id="@+id/reader_mode_mushaf"
+          style="@style/TasnimSegment"
+          android:text="@string/tasnim_reader_mushaf"
+          />
+      <TextView
+          android:id="@+id/reader_mode_persian"
+          style="@style/TasnimSegment"
+          android:layout_marginStart="4dp"
+          android:text="@string/tasnim_reader_persian"
+          />
+      <TextView
+          android:id="@+id/reader_mode_tajweed"
+          style="@style/TasnimSegment"
+          android:layout_marginStart="4dp"
+          android:text="@string/tasnim_reader_tajweed"
+          />
+    </LinearLayout>
+  </LinearLayout>
+
+  <!-- Tasnim: page slider, shown with the toolbar; the bubble names the page while dragging -->
+  <TextView
+      android:id="@+id/page_slider_bubble"
+      style="@style/TasnimUiText.Medium"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom|center_horizontal"
+      android:layout_marginBottom="76dp"
+      android:background="@drawable/tasnim_segment_selected"
+      android:gravity="center"
+      android:paddingStart="16dp"
+      android:paddingTop="8dp"
+      android:paddingEnd="16dp"
+      android:paddingBottom="8dp"
+      android:textColor="@color/tasnim_on_primary"
+      android:textSize="14sp"
+      android:visibility="gone"
+      />
+
+  <LinearLayout
+      android:id="@+id/page_slider_area"
+      android:layout_width="match_parent"
+      android:layout_height="52dp"
+      android:layout_gravity="bottom"
+      android:layout_marginStart="14dp"
+      android:layout_marginEnd="14dp"
+      android:layout_marginBottom="12dp"
+      android:background="@drawable/tasnim_segment_track"
+      android:elevation="4dp"
+      android:gravity="center_vertical"
+      android:layoutDirection="rtl"
+      android:orientation="horizontal"
+      android:paddingStart="14dp"
+      android:paddingEnd="14dp"
+      >
+    <TextView
+        android:id="@+id/page_slider_first"
+        style="@style/TasnimUiText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/tasnim_muted"
+        android:textSize="12sp"
+        />
+    <SeekBar
+        android:id="@+id/page_slider"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:layoutDirection="rtl"
+        android:progressTint="@color/tasnim_primary"
+        android:progressBackgroundTint="@color/tasnim_border"
+        android:thumbTint="@color/tasnim_primary"
+        />
+    <TextView
+        android:id="@+id/page_slider_last"
+        style="@style/TasnimUiText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/tasnim_muted"
+        android:textSize="12sp"
+        />
+  </LinearLayout>
+
+  <com.quran.mobile.feature.audiobar.AudioBarWrapper
+      android:id="@+id/audio_area"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      android:visibility="gone"
+      />
+
+  <!-- the reader's sheets (bookmarks, reading bookmarks, qari list) -->
+  <FrameLayout
+      android:id="@+id/overlay"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:visibility="gone"
+      />
+</FrameLayout>

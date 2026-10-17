@@ -1,38 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Tajweed mushaf strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
 <resources>
-  <string name="tajweed_title" translatable="false">مصحف تجوید</string>
-  <string name="tajweed_experimental" translatable="false">آزمایشی</string>
-  <string name="tajweed_back" translatable="false">بازگشت</string>
-  <string name="tajweed_suras" translatable="false">فهرست سوره‌ها</string>
-  <string name="tajweed_page_juz" translatable="false">صفحهٔ %1$s · جزء %2$s</string>
   <string name="tajweed_loading" translatable="false">در حال دریافت قلم این صفحه…</string>
   <string name="tajweed_error" translatable="false">دریافت قلم این صفحه ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
   <string name="tajweed_data_error" translatable="false">بارگذاری صفحه‌های مصحف ممکن نشد.</string>
   <string name="tajweed_retry" translatable="false">تلاش دوباره</string>
-  <string name="tajweed_sura_header" translatable="false">سورة %1$s</string>
-  <string name="tajweed_mushaf" translatable="false">مصحف</string>
-  <string name="tajweed_mode" translatable="false">تجوید</string>
-  <string name="tajweed_ayah_title" translatable="false">سورهٔ %1$s، آیهٔ %2$s</string>
-  <string name="tajweed_play" translatable="false">تلاوت از این آیه</string>
-  <string name="tajweed_stop" translatable="false">توقف</string>
-  <string name="tajweed_audio_downloading" translatable="false">فایل‌های صوتی این قاری در حال دریافت است. پس از پایان دریافت، تلاوت خودبه‌خود آغاز می‌شود.</string>
-  <string name="tajweed_audio_downloading_short" translatable="false">در حال دریافت صوت تلاوت…</string>
-  <string name="tajweed_pause" translatable="false">مکث</string>
-  <string name="tajweed_resume" translatable="false">ادامهٔ تلاوت</string>
-  <string name="tajweed_audio_mobile_data" translatable="false">برای تلاوت، فایل‌های صوتی این قاری باید دریافت شود و اکنون به Wi-Fi وصل نیستید.</string>
-  <string name="tajweed_audio_download" translatable="false">دریافت با اینترنت همراه</string>
-  <string name="tajweed_bookmark" translatable="false">نشانک و برجسته‌سازی</string>
-  <string name="tajweed_copy" translatable="false">کپی آیه</string>
-  <string name="tajweed_share_text" translatable="false">اشتراک متن</string>
-  <string name="tajweed_share_link" translatable="false">اشتراک پیوند</string>
-  <string name="tajweed_text_missing" translatable="false">متن عربی قرآن هنوز دریافت نشده است. یک بار مصحف اصلی را باز کنید تا فایل‌های لازم دریافت شوند.</string>
-  <string name="tajweed_repeat_ayah" translatable="false">تکرار هر آیه</string>
-  <string name="tajweed_repeat_times" translatable="false">%1$s بار</string>
-  <string name="tajweed_repeat_forever" translatable="false">بی‌پایان</string>
-  <string name="tajweed_speed" translatable="false">سرعت</string>
-  <string name="tajweed_to_end_of_sura" translatable="false">تا پایان سوره</string>
-  <string name="tajweed_tafsir" translatable="false">ترجمه و تفسیر فارسی</string>
-  <string name="tajweed_tafsir_unavailable" translatable="false">تفسیر این آیه در دسترس نیست.</string>
-  <string name="tajweed_close" translatable="false">بستن</string>
 </resources>

@@ -87,8 +87,9 @@
         android:name="com.quran.mobile.feature.livetv.radio.RadioActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
     <activity
-        android:name="com.quran.mobile.feature.tajweed.TajweedMushafActivity"
-        android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
+        android:name=".ui.TajweedReaderActivity"
+        android:theme="@style/QuranToolBar.Overlay"
+        android:exported="false"/>
     <activity
         android:name="com.quran.mobile.feature.library.LibraryActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
