@@ -239,6 +239,7 @@ dependencies {
   implementation(project(":feature:downloadmanager"))
   implementation(project(":feature:library"))
   implementation(project(":feature:livetv"))
+  implementation(project(":feature:tajweed"))
   implementation(project(":feature:qarilist"))
   implementation(project(":feature:sync"))
 

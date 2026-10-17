@@ -7,6 +7,7 @@
 
   <string name="tasnim_section_mushaf" translatable="false">مصحف</string>
   <string name="tasnim_section_live" translatable="false">پخش زنده</string>
+  <string name="tasnim_tajweed_mushaf" translatable="false">مصحف تجوید (آزمایشی)</string>
   <string name="tasnim_section_radio" translatable="false">رادیو</string>
   <string name="tasnim_section_library" translatable="false">کتابخانه</string>
   <string name="tasnim_sections_description" translatable="false">بخش‌های اصلی</string>

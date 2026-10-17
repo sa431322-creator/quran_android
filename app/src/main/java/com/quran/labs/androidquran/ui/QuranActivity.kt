@@ -72,6 +72,7 @@ import com.quran.mobile.feature.library.LibraryActivity
 import com.quran.mobile.feature.livetv.LiveTvActivity
 import com.quran.mobile.feature.livetv.data.LiveChannelRepository
 import com.quran.mobile.feature.livetv.radio.RadioActivity
+import com.quran.mobile.feature.tajweed.TajweedMushafActivity
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -445,6 +446,9 @@ class QuranActivity : AppCompatActivity(),
       getString(R.string.tasnim_live_now, liveChannelRepository.channel().name)
     findViewById<View>(R.id.radio_button).setOnClickListener {
       startActivity(Intent(this, RadioActivity::class.java))
+    }
+    findViewById<View>(R.id.tajweed_button).setOnClickListener {
+      startActivity(Intent(this, TajweedMushafActivity::class.java))
     }
     findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }

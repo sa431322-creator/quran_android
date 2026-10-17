@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tajweed mushaf strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
+<resources>
+  <string name="tajweed_title" translatable="false">مصحف تجوید</string>
+  <string name="tajweed_experimental" translatable="false">آزمایشی</string>
+  <string name="tajweed_back" translatable="false">بازگشت</string>
+  <string name="tajweed_suras" translatable="false">فهرست سوره‌ها</string>
+  <string name="tajweed_page_juz" translatable="false">صفحهٔ %1$s · جزء %2$s</string>
+  <string name="tajweed_loading" translatable="false">در حال دریافت قلم این صفحه…</string>
+  <string name="tajweed_error" translatable="false">دریافت قلم این صفحه ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
+  <string name="tajweed_data_error" translatable="false">بارگذاری صفحه‌های مصحف ممکن نشد.</string>
+  <string name="tajweed_retry" translatable="false">تلاش دوباره</string>
+  <string name="tajweed_sura_header" translatable="false">سورة %1$s</string>
+  <string name="tajweed_close" translatable="false">بستن</string>
+</resources>
