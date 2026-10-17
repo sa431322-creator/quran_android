@@ -4,6 +4,11 @@
   <string name="ayahbookmark_collections_header">مجموعه‌ها</string>
   <string name="ayahbookmark_new_collection">مجموعه جدید</string>
   <string name="ayahbookmark_collection_name_hint">نام مجموعه</string>
+  <string name="ayahbookmark_collection_name_error">این نام مجموعه قابل استفاده نیست.</string>
+  <string name="ayahbookmark_collection_name_duplicate">مجموعه‌ای با نام «%1$s» از قبل وجود دارد.</string>
+  <string name="ayahbookmark_collection_name_reserved">«%1$s» یک نام رزرو شده است.</string>
+  <string name="ayahbookmark_collection_name_empty">نام مجموعه نمی‌تواند خالی باشد.</string>
+  <string name="ayahbookmark_collection_name_too_long">نام مجموعه بیش از حد طولانی است.</string>
   <string name="ayahbookmark_cancel">لغو</string>
   <string name="ayahbookmark_create">ایجاد</string>
   <string name="ayahbookmark_saved">ذخیره‌شده</string>
