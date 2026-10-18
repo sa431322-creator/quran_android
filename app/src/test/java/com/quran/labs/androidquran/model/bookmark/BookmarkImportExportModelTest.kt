@@ -17,6 +17,7 @@ import com.quran.data.model.bookmark.RecentPage
 import com.quran.data.model.bookmark.Tag
 import com.quran.labs.BaseTestExtension
 import com.quran.labs.androidquran.R
+import com.quran.labs.androidquran.base.SeparatorAgnosticFileProvider
 import com.quran.labs.androidquran.base.TestApplication
 import com.quran.labs.androidquran.fakes.FakeBookmarksDao
 import com.quran.labs.androidquran.fakes.FakePageProvider
@@ -45,7 +46,13 @@ import java.io.File
 import java.io.IOException
 import kotlin.time.Instant
 
-@Config(application = TestApplication::class, sdk = [33])
+// FileProvider cannot match paths under Robolectric on Windows; see SeparatorAgnosticFileProvider
+@Config(
+  application = TestApplication::class,
+  sdk = [33],
+  shadows = [SeparatorAgnosticFileProvider::class],
+  instrumentedPackages = ["androidx.core.content"]
+)
 @RunWith(RobolectricTestRunner::class)
 class BookmarkImportExportModelTest {
 
