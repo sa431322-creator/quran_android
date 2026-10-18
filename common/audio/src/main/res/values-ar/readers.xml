@@ -89,4 +89,11 @@
   <string name="qari_abdulhadi_kanakeri_gapless">عبدالهادي كناكري</string>
   <string name="qari_peshawa_qadir_al_qurdi_gapless">بيشاوا قادر الكردي</string>
   <string name="qari_farman_shawani_gapless">فرمان شواني</string>
+  <string name="qari_husary_muallim">الحصري (المعلم) (غير متصل)</string>
+  <string name="qari_yasser_salama">ياسر سلامة (غير متصل)</string>
+  <string name="qari_muhammad_abdulkareem">محمد عبد الكريم (غير متصل)</string>
+  <string name="qari_karim_mansoori">كريم منصوري (غير متصل)</string>
+  <string name="qari_parhizgar">شهريار پرهيزكار (غير متصل)</string>
+  <string name="qari_makarem_kabiri">ترجمة فارسية (مكارم شيرازي) بصوت كبيري</string>
+  <string name="qari_fooladvand_hedayatfar">ترجمة فارسية (فولادوند) بصوت هدايت فر</string>
 </resources>
