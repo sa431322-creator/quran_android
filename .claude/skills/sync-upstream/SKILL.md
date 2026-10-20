@@ -1,6 +1,6 @@
 ---
 name: sync-upstream
-description: Pull new commits from the original open-source repo (github.com/quran/quran_android, remote `upstream`) into our Tasnim branch while keeping all our own code and features on top. Run it right after the `save-work` skill finishes, or when the user says "زامن مع الأصل", "حدّث من المستودع الأصلي", "sync upstream", "pull from origin repo", or "update from quran_android".
+description: Pull new commits from the original open-source repo (github.com/quran/quran_android, remote `upstream`) into our Tasnim branch while keeping all our own code and features on top. Standalone, not part of `save-work`. Use it when the user says yes to "sync with upstream first?" (asked at the start of each task), or when the user says "زامن مع الأصل", "حدّث من المستودع الأصلي", "sync upstream", "pull from origin repo", or "update from quran_android".
 ---
 
 # Sync upstream — مزامنة مستودعنا مع المستودع الأصلي
@@ -14,7 +14,7 @@ Our app (تسنیم) is built on top of the open-source **quran/quran_android**.
 
 **Strategy: merge, never rebase.** Our branches are already pushed, so rebasing onto upstream would rewrite them and need a force push. A merge commit keeps our history intact and records exactly what came from upstream.
 
-Run it after `save-work` (step 6 there). If `save-work` reported a failure (review not done, build broken, push failed), fix that first.
+This skill is independent of `save-work`. Before starting a new task, ask the user once whether they want to sync with upstream first, and run it only if they agree.
 
 ## 1. Preconditions
 
