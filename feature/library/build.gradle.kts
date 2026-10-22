@@ -9,6 +9,7 @@ android.namespace = "com.quran.mobile.feature.library"
 dependencies {
   implementation(project(":common:data"))
   implementation(project(":common:di"))
+  implementation(project(":common:networking"))
   implementation(project(":common:ui:core"))
 
   implementation(libs.androidx.activity.compose)

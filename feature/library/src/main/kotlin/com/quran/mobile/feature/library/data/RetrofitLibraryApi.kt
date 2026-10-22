@@ -1,11 +1,11 @@
 package com.quran.mobile.feature.library.data
 
+import com.quran.common.networking.ReachableUrl
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.JsonDataException
 import com.squareup.moshi.JsonEncodingException
 import okhttp3.HttpUrl
 import okhttp3.HttpUrl.Companion.toHttpUrl
-import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import retrofit2.HttpException
 import retrofit2.Retrofit
@@ -92,25 +92,7 @@ class RetrofitLibraryApi internal constructor(
     )
   }
 
-  /**
-   * A server started on a computer names its files `http://localhost:3000/...`, which a phone or
-   * emulator cannot open; such links are pointed at the address the app used to reach the server.
-   * Real hosts are left as they are.
-   */
-  private fun reachable(url: String): String {
-    val parsed = url.toHttpUrlOrNull() ?: return url
-    if (parsed.host !in LOCAL_HOSTS) return url
-    return parsed.newBuilder()
-      .scheme(baseUrl.scheme)
-      .host(baseUrl.host)
-      .port(baseUrl.port)
-      .build()
-      .toString()
-  }
-
-  private companion object {
-    val LOCAL_HOSTS = setOf("localhost", "127.0.0.1", "0.0.0.0")
-  }
+  private fun reachable(url: String): String = ReachableUrl.of(url, baseUrl)
 }
 
 internal interface LibraryService {

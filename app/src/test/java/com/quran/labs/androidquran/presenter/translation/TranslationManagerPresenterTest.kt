@@ -135,6 +135,21 @@ class TranslationManagerPresenterTest {
   }
 
   @Test
+  fun `own translations on a development server download from the server's address`() {
+    val manager = translationManager().apply { host = "http://10.0.2.2:3000/" }
+    val local = makeTranslation(id = 100000).copy(
+      fileUrl = "http://localhost:3000/files/translations/100000-abcd1234.db"
+    )
+    val upstream = makeTranslation(id = 33).copy(
+      fileUrl = "https://android.quran.com/data/getTranslation.php?id=33&ext=zip"
+    )
+
+    Truth.assertThat(manager.reachable(local).fileUrl)
+      .isEqualTo("http://10.0.2.2:3000/files/translations/100000-abcd1234.db")
+    Truth.assertThat(manager.reachable(upstream)).isSameInstanceAs(upstream)
+  }
+
+  @Test
   fun `getTranslations with fresh cache emits only one item`() = runTest {
     // Arrange: fresh timestamp means isCacheStale=false → take(1) is applied inside getTranslations.
     quranSettings.setLastUpdatedTranslationDate(System.currentTimeMillis())

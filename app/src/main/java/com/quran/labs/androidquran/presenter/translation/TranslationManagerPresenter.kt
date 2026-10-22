@@ -2,6 +2,7 @@ package com.quran.labs.androidquran.presenter.translation
 
 import android.content.Context
 import android.util.Pair
+import com.quran.common.networking.ReachableUrl
 import com.quran.data.constant.DependencyInjectionConstants
 import com.quran.data.di.AppScope
 import com.quran.labs.androidquran.dao.translation.Translation
@@ -30,6 +31,7 @@ import kotlinx.coroutines.flow.merge
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.take
 import kotlinx.coroutines.withContext
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okio.buffer
@@ -84,11 +86,20 @@ open class TranslationManagerPresenter @Inject internal constructor(
     }
 
     return flow
-      .map { mergeWithServerTranslations(it.translations) }
+      .map { list -> mergeWithServerTranslations(list.translations.map(::reachable)) }
       .onEach { translations ->
         val updatedTranslations = translations.any { it.needsUpgrade() }
         quranSettings.setHaveUpdatedTranslations(updatedTranslations)
       }
+  }
+
+  /**
+   * A development server lists its own files as `http://localhost:3000/...`; the download must
+   * go to the address the app reaches that server at. quran.app links are left as they are.
+   */
+  internal fun reachable(translation: Translation): Translation {
+    val url = ReachableUrl.of(translation.fileUrl, host.toHttpUrlOrNull())
+    return if (url == translation.fileUrl) translation else translation.copy(fileUrl = url)
   }
 
   suspend fun updateItem(item: TranslationItem) {
