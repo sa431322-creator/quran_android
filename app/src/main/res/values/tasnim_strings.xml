@@ -49,4 +49,13 @@
   <string name="tasnim_sura_sheet_juz" translatable="false">جزءها</string>
   <string name="tasnim_sura_sheet_ayahs" translatable="false">%1$s آیه</string>
   <string name="tasnim_sura_sheet_page" translatable="false">صفحهٔ %1$s</string>
+  <!-- server settings and announcements (launch screen) -->
+  <string name="tasnim_update_required_title">به‌روزرسانی لازم است</string>
+  <string name="tasnim_update_required_body">برای ادامه، نسخهٔ تازهٔ تسنیم را نصب کنید.</string>
+  <string name="tasnim_update_available_title">نسخهٔ تازهٔ تسنیم آماده است</string>
+  <string name="tasnim_update_available_body">با به‌روزرسانی، از امکانات تازه بهره‌مند شوید.</string>
+  <string name="tasnim_update_now">به‌روزرسانی</string>
+  <string name="tasnim_update_later">بعداً</string>
+  <string name="tasnim_maintenance_default">بخشی از خدمات تسنیم موقتاً در دسترس نیست.</string>
+  <string name="tasnim_announcement_close">بستن اعلان</string>
 </resources>

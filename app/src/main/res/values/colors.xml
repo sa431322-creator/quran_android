@@ -97,6 +97,10 @@
   <color name="tasnim_on_primary">#fff7f0e1</color>
   <!-- text on surfaces that stay dark in both modes (start screen, continue card) -->
   <color name="tasnim_cream">#fff7f0e1</color>
+  <!-- the launch screen is always dark teal, so its announcement card keeps fixed colors -->
+  <color name="tasnim_card_ink">#ff1c1a16</color>
+  <color name="tasnim_card_muted">#ff5a5347</color>
+  <color name="tasnim_card_teal">#ff1f4e56</color>
   <!-- cream behind the launcher icon artwork; matches the logo file background -->
   <color name="tasnim_launcher_background">#fffffcef</color>
   <color name="tasnim_water">#ff5fa9c1</color>
