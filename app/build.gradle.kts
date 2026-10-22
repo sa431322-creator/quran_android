@@ -80,6 +80,8 @@ android {
 
   buildTypes {
     create("beta") {
+      // Blank until the server domain is chosen: the library keeps using its sample data.
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"\"")
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
@@ -89,12 +91,18 @@ android {
     }
 
     getByName("debug") {
+      // The emulator reaches the computer running `pnpm backend` at 10.0.2.2. For a real phone
+      // on the same Wi-Fi, set tasnimApiBaseUrl=http://<computer-ip>:3000/ in gradle.properties.
+      val tasnimApi = (project.findProperty("tasnimApiBaseUrl") as String?) ?: "http://10.0.2.2:3000/"
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"$tasnimApi\"")
       applicationIdSuffix = ".debug"
       versionNameSuffix = "-debug"
       matchingFallbacks += "release"
     }
 
     getByName("release") {
+      // Blank until the server domain is chosen: the library keeps using its sample data.
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"\"")
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")

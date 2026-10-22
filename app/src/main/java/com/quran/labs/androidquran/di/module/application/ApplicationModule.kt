@@ -6,6 +6,7 @@ import android.net.Uri
 import android.view.Display
 import android.view.WindowManager
 import com.quran.data.constant.DependencyInjectionConstants
+import com.quran.labs.androidquran.BuildConfig
 import com.quran.data.core.QuranFileManager
 import com.quran.data.dao.Settings
 import com.quran.data.di.AppScope
@@ -72,6 +73,10 @@ object ApplicationModule {
   fun provideSettings(settingsImpl: SettingsImpl): Settings {
     return settingsImpl
   }
+
+  @Named(DependencyInjectionConstants.TASNIM_API_BASE_URL)
+  @Provides
+  fun provideTasnimApiBaseUrl(): String = BuildConfig.TASNIM_API_BASE_URL
 
   @Named(DependencyInjectionConstants.CURRENT_PAGE_TYPE)
   @Provides

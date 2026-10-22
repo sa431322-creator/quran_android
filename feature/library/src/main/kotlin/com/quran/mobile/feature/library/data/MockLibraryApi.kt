@@ -1,25 +1,16 @@
 package com.quran.mobile.feature.library.data
 
-import com.quran.data.di.AppScope
-import dev.zacsweers.metro.ContributesBinding
-import dev.zacsweers.metro.Inject
-import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 
 /**
  * An in-memory [LibraryApi] that behaves like the backend will: it validates requests,
- * answers after a short delay and keeps writes until the process dies. Swap the binding
- * to a Retrofit implementation once the real API exists.
- *
- * It serves [MockLibraryData] in the app; tests give it their own [seed].
+ * answers after a short delay and keeps writes until the process dies. The app uses it while
+ * the build names no server (LibraryDataModule); tests give it their own [seed].
  */
-@SingleIn(AppScope::class)
-@ContributesBinding(AppScope::class)
 class MockLibraryApi internal constructor(seed: List<LibraryBook>) : LibraryApi {
 
-  @Inject
   constructor() : this(MockLibraryData.BOOKS)
 
   /** What the mock answers with, to try the screen's empty and error states. */

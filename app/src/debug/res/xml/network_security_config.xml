@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug builds only: plain HTTP is allowed everywhere so the app can reach the Tasnim server
+     running on a computer (10.0.2.2 from the emulator, or the computer's Wi-Fi address from a
+     phone; see tasnimApiBaseUrl in app/build.gradle.kts). Release builds use src/main. -->
+<network-security-config>
+  <base-config cleartextTrafficPermitted="true" />
+</network-security-config>

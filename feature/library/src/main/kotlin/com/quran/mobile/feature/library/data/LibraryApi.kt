@@ -1,8 +1,8 @@
 package com.quran.mobile.feature.library.data
 
 /**
- * The library endpoints. [MockLibraryApi] serves them from memory for now; a Retrofit
- * implementation of this same interface replaces it once the backend exists.
+ * The library endpoints: [RetrofitLibraryApi] talks to the Tasnim server, [MockLibraryApi] serves
+ * sample books from memory while the build names no server (see LibraryDataModule).
  *
  * Failures are thrown as [LibraryApiException], or as an IOException when the network is down;
  * a real implementation maps HTTP errors to [LibraryApiException].
