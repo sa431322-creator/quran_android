@@ -286,6 +286,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
 
   override fun onDestroy() {
     audioStatusRepositoryBridge.dispose()
+    downloadBridge.unsubscribe()
     super.onDestroy()
   }
 

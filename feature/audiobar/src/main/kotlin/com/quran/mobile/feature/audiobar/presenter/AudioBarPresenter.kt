@@ -23,6 +23,7 @@ import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.filterNotNull
@@ -76,6 +77,14 @@ class AudioBarPresenter @Inject constructor(
       .filterNotNull()
       .onEach { internalAudioBarFlow.value = it }
       .launchIn(scope)
+  }
+
+  /**
+   * Stops collecting. The download stream is app-scoped, so a collector left running would keep
+   * this presenter (and the screen it belongs to) alive after the screen is closed.
+   */
+  fun dispose() {
+    scope.cancel()
   }
 
   @Composable
