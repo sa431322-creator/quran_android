@@ -2,6 +2,7 @@ package com.quran.labs.androidquran.presenter.translation
 
 import android.content.Context
 import android.util.Pair
+import com.quran.data.constant.DependencyInjectionConstants
 import com.quran.data.di.AppScope
 import com.quran.labs.androidquran.dao.translation.Translation
 import com.quran.labs.androidquran.dao.translation.TranslationItem
@@ -9,11 +10,13 @@ import com.quran.labs.androidquran.dao.translation.TranslationList
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.database.DatabaseHandler.Companion.getDatabaseHandler
 import com.quran.labs.androidquran.database.TranslationsDBAdapter
+import com.quran.labs.androidquran.tasnim.TasnimDataHost
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.mobile.di.qualifier.ApplicationContext
 import com.squareup.moshi.Moshi
 import dev.zacsweers.metro.Inject
+import dev.zacsweers.metro.Named
 import dev.zacsweers.metro.SingleIn
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
@@ -34,6 +37,7 @@ import okio.sink
 import okio.source
 import timber.log.Timber
 import java.io.File
+import java.io.IOException
 
 @SingleIn(AppScope::class)
 open class TranslationManagerPresenter @Inject internal constructor(
@@ -41,9 +45,10 @@ open class TranslationManagerPresenter @Inject internal constructor(
   private val okHttpClient: OkHttpClient,
   private val quranSettings: QuranSettings,
   private val translationsDBAdapter: TranslationsDBAdapter,
-  private val quranFileUtils: QuranFileUtils
+  private val quranFileUtils: QuranFileUtils,
+  @Named(DependencyInjectionConstants.TASNIM_API_BASE_URL) tasnimBaseUrl: String
 ) {
-  internal var host: String = Constants.HOST
+  internal var host: String = TasnimDataHost.of(tasnimBaseUrl)
 
   private val scope = MainScope()
 
@@ -130,6 +135,12 @@ open class TranslationManagerPresenter @Inject internal constructor(
         .url(url)
         .build()
       val response = okHttpClient.newCall(request).execute()
+      // e.g. 503 from the Tasnim server before its first sync: treat it like a network
+      // failure so the cached list is kept, instead of parsing the error body.
+      if (!response.isSuccessful) {
+        response.close()
+        throw IOException("Translation list answered ${response.code}")
+      }
       val responseBody = response.body
       val result = moshiTranslationListAdapter.fromJson(responseBody!!.source())
       responseBody.close()

@@ -109,6 +109,32 @@ class TranslationManagerPresenterTest {
   }
 
   @Test
+  fun `remote list with a JSON error body (Tasnim server not synced yet) is a network failure`() =
+    runTest {
+      mockWebServer.enqueue(
+        MockResponse()
+          .setResponseCode(503)
+          .setHeader("content-type", "application/json")
+          .setBody("""{"error":{"code":"Unavailable","message":"not synced","requestId":"x"}}""")
+      )
+
+      translationManager().remoteTranslationList().test {
+        Truth.assertThat(awaitError()).isInstanceOf(IOException::class.java)
+      }
+    }
+
+  @Test
+  fun `stale cache is still shown when the server answers 503`() = runTest {
+    quranSettings.setLastUpdatedTranslationDate(0L)
+    mockWebServer.enqueue(MockResponse().setResponseCode(503))
+
+    translationManager(withCache = true).getTranslations(false).test {
+      Truth.assertThat(awaitItem()).isNotEmpty()
+      Truth.assertThat(awaitError()).isInstanceOf(IOException::class.java)
+    }
+  }
+
+  @Test
   fun `getTranslations with fresh cache emits only one item`() = runTest {
     // Arrange: fresh timestamp means isCacheStale=false → take(1) is applied inside getTranslations.
     quranSettings.setLastUpdatedTranslationDate(System.currentTimeMillis())
@@ -231,7 +257,7 @@ class TranslationManagerPresenterTest {
     val okHttp = OkHttpClient.Builder().build()
 
     return object : TranslationManagerPresenter(
-      appContext, okHttp, quranSettings, fakeTranslationsAdapter, quranFileUtils
+      appContext, okHttp, quranSettings, fakeTranslationsAdapter, quranFileUtils, ""
     ) {
       override val cachedFile: File =
         if (withCache) File(CLI_ROOT_DIRECTORY, "translations.json") else super.cachedFile
