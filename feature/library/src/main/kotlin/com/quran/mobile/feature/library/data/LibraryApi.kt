@@ -8,10 +8,13 @@ package com.quran.mobile.feature.library.data
  * a real implementation maps HTTP errors to [LibraryApiException].
  */
 interface LibraryApi {
-  /** `GET /api/library?category={category}&published={published}`; null skips a filter. */
+  /**
+   * `GET /api/v1/books?category={category}` (every page); null skips a filter. The server only
+   * lists published books, so `published = false` gives none.
+   */
   suspend fun getBooks(category: String? = null, published: Boolean? = null): List<LibraryBook>
 
-  /** `GET /api/library/:id` */
+  /** `GET /api/v1/books/:id`, with chapters. */
   suspend fun getBook(id: String): LibraryBook
 
   /** `POST /api/library` */

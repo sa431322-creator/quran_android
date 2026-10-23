@@ -15,8 +15,9 @@ import retrofit2.http.Path
 import retrofit2.http.Query
 
 /**
- * [LibraryApi] backed by the Tasnim server (`tasneem-backend`, legacy `/api/library` contract).
+ * [LibraryApi] backed by the Tasnim server (`tasneem-backend`, `/api/v1/books`).
  * The server only exposes published books to the app; the write calls are admin-only there.
+ * Ids stay the decimal strings the app already stores (progress, bookmarks): `14` ↔ `"14"`.
  */
 class RetrofitLibraryApi internal constructor(
   private val service: LibraryService,
@@ -33,12 +34,28 @@ class RetrofitLibraryApi internal constructor(
     baseUrl.toHttpUrl()
   )
 
-  override suspend fun getBooks(category: String?, published: Boolean?): List<LibraryBook> =
-    call(id = null) { service.books(category, published) }
-      .mapNotNull { it.toBook() }
+  /**
+   * Every published book of [category]: the list comes in pages, read until all `total` came.
+   * Drafts are never public, so asking for unpublished books gives nothing.
+   */
+  override suspend fun getBooks(category: String?, published: Boolean?): List<LibraryBook> {
+    if (published == false) return emptyList()
+    val books = mutableListOf<BookDto>()
+    var page = 1
+    while (page <= MAX_PAGES) {
+      val answer = call(id = null) { service.books(category, page, PAGE_SIZE) }
+      books += answer.items
+      if (answer.items.isEmpty() || books.size >= answer.total) break
+      page++
+    }
+    return books.mapNotNull { it.toBook() }
+  }
 
-  override suspend fun getBook(id: String): LibraryBook =
-    call(id) { service.book(id) }.toBook() ?: throw LibraryApiException.NotFound(id)
+  override suspend fun getBook(id: String): LibraryBook {
+    // Older copies of the list used the same numbers as text; anything else cannot exist.
+    val number = id.toLongOrNull() ?: throw LibraryApiException.NotFound(id)
+    return call(id) { service.book(number) }.toBook() ?: throw LibraryApiException.NotFound(id)
+  }
 
   override suspend fun createBook(book: NewLibraryBook): LibraryBook = adminOnly()
 
@@ -74,10 +91,11 @@ class RetrofitLibraryApi internal constructor(
   private fun BookDto.toBook(): LibraryBook? {
     val shelf = LibraryCategory.fromId(category) ?: return null
     return LibraryBook(
-      id = id,
-      bookTitle = bookTitle,
+      id = id.toString(),
+      bookTitle = title,
       description = description,
-      published = published,
+      // `/api/v1` only ever lists published books.
+      published = true,
       category = shelf,
       fileUrl = fileUrl?.let(::reachable),
       order = order,
@@ -93,28 +111,43 @@ class RetrofitLibraryApi internal constructor(
   }
 
   private fun reachable(url: String): String = ReachableUrl.of(url, baseUrl)
+
+  private companion object {
+    /** The server's largest page. */
+    const val PAGE_SIZE = 100
+
+    /** 10 000 books; a guard against a server that never says "done". */
+    const val MAX_PAGES = 100
+  }
 }
 
 internal interface LibraryService {
-  @GET("api/library")
+  @GET("api/v1/books")
   suspend fun books(
     @Query("category") category: String?,
-    @Query("published") published: Boolean?
-  ): List<BookDto>
+    @Query("page") page: Int,
+    @Query("limit") limit: Int
+  ): BookPageDto
 
-  @GET("api/library/{id}")
-  suspend fun book(@Path("id") id: String): BookDto
+  @GET("api/v1/books/{id}")
+  suspend fun book(@Path("id") id: Long): BookDto
 }
 
-/** The server's JSON; field names match [LibraryBook], `category` is a [LibraryCategory.id]. */
+/** `GET /api/v1/books`: one page of published books, in display order. */
+@JsonClass(generateAdapter = true)
+internal data class BookPageDto(val items: List<BookDto>, val total: Int)
+
+/**
+ * A book from `/api/v1/books` (list) or `/api/v1/books/{id}` (details, which adds chapters).
+ * `category` is a [LibraryCategory.id].
+ */
 @JsonClass(generateAdapter = true)
 internal data class BookDto(
-  val id: String,
-  val bookTitle: String,
-  val description: String,
-  val published: Boolean,
+  val id: Long,
+  val title: String,
+  val description: String = "",
   val category: String,
-  val fileUrl: String?,
+  val fileUrl: String? = null,
   val order: Int,
   val coverUrl: String? = null,
   val author: String? = null,

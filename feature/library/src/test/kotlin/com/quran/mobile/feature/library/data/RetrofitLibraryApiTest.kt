@@ -29,37 +29,74 @@ class RetrofitLibraryApiTest {
     server.enqueue(MockResponse().setResponseCode(code).setBody(body))
   }
 
-  // Exactly what tasneem-backend's GET /api/library returns (see its legacy snapshot).
+  // Exactly what tasneem-backend's GET /api/v1/books returns per book (contract `Book`).
   private val tafsir = """
-    {"id":"16","bookTitle":"تفسیر نور","description":"…","published":true,"category":"tafsir",
-     "fileUrl":"http://localhost:3000/files/books/16-732cf0f7.pdf","order":10,
-     "coverUrl":"https://cdn.example.org/files/covers/16-1a2b3c4d.webp","author":"دکتر مصطفی خرم‌دل",
-     "translator":null,"language":"فارسی","pageCount":2029,"fileSizeBytes":12345,
-     "tags":["تفسیر"],"chapters":[{"title":"مقدمه","page":7}]}
+    {"id":16,"title":"تفسیر نور","description":"…","category":"tafsir","order":10,
+     "author":"دکتر مصطفی خرم‌دل","translator":null,"language":"فارسی","pageCount":2029,
+     "fileUrl":"http://localhost:3000/files/books/16-732cf0f7.pdf","fileSizeBytes":12345,
+     "coverUrl":"https://cdn.example.org/files/covers/16-1a2b3c4d.webp",
+     "coverThumbUrl":"https://cdn.example.org/files/covers/16-1a2b3c4d-300.webp",
+     "tags":["تفسیر"],"publishedAt":"2026-10-20T10:00:00.000Z","updatedAt":"2026-10-21T10:00:00.000Z"}
   """.trimIndent()
+
+  private fun page(total: Int, vararg books: String) =
+    """{"items":[${books.joinToString(",")}],"total":$total,"page":1,"limit":100}"""
+
+  private fun book(id: Int) = tafsir.replace("\"id\":16", "\"id\":$id")
 
   @Test
   fun `maps the server's books and sends the filters`() = runTest {
-    reply(200, "[$tafsir]")
+    reply(200, page(1, tafsir))
 
     val books = api.getBooks(category = "tafsir", published = true)
 
     val request = server.takeRequest()
-    assertThat(request.path).isEqualTo("/api/library?category=tafsir&published=true")
+    assertThat(request.path).isEqualTo("/api/v1/books?category=tafsir&page=1&limit=100")
     assertThat(books).hasSize(1)
     val book = books.single()
     assertThat(book.id).isEqualTo("16")
+    assertThat(book.bookTitle).isEqualTo("تفسیر نور")
+    assertThat(book.published).isTrue()
     assertThat(book.category).isEqualTo(LibraryCategory.TAFSIR)
     assertThat(book.order).isEqualTo(10)
     assertThat(book.translator).isNull()
     assertThat(book.fileSizeBytes).isEqualTo(12345L)
     assertThat(book.tags).containsExactly("تفسیر")
-    assertThat(book.chapters).containsExactly(LibraryChapter("مقدمه", 7))
+    // The list has no chapters; the details screen reads them from the book itself.
+    assertThat(book.chapters).isEmpty()
+  }
+
+  @Test
+  fun `reads every page of a long list`() = runTest {
+    reply(200, page(3, book(1), book(2)))
+    reply(200, page(3, book(3)))
+
+    val books = api.getBooks()
+
+    assertThat(books.map { it.id }).containsExactly("1", "2", "3").inOrder()
+    assertThat(server.takeRequest().path).isEqualTo("/api/v1/books?page=1&limit=100")
+    assertThat(server.takeRequest().path).isEqualTo("/api/v1/books?page=2&limit=100")
+    assertThat(server.requestCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `stops when a page comes back empty even if the total says more`() = runTest {
+    reply(200, page(5, book(1)))
+    reply(200, page(5))
+
+    assertThat(api.getBooks().map { it.id }).containsExactly("1")
+    assertThat(server.requestCount).isEqualTo(2)
+  }
+
+  @Test
+  fun `drafts are never public, so asking for them asks nothing`() = runTest {
+    assertThat(api.getBooks(published = false)).isEmpty()
+    assertThat(server.requestCount).isEqualTo(0)
   }
 
   @Test
   fun `points localhost links at the server address and leaves real hosts alone`() = runTest {
-    reply(200, "[$tafsir]")
+    reply(200, page(1, tafsir))
 
     val book = api.getBooks().single()
 
@@ -70,25 +107,35 @@ class RetrofitLibraryApiTest {
 
   @Test
   fun `skips books on a shelf this app version does not know`() = runTest {
-    reply(200, "[$tafsir, ${tafsir.replace("\"tafsir\"", "\"new-shelf\"").replace("\"16\"", "\"99\"")}]")
+    reply(200, page(2, tafsir, book(99).replace("\"tafsir\"", "\"new-shelf\"")))
 
     assertThat(api.getBooks().map { it.id }).containsExactly("16")
   }
 
   @Test
-  fun `reads one book, and missing fields fall back to their defaults`() = runTest {
-    reply(
-      200,
-      """{"id":"7","bookTitle":"x","description":"","published":true,"category":"tajweed",
-         "fileUrl":null,"order":20}"""
-    )
+  fun `reads one book with its chapters, and missing fields fall back to their defaults`() =
+    runTest {
+      reply(
+        200,
+        """{"id":7,"title":"x","category":"tajweed","order":20,"fileUrl":null,
+           "chapters":[{"title":"مقدمه","page":7}]}"""
+      )
 
-    val book = api.getBook("7")
+      val book = api.getBook("7")
 
-    assertThat(server.takeRequest().path).isEqualTo("/api/library/7")
-    assertThat(book.fileUrl).isNull()
-    assertThat(book.tags).isEmpty()
-    assertThat(book.chapters).isEmpty()
+      assertThat(server.takeRequest().path).isEqualTo("/api/v1/books/7")
+      assertThat(book.id).isEqualTo("7")
+      assertThat(book.fileUrl).isNull()
+      assertThat(book.description).isEmpty()
+      assertThat(book.tags).isEmpty()
+      assertThat(book.chapters).containsExactly(LibraryChapter("مقدمه", 7))
+    }
+
+  @Test
+  fun `an id that is not a number cannot exist on the server`() = runTest {
+    val notFound = runCatching { api.getBook("abc") }.exceptionOrNull()
+    assertThat(notFound).isInstanceOf(LibraryApiException.NotFound::class.java)
+    assertThat(server.requestCount).isEqualTo(0)
   }
 
   @Test
@@ -116,7 +163,12 @@ class RetrofitLibraryApiTest {
 
   @Test
   fun `an answer that cannot be read is Unavailable, never a crash`() = runTest {
-    reply(200, """[{"id":"16","bookTitle":"x","pageCount":"many"}]""")
+    reply(200, """{"items":[{"id":16,"title":"x","pageCount":"many"}],"total":1}""")
+    assertThat(runCatching { api.getBooks() }.exceptionOrNull())
+      .isInstanceOf(LibraryApiException.Unavailable::class.java)
+
+    // The old /api/library answer (a plain list) is not readable as a page.
+    reply(200, "[$tafsir]")
     assertThat(runCatching { api.getBooks() }.exceptionOrNull())
       .isInstanceOf(LibraryApiException.Unavailable::class.java)
 
