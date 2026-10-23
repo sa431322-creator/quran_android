@@ -48,6 +48,7 @@ import com.quran.data.model.selection.AyahSelection
 import com.quran.data.model.selection.SelectionIndicator
 import com.quran.data.model.selection.SelectionRectangle
 import com.quran.data.model.selection.startSuraAyah
+import com.quran.labs.androidquran.BuildConfig
 import com.quran.labs.androidquran.HelpActivity
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranPreferenceActivity
@@ -191,7 +192,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
       if (sura > 0 && ayah > 0) startPosition = sura to ayah
     }
 
-    repository = TajweedRepository(this)
+    repository = TajweedRepository(this, BuildConfig.TASNIM_API_BASE_URL)
     toolBarArea = findViewById(R.id.toolbar_area)
     ayahToolBar = findViewById(R.id.ayah_toolbar)
     audioStatusBar = findViewById(R.id.audio_area)

@@ -2,6 +2,7 @@ package com.quran.common.networking
 
 import android.os.Build
 import com.quran.common.networking.dns.DnsModule
+import com.quran.data.constant.DependencyInjectionConstants
 import com.quran.data.di.AppScope
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.Named
@@ -39,24 +40,33 @@ object NetworkModule {
   @Provides
   @Named(DEFAULT_OKHTTP_CLIENT)
   @SingleIn(AppScope::class)
-  fun provideDefaultOkHttpClient(dns: Dns): OkHttpClient {
+  fun provideDefaultOkHttpClient(
+    dns: Dns,
+    @Named(DependencyInjectionConstants.TASNIM_API_BASE_URL) tasnimBaseUrl: String
+  ): OkHttpClient {
     return OkHttpClient.Builder()
       .readTimeout(DEFAULT_READ_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
       .connectTimeout(DEFAULT_CONNECT_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
       .dns(dns)
+      .addInterceptor(MirrorFallbackInterceptor(tasnimBaseUrl))
       .build()
   }
 
   @Provides
   @Named(LEGACY_OKHTTP_CLIENT)
   @SingleIn(AppScope::class)
-  fun provideLegacyOkHttpClient(dns: Dns, certificates: HandshakeCertificates): OkHttpClient {
+  fun provideLegacyOkHttpClient(
+    dns: Dns,
+    certificates: HandshakeCertificates,
+    @Named(DependencyInjectionConstants.TASNIM_API_BASE_URL) tasnimBaseUrl: String
+  ): OkHttpClient {
     // https://stackoverflow.com/questions/64844311
     return OkHttpClient.Builder()
       .sslSocketFactory(certificates.sslSocketFactory(), certificates.trustManager)
       .readTimeout(DEFAULT_READ_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
       .connectTimeout(DEFAULT_CONNECT_TIMEOUT_SECONDS.toLong(), TimeUnit.SECONDS)
       .dns(dns)
+      .addInterceptor(MirrorFallbackInterceptor(tasnimBaseUrl))
       .build()
   }
 

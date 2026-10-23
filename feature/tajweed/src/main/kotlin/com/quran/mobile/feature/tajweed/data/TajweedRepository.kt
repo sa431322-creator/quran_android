@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
  * Page layout from assets, and the per-page QPC V4 tajweed fonts (from QUL, Tarteel's CDN),
  * downloaded the first time a page is opened and kept in app storage.
  */
-class TajweedRepository(context: Context) {
+class TajweedRepository(context: Context, private val fallbackBaseUrl: String) {
   private val appContext = context.applicationContext
   private val fontDirectory = File(appContext.filesDir, "tajweed/v4")
   // one lock per page: a slow download never holds up another page's font
@@ -39,11 +39,34 @@ class TajweedRepository(context: Context) {
 
   private fun fontFile(page: Int) = File(fontDirectory, "p$page.ttf")
 
+  /**
+   * Tarteel first; when that fails, the copy on the Tasnim server (when the build names one).
+   * After Tarteel failed, the copy is asked first for a while instead of waiting for its timeout
+   * again on every page.
+   */
   private fun download(page: Int): File {
+    val primary = "$FONT_BASE_URL/p$page.ttf"
+    val fallbackUrl = tajweedFontFallbackUrl(fallbackBaseUrl, page) ?: return download(page, primary)
+    val tarteelDown = System.currentTimeMillis() - tarteelFailedAt < TARTEEL_DOWN_MS
+    val (first, second) = if (tarteelDown) fallbackUrl to primary else primary to fallbackUrl
+    return try {
+      download(page, first).also { if (first == primary) tarteelFailedAt = 0L }
+    } catch (e: IOException) {
+      if (first == primary) tarteelFailedAt = System.currentTimeMillis()
+      try {
+        download(page, second)
+      } catch (secondError: IOException) {
+        e.addSuppressed(secondError)
+        throw e
+      }
+    }
+  }
+
+  private fun download(page: Int, url: String): File {
     fontDirectory.mkdirs()
     val target = fontFile(page)
     val temp = File(fontDirectory, "p$page.ttf.part")
-    val connection = URL("$FONT_BASE_URL/p$page.ttf").openConnection() as HttpURLConnection
+    val connection = URL(url).openConnection() as HttpURLConnection
     try {
       connection.connectTimeout = TIMEOUT_MS
       connection.readTimeout = TIMEOUT_MS
@@ -107,6 +130,11 @@ class TajweedRepository(context: Context) {
     private var data: TajweedData? = null
 
     private const val PAGES_ASSET = "tajweed/pages.json"
+    private const val TARTEEL_DOWN_MS = 5 * 60 * 1000L
+
+    /** When a Tarteel download last failed (shared by every page and screen); 0 = working. */
+    @Volatile private var tarteelFailedAt = 0L
+
     private const val FONT_BASE_URL = "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v4-tajweed/ttf"
     private const val TIMEOUT_MS = 20_000
     private const val MIN_FONT_BYTES = 1_000L
@@ -114,3 +142,9 @@ class TajweedRepository(context: Context) {
 }
 
 class TajweedData(val pages: List<TajweedPage>, val suraHeaderPages: Map<Int, Int>)
+
+/** The Tasnim server's copy of a page's font, or null without a Tasnim server. */
+internal fun tajweedFontFallbackUrl(baseUrl: String, page: Int): String? {
+  val base = baseUrl.trim().ifBlank { return null }
+  return "${base.removeSuffix("/")}/data/qul/v4-tajweed/ttf/p$page.ttf"
+}
