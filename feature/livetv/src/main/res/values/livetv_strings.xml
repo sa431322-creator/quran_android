@@ -28,4 +28,7 @@
   <string name="livetv_reminder" translatable="false">یادآوری %1$s</string>
   <string name="livetv_reminder_soon" translatable="false">یادآوری برنامه‌ها به‌زودی</string>
   <string name="livetv_phase_two" translatable="false">فاز ۲</string>
+  <string name="livetv_unavailable_title" translatable="false">در حال حاضر در دسترس نیست</string>
+  <string name="livetv_unavailable_video" translatable="false">پخش زندهٔ تصویری فعلاً فعال نیست. لطفاً بعداً دوباره سر بزنید.</string>
+  <string name="livetv_unavailable_radio" translatable="false">پخش رادیو فعلاً فعال نیست. لطفاً بعداً دوباره سر بزنید.</string>
 </resources>

@@ -133,11 +133,7 @@ class TasnimLaunchActivity : AppCompatActivity() {
     bindLink(R.id.launch_messenger, config.links.messenger, R.string.tasnim_url_messenger)
 
     findViewById<View>(R.id.launch_library).isVisible = config.features.library
-    findViewById<View>(R.id.launch_live).isVisible = config.features.live
-    findViewById<View>(R.id.launch_radio).isVisible = config.features.radio
-    // the broadcasts row disappears completely when neither is on
-    (findViewById<View>(R.id.launch_live).parent as View).isVisible =
-      config.features.live || config.features.radio
+    // live and radio always show; while switched off their screens say they are unavailable
 
     findViewById<TextView>(R.id.launch_maintenance).apply {
       isVisible = config.maintenance.enabled
