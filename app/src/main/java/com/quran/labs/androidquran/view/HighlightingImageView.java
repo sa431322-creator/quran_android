@@ -121,6 +121,12 @@ public class HighlightingImageView extends AppCompatImageView {
   private final ImageDrawHelper suraHeaderDrawer =
       new MushafSuraHeaderDrawer(getContext(), () -> isNightMode);
 
+  // Draws the Tasnim page ornament around the page image when there is room (single page only)
+  private final MushafPageOrnamentDrawer pageOrnamentDrawer =
+      new MushafPageOrnamentDrawer(getContext());
+  private final RectF imageRect = new RectF();
+  private boolean isSinglePortraitPage = true;
+
   private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS ?
       new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates) : null;
 
@@ -163,6 +169,7 @@ public class HighlightingImageView extends AppCompatImageView {
     int topBottom = scrollable ? scrollableHeaderFooterSize :
         landscape ? dualPageHeaderFooterSize : headerFooterSize;
     verticalOffsetForScrolling = topBottom;
+    isSinglePortraitPage = !scrollable && !landscape;
     setPadding(horizontalSafeOffset,
         topBottom + topSafeOffset,
         horizontalSafeOffset,
@@ -423,6 +430,8 @@ public class HighlightingImageView extends AppCompatImageView {
     String pageText = null;
     String rub3Text = null;
     String manzilText = null;
+    // juz', rub3 and manzil text together, as drawn by the page ornament
+    String infoText = null;
   }
 
   public void setOverlayText(String suraText, String juzText, String pageText, String rub3Text, String manzilText) {
@@ -437,6 +446,7 @@ public class HighlightingImageView extends AppCompatImageView {
     overlayParams.pageText = pageText;
     overlayParams.rub3Text = rub3Text;
     overlayParams.manzilText = manzilText;
+    overlayParams.infoText = juzText + rub3Text + manzilText;
     overlayParams.paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DEV_KERN_TEXT_FLAG);
     overlayParams.paint.setTextSize(fontSize);
 //    if (juzText.contains("ج")) {
@@ -502,6 +512,11 @@ public class HighlightingImageView extends AppCompatImageView {
       return;
     }
 
+    if (drawPageOrnament(canvas, matrix)) {
+      didDraw = true;
+      return;
+    }
+
     overlayParams.paint.setTextAlign(Align.LEFT);
     canvas.drawText(overlayParams.suraText,
         overlayParams.offsetX + horizontalSafeOffset,
@@ -519,6 +534,24 @@ public class HighlightingImageView extends AppCompatImageView {
         overlayParams.topBaseline + topSafeOffset,
         overlayParams.paint);
     didDraw = true;
+  }
+
+  private boolean drawPageOrnament(Canvas canvas, Matrix matrix) {
+    final Drawable d = getDrawable();
+    if (!isSinglePortraitPage || d == null) {
+      return false;
+    }
+
+    imageRect.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+    matrix.mapRect(imageRect);
+    imageRect.offset(getPaddingLeft(), getPaddingTop());
+    return pageOrnamentDrawer.draw(canvas, getWidth(), imageRect,
+        topSafeOffset, getHeight() - bottomSafeOffset,
+        overlayParams.suraText,
+        overlayParams.infoText,
+        overlayParams.pageText,
+        isNightMode,
+        overlayParams.paint.getColor());
   }
 
   @Override
