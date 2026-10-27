@@ -117,10 +117,7 @@ class AudioBarPresenter @Inject constructor(
         progress, com.quran.mobile.common.download.R.string.downloading
       )
 
-      is DownloadInfo.DownloadBatchSuccess -> AudioBarState.Stopped(
-        currentQariManager.currentQari().nameResource,
-        recitationPresenter.isRecitationEnabled()
-      )
+      is DownloadInfo.DownloadBatchSuccess -> stoppedState()
 
       DownloadInfo.RequestDownloadNetworkPermission -> AudioBarState.Prompt(
         com.quran.mobile.common.download.R.string.download_non_wifi_prompt
@@ -152,9 +149,15 @@ class AudioBarPresenter @Inject constructor(
         }
       }
 
-      AudioStatus.Stopped -> AudioBarState.Stopped(qari.nameResource, enableRecitation)
+      AudioStatus.Stopped -> stoppedState(qari, enableRecitation)
     }
   }
+
+  /** The stopped bar for [qari]; a name from the Tasnim server wins over the built-in string. */
+  private fun stoppedState(
+    qari: Qari = currentQariManager.currentQari(),
+    enableRecitation: Boolean = recitationPresenter.isRecitationEnabled()
+  ) = AudioBarState.Stopped(qari.nameResource, enableRecitation, qari.name)
 
   private fun transformAudioBarRecitationState(
     recitationSession: RecitationSession?, isListening: Boolean, isPlaying: Boolean
@@ -187,10 +190,7 @@ class AudioBarPresenter @Inject constructor(
   private val cancelableEventSink =
     { event: AudioBarUiEvent.CancelablePlaybackEvent ->
       if (event is AudioBarUiEvent.CancelablePlaybackEvent.Cancel) {
-        internalAudioBarFlow.value = AudioBarState.Stopped(
-          currentQariManager.currentQari().nameResource,
-          recitationPresenter.isRecitationEnabled()
-        )
+        internalAudioBarFlow.value = stoppedState()
       }
       emit(event.audioBarEvent)
     }
@@ -198,10 +198,7 @@ class AudioBarPresenter @Inject constructor(
   private val promptEventSink =
     { event: AudioBarUiEvent.PromptEvent ->
       if (event is AudioBarUiEvent.PromptEvent.Cancel) {
-        internalAudioBarFlow.value = AudioBarState.Stopped(
-          currentQariManager.currentQari().nameResource,
-          recitationPresenter.isRecitationEnabled()
-        )
+        internalAudioBarFlow.value = stoppedState()
       }
       emit(event.audioBarEvent)
     }
@@ -209,10 +206,7 @@ class AudioBarPresenter @Inject constructor(
   private val commonPlaybackEventSink =
     { event: AudioBarUiEvent.CommonPlaybackEvent ->
       if (event is AudioBarUiEvent.CommonPlaybackEvent.Stop) {
-        internalAudioBarFlow.value = AudioBarState.Stopped(
-          currentQariManager.currentQari().nameResource,
-          recitationPresenter.isRecitationEnabled()
-        )
+        internalAudioBarFlow.value = stoppedState()
       } else if (event is AudioBarUiEvent.CommonPlaybackEvent.SetRepeat) {
         // pre-emptively update the ui with the repeat even before the service gets it
         val currentAudioBarValue = internalAudioBarFlow.value

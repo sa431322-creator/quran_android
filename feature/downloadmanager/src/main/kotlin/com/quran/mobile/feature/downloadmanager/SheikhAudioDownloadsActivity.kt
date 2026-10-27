@@ -121,7 +121,8 @@ class SheikhAudioDownloadsActivity : ComponentActivity() {
                   // end contextual mode on back with suras selected
                   sheikhAudioPresenter.clearSelection()
                 }
-              }
+              },
+              title = currentDownloadState?.qariItem?.name
             )
 
             if (currentDownloadState != null) {

@@ -6,8 +6,9 @@ import androidx.media3.common.MediaMetadata
 import androidx.media3.common.MimeTypes
 import com.google.common.collect.ImmutableList
 import com.quran.data.model.audio.Qari
-import com.quran.data.source.PageProvider
+import com.quran.labs.androidquran.common.audio.model.displayName
 import com.quran.labs.androidquran.common.audio.util.AudioExtensionDecider
+import com.quran.labs.androidquran.common.audio.util.QariUtil
 import com.quran.labs.feature.autoquran.R
 import com.quran.mobile.di.qualifier.ApplicationContext
 import dev.zacsweers.metro.Inject
@@ -16,7 +17,7 @@ import kotlinx.coroutines.withContext
 
 class BrowsableSurahBuilder @Inject constructor(
   @param:ApplicationContext private val appContext: Context,
-  private val pageProvider: PageProvider,
+  private val qariUtil: QariUtil,
   private val audioExtensionDecider: AudioExtensionDecider,
   private val qariArtworkProvider: QariArtworkProvider,
   private val recentQariManager: RecentQariManager,
@@ -56,7 +57,7 @@ class BrowsableSurahBuilder @Inject constructor(
   suspend fun children(parentId: String): ImmutableList<MediaItem> {
     return withContext(Dispatchers.IO) {
       if (parentId == ROOT_ID) {
-        val qaris = pageProvider.getQaris()
+        val qaris = qariUtil.getQariList()
         if (recentChildren(qaris).isNotEmpty()) {
           ImmutableList.of(recentMediaItem, qariMediaItem)
         } else {
@@ -65,7 +66,7 @@ class BrowsableSurahBuilder @Inject constructor(
       } else if (parentId == RECENT_ID) {
         recentChildren()
       } else if (parentId == QARI_ID) {
-        val items = pageProvider.getQaris()
+        val items = qariUtil.getQariList()
           .filter { it.isGapless }
           .take(2)
           .map { qari -> makeMediaItem(qari) }
@@ -88,7 +89,7 @@ class BrowsableSurahBuilder @Inject constructor(
       }
 
       val qariId = mediaId.substringAfterLast("_").toIntOrNull() ?: -1
-      val qari = pageProvider.getQaris().firstOrNull { it.id == qariId }
+      val qari = qariUtil.getQariList().firstOrNull { it.id == qariId }
       when {
         mediaId.startsWith("quran_") && qari != null -> makeMediaItem(qari)
         mediaId.startsWith("sura_") -> {
@@ -119,8 +120,8 @@ class BrowsableSurahBuilder @Inject constructor(
 
   suspend fun search(query: String): List<MediaItem> {
     return withContext(Dispatchers.IO) {
-      val matchingQaris = pageProvider.getQaris()
-        .filter { it.isGapless && appContext.getString(it.nameResource).contains(query, true) }
+      val matchingQaris = qariUtil.getQariList()
+        .filter { it.isGapless && it.displayName(appContext).contains(query, true) }
         .map { makeMediaItem(it) }
 
       // TODO: add sura search
@@ -133,7 +134,7 @@ class BrowsableSurahBuilder @Inject constructor(
    * Each item represents the last sura played for that qari.
    */
   private fun recentChildren(): ImmutableList<MediaItem> {
-    val qaris = pageProvider.getQaris()
+    val qaris = qariUtil.getQariList()
     return recentChildren(qaris)
   }
 
@@ -156,7 +157,7 @@ class BrowsableSurahBuilder @Inject constructor(
    * Typically, this is a list of 114 [MediaItem]s, one for each sura.
    */
   private fun suraMediaItemsForQariId(qariId: Int): ImmutableList<MediaItem> {
-    val qari = pageProvider.getQaris().firstOrNull { it.id == qariId }
+    val qari = qariUtil.getQariList().firstOrNull { it.id == qariId }
     return if (qari != null) {
       (1..114).map { sura ->
         makeSuraMediaItem(qari, sura)
@@ -176,7 +177,7 @@ class BrowsableSurahBuilder @Inject constructor(
       .setMediaId(mediaId)
       .setMediaMetadata(
         MediaMetadata.Builder()
-          .setTitle(appContext.getString(qari.nameResource))
+          .setTitle(qari.displayName(appContext))
           .setIsBrowsable(true)
           .setMediaType(MediaMetadata.MEDIA_TYPE_ARTIST)
           .apply { setArtworkUri(artworkUri) }
@@ -202,7 +203,7 @@ class BrowsableSurahBuilder @Inject constructor(
       qari.url to MimeTypes.AUDIO_MPEG
     }
     val artworkUri = qariArtworkProvider.suraArtworkUriFor(qari, sura)
-    val qariName = appContext.getString(qari.nameResource)
+    val qariName = qari.displayName(appContext)
 
     return MediaItem.Builder()
       .setMediaId("sura_${sura}_${qari.id}")

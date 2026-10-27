@@ -6,16 +6,20 @@ import com.quran.data.source.PageProvider
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import dev.zacsweers.metro.Inject
 
-class QariUtil @Inject constructor(private val pageProvider: PageProvider) {
+class QariUtil @Inject constructor(
+  private val pageProvider: PageProvider,
+  private val serverQaris: ServerQariSource,
+) {
 
   /**
-   * Get a list of all available qaris as [Qari].
+   * Get a list of all available qaris as [Qari]: the Tasnim server's list when the app has one,
+   * otherwise the built-in list of the page type.
    *
-   * Unlike the method with the context parameter, this version does not have
-   * the actual qari name. It only has the resource id for the qari.
+   * Unlike the method with the context parameter, this version does not resolve names; use
+   * `displayName(context)` (server qaris carry [Qari.name], built-in ones a resource id).
    */
   fun getQariList(): List<Qari> {
-    return pageProvider.getQaris()
+    return serverQaris.cached()?.takeIf { it.isNotEmpty() } ?: pageProvider.getQaris()
   }
 
   /**

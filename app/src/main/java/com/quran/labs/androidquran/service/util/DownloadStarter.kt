@@ -5,6 +5,7 @@ import android.content.Intent
 import com.quran.data.core.QuranFileManager
 import com.quran.data.di.AppScope
 import com.quran.data.model.audio.Qari
+import com.quran.labs.androidquran.common.audio.model.displayName
 import com.quran.labs.androidquran.common.audio.model.download.AudioDownloadMetadata
 import com.quran.labs.androidquran.common.audio.util.AudioExtensionDecider
 import com.quran.labs.androidquran.service.QuranDownloadService
@@ -31,7 +32,7 @@ class DownloadStarter @Inject constructor(
     val basePath = fileManager.audioFileDirectory()
     val baseUri = basePath + qari.path
     val isGapless = qari.isGapless
-    val sheikhName = appContext.getString(qari.nameResource)
+    val sheikhName = qari.displayName(appContext)
     val extension = audioExtensionDecider.audioExtensionForQari(qari)
 
     val intent = ServiceIntentHelper.getDownloadIntent(

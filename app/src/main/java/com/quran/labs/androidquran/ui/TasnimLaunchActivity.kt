@@ -35,6 +35,7 @@ import com.quran.labs.androidquran.tasnim.Announcement
 import com.quran.labs.androidquran.tasnim.AppConfig
 import com.quran.labs.androidquran.tasnim.AppUpdate
 import com.quran.labs.androidquran.tasnim.TasnimConfigRepository
+import com.quran.labs.androidquran.tasnim.TasnimReciterRepository
 import com.quran.labs.androidquran.tasnim.UpdateNeed
 import com.quran.labs.androidquran.tasnim.firstUnseen
 import com.quran.labs.androidquran.tasnim.updateNeed
@@ -59,6 +60,7 @@ import com.quran.mobile.feature.livetv.radio.RadioActivity
 class TasnimLaunchActivity : AppCompatActivity() {
 
   @Inject lateinit var server: TasnimConfigRepository
+  @Inject lateinit var reciters: TasnimReciterRepository
 
   private var updateDialog: AlertDialog? = null
 
@@ -123,6 +125,8 @@ class TasnimLaunchActivity : AppCompatActivity() {
           ?.let(::showAnnouncement)
       }
     }
+    // The reciter list from the server; saved for the next start (the audio code reads it once).
+    if (savedInstanceState == null) lifecycleScope.launch { reciters.refresh() }
   }
 
   /** Links, visible sections and the maintenance note, from the server (or the built-in links). */

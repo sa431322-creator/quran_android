@@ -9,7 +9,8 @@ import android.os.ParcelFileDescriptor
 import android.os.SystemClock
 import androidx.collection.LruCache
 import com.quran.data.model.audio.Qari
-import com.quran.data.source.PageProvider
+import com.quran.labs.androidquran.common.audio.model.displayName
+import com.quran.labs.androidquran.common.audio.util.QariUtil
 import com.quran.labs.feature.autoquran.di.QuranAutoInjector
 import com.quran.mobile.di.QuranApplicationComponentProvider
 import dev.zacsweers.metro.Inject
@@ -30,7 +31,7 @@ class QariArtworkContentProvider : ContentProvider() {
   private var didInject = false
 
   @Inject
-  lateinit var pageProvider: PageProvider
+  lateinit var qariUtil: QariUtil
 
   private val renderer: QariArtworkProvider by lazy {
     QariArtworkProvider(requireNotNull(context).applicationContext)
@@ -120,7 +121,7 @@ class QariArtworkContentProvider : ContentProvider() {
       if (cached != null) {
         cached
       } else {
-        val exists = pageProvider.getQaris().any { it.id == qariId }
+        val exists = qariUtil.getQariList().any { it.id == qariId }
         knownQariIdCache.put(qariId, exists)
         exists
       }
@@ -164,7 +165,7 @@ class QariArtworkContentProvider : ContentProvider() {
     return if (qari == null || context == null) {
       ""
     } else {
-      runCatching { context.getString(qari.nameResource) }.getOrDefault("")
+      qari.displayName(context)
     }
   }
 
@@ -172,7 +173,7 @@ class QariArtworkContentProvider : ContentProvider() {
     return if (!ensureInjected()) {
       null
     } else {
-      pageProvider.getQaris().firstOrNull { it.id == qariId }
+      qariUtil.getQariList().firstOrNull { it.id == qariId }
     }
   }
 
