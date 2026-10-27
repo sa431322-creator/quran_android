@@ -86,6 +86,22 @@ class TasnimServerTest {
   }
 
   @Test
+  fun `live and radio follow the server switches, and are on when there is no server`() = runTest {
+    val noServer = TasnimLiveAvailability(repo(baseUrl = ""))
+    assertThat(noServer.isLiveAvailable()).isTrue()
+    assertThat(noServer.isRadioAvailable()).isTrue()
+
+    val withServer = TasnimLiveAvailability(repo())
+    assertThat(withServer.isLiveAvailable()).isFalse()
+    assertThat(withServer.isRadioAvailable()).isFalse()
+
+    reply(200, config)
+    repo().refreshConfig()
+    assertThat(withServer.isLiveAvailable()).isTrue()
+    assertThat(withServer.isRadioAvailable()).isFalse()
+  }
+
+  @Test
   fun `asks for this version's announcements and remembers which were seen`() = runTest {
     reply(
       200,

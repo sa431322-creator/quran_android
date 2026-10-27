@@ -126,6 +126,9 @@ class TasnimConfigRepository internal constructor(
 
   private val configAdapter = Moshi.Builder().build().adapter(AppConfig::class.java)
 
+  /** Whether this build talks to a Tasnim server at all (false when the base URL is blank). */
+  val hasServer: Boolean get() = service != null
+
   /** The last settings received, or the defaults. Instant; safe on the main thread. */
   fun cached(): AppConfig =
     prefs.getString(KEY_CONFIG, null)
