@@ -114,6 +114,12 @@ class AyahTrackerPresenter @Inject constructor(
     }
   }
 
+  fun setPageCoordinatesError() {
+    for (item in items) {
+      item.onPageCoordinatesError()
+    }
+  }
+
   fun setAyahCoordinates(ayahCoordinates: AyahCoordinates) {
     for (item in items) {
       item.onSetAyahCoordinates(ayahCoordinates)

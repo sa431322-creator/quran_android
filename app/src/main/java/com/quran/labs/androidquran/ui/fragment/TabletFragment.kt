@@ -446,6 +446,9 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
 
   override fun setAyahCoordinatesError() {
     ayahCoordinatesError = true
+    if (quranSettings.shouldOverlayPageInfo()) {
+      ayahTrackerPresenter.setPageCoordinatesError()
+    }
   }
 
   override fun setAyahCoordinatesData(coordinates: AyahCoordinates) {

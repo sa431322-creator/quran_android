@@ -191,6 +191,9 @@ class QuranPageFragment : Fragment(), PageController, QuranPage, QuranPageScreen
 
   override fun setAyahCoordinatesError() {
     ayahCoordinatesError = true
+    if (quranSettings.shouldOverlayPageInfo()) {
+      ayahTrackerPresenter.setPageCoordinatesError()
+    }
   }
 
   override fun onScrollChanged(y: Float) {

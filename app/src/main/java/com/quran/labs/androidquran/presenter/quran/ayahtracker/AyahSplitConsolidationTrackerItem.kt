@@ -19,6 +19,11 @@ class AyahSplitConsolidationTrackerItem(
     translationTrackerItem.onSetPageBounds(pageCoordinates)
   }
 
+  override fun onPageCoordinatesError() {
+    imageTrackerItem.onPageCoordinatesError()
+    translationTrackerItem.onPageCoordinatesError()
+  }
+
   override fun onSetAyahCoordinates(ayahCoordinates: AyahCoordinates) {
     imageTrackerItem.onSetAyahCoordinates(ayahCoordinates)
     translationTrackerItem.onSetAyahCoordinates(ayahCoordinates)
