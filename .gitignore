@@ -27,3 +27,4 @@ app/google-services.json
 # Live TV mock broadcast clips: kept local only (size / third-party content)
 feature/livetv/src/main/assets/second_stream.mp4
 feature/livetv/src/main/assets/al_fatiha.mp4
+feature/livetv/src/main/assets/qurhan_42.mp4

@@ -1,6 +1,6 @@
 # Live TV sample clip
 
-`al_fatiha.mp4` (~3 MB) in this folder is the mock "live" broadcast. The Live TV channel
+`qurhan_42.mp4` (~74 MB, H.265 480p, from QURHAN-42.mp4) in this folder is the mock "live" broadcast. The Live TV channel
 loops it, and every radio station plays its audio, until the real streaming backend exists.
 
 The file is **gitignored**: it is a third-party recitation video, so it is not pushed to

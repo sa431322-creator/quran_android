@@ -9,7 +9,7 @@ class LocalLiveChannelRepositoryTest {
 
   @Test
   fun channelPlaysBundledSample() {
-    assertThat(channel.source).isEqualTo(LiveStreamSource.LocalAsset("al_fatiha.mp4"))
+    assertThat(channel.source).isEqualTo(LiveStreamSource.LocalAsset("qurhan_42.mp4"))
   }
 
   @Test
