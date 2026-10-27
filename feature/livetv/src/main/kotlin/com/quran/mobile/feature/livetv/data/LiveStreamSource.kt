@@ -29,3 +29,14 @@ sealed interface LiveStreamSource {
 }
 
 enum class StreamFormat { HLS, DASH, PROGRESSIVE }
+
+/** A stream from the admin panel: .m3u8 plays as HLS, .mpd as DASH, anything else progressively. */
+fun remoteStreamOf(url: String): LiveStreamSource.Remote {
+  val path = url.substringBefore('#').substringBefore('?').lowercase()
+  val format = when {
+    path.endsWith(".m3u8") -> StreamFormat.HLS
+    path.endsWith(".mpd") -> StreamFormat.DASH
+    else -> StreamFormat.PROGRESSIVE
+  }
+  return LiveStreamSource.Remote(url, format)
+}

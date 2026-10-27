@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.quran.mobile.feature.livetv.data.StreamLinks
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -99,6 +100,28 @@ class TasnimServerTest {
     repo().refreshConfig()
     assertThat(withServer.isLiveAvailable()).isTrue()
     assertThat(withServer.isRadioAvailable()).isFalse()
+  }
+
+  @Test
+  fun `stream links come from the saved settings, and none without a server`() = runTest {
+    assertThat(TasnimStreamLinks(repo(baseUrl = "")).links()).isNull()
+
+    val links = TasnimStreamLinks(repo())
+    assertThat(links.links()).isEqualTo(StreamLinks())
+
+    reply(
+      200,
+      """{"streams":{"ownLive":"https://s.example/live.m3u8","quranLive":null,""" +
+        """"ownRadio":"https://s.example/radio","quranRadio":"https://q.example/r.mp3"}}"""
+    )
+    repo().refreshConfig()
+    assertThat(links.links()).isEqualTo(
+      StreamLinks(
+        ownLive = "https://s.example/live.m3u8",
+        ownRadio = "https://s.example/radio",
+        quranRadio = "https://q.example/r.mp3"
+      )
+    )
   }
 
   @Test

@@ -8,6 +8,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -59,11 +60,14 @@ import com.quran.mobile.feature.livetv.ui.common.SegmentedSwitch
 /** The «پخش زندهٔ تصویری» screen from the design canvas (LiveVideo.dc.html). */
 @Composable
 fun LiveTvScreen(
-  channel: LiveChannel,
+  channels: List<LiveChannel>,
   onBack: () -> Unit,
   onOpenAudio: () -> Unit
 ) {
   var isFullscreen by rememberSaveable { mutableStateOf(false) }
+  // opens on our own channel; the viewer may switch to the Quran channel
+  var selectedId by rememberSaveable { mutableStateOf(channels.first().id) }
+  val channel = channels.firstOrNull { it.id == selectedId } ?: channels.first()
   val context = LocalContext.current
   val onAir = rememberOnAirIndex(channel.schedule)
   // the title follows the program the schedule marks as on air
@@ -127,8 +131,25 @@ fun LiveTvScreen(
               .verticalScroll(rememberScrollState())
               .padding(bottom = 16.dp)
           ) {
+            if (channels.size > 1) {
+              Box(
+                modifier = Modifier
+                  .fillMaxWidth()
+                  .padding(start = 20.dp, end = 20.dp, top = 14.dp),
+                contentAlignment = Alignment.Center
+              ) {
+                SegmentedSwitch(
+                  options = channels.map { it.name },
+                  selectedIndex = channels.indexOf(channel),
+                  onSelect = { selectedId = channels[it].id }
+                )
+              }
+            }
             ProgramInfo(title = programTitle, onShare = { shareProgram(context, channel, programTitle) })
-            ScheduleSection(channel.schedule, onAir)
+            // only our own channel has a schedule
+            if (channel.schedule.isNotEmpty()) {
+              ScheduleSection(channel.schedule, onAir)
+            }
           }
         }
       }
@@ -167,7 +188,6 @@ private fun shareProgram(context: android.content.Context, channel: LiveChannel,
 @Composable
 private fun ProgramInfo(title: String, onShare: () -> Unit) {
   val palette = LocalTasnimPalette.current
-  // the design keeps a single channel, so only the program title sits beside share
   Row(
     modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp),
     verticalAlignment = Alignment.CenterVertically,

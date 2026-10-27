@@ -29,16 +29,16 @@ class RadioActivity : AppCompatActivity() {
       ?.provideQuranApplicationComponent() as? LiveTvComponentInterface
     injector?.liveTvComponentFactory()?.generate()?.inject(this)
 
-    // Tasnim broadcasts a single station
-    val station = radioStationRepository.stations().first()
-    val isAvailable = liveAvailability.isRadioAvailable()
+    // our own station first, then the Quran station
+    val stations = radioStationRepository.stations()
+    val isAvailable = liveAvailability.isRadioAvailable() && stations.isNotEmpty()
 
     enableEdgeToEdge()
 
     setContent {
       QuranTheme {
         if (isAvailable) {
-          RadioScreen(station = station, onBack = onBackPressedDispatcher::onBackPressed)
+          RadioScreen(stations = stations, onBack = onBackPressedDispatcher::onBackPressed)
         } else {
           UnavailableScreen(
             message = getString(R.string.livetv_unavailable_radio),

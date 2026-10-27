@@ -3,8 +3,8 @@ package com.quran.mobile.feature.livetv.radio
 import android.net.Uri
 import androidx.media3.common.MediaMetadata
 import com.google.common.truth.Truth.assertThat
-import com.quran.mobile.feature.livetv.data.LocalLiveChannelRepository
-import com.quran.mobile.feature.livetv.data.LocalRadioStationRepository
+import com.quran.mobile.feature.livetv.data.ConfiguredLiveChannelRepository
+import com.quran.mobile.feature.livetv.data.ConfiguredRadioStationRepository
 import com.quran.mobile.feature.livetv.data.LiveStreamSource
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -15,13 +15,13 @@ import org.robolectric.annotation.Config
 @Config(sdk = [33])
 class RadioMediaItemsTest {
 
-  private val repository = LocalRadioStationRepository()
+  private val repository = ConfiguredRadioStationRepository { null }
 
   @Test
   fun singleStationPlaysTheSample() {
     val stations = repository.stations()
     assertThat(stations).hasSize(1)
-    val sample = LiveStreamSource.LocalAsset(LocalLiveChannelRepository.SAMPLE_ASSET)
+    val sample = LiveStreamSource.LocalAsset(ConfiguredLiveChannelRepository.SAMPLE_ASSET)
     assertThat(stations.single().source).isEqualTo(sample)
   }
 
@@ -47,7 +47,7 @@ class RadioMediaItemsTest {
 
     assertThat(item.mediaId).isEqualTo(station.id)
     assertThat(item.localConfiguration!!.uri.toString())
-      .isEqualTo("asset:///${LocalLiveChannelRepository.SAMPLE_ASSET}")
+      .isEqualTo("asset:///${ConfiguredLiveChannelRepository.SAMPLE_ASSET}")
     assertThat(item.mediaMetadata.title.toString()).isEqualTo(station.name)
     assertThat(item.mediaMetadata.artist.toString()).isEqualTo(station.description)
     assertThat(item.mediaMetadata.artworkUri).isEqualTo(artwork)

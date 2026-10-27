@@ -63,21 +63,25 @@ import com.quran.mobile.feature.livetv.radio.RadioPlaybackState
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
 import com.quran.mobile.feature.livetv.ui.common.ScheduleSection
+import com.quran.mobile.feature.livetv.ui.common.SegmentedSwitch
 import com.quran.mobile.feature.livetv.ui.common.rememberOnAirIndex
 
 /** The «پخش زنده» radio screen from the design canvas (Radio.dc.html). */
 @Composable
-fun RadioScreen(station: RadioStation, onBack: () -> Unit) {
+fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
   val connection = remember { RadioConnection(context) }
   val playback by connection.state.collectAsState()
+  // the station playing in the background service, or our own one before anything plays
+  val station = stations.firstOrNull { it.id == playback.stationId } ?: stations.first()
+  val defaultStationId = stations.first().id
 
   // connected only while visible; playback itself continues in LiveRadioService
   DisposableEffect(lifecycleOwner, connection) {
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
-        Lifecycle.Event.ON_START -> connection.connect(station.id)
+        Lifecycle.Event.ON_START -> connection.connect(defaultStationId)
         Lifecycle.Event.ON_STOP -> connection.disconnect()
         else -> Unit
       }
@@ -101,16 +105,33 @@ fun RadioScreen(station: RadioStation, onBack: () -> Unit) {
           .verticalScroll(rememberScrollState())
       ) {
         LiveHeader(onBack = onBack) { PhaseChip() }
+        if (stations.size > 1) {
+          Box(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(start = 20.dp, end = 20.dp, top = 4.dp, bottom = 8.dp),
+            contentAlignment = Alignment.Center
+          ) {
+            SegmentedSwitch(
+              options = stations.map { it.name },
+              selectedIndex = stations.indexOf(station),
+              onSelect = { connection.play(stations[it].id) }
+            )
+          }
+        }
         NowPlayingCard(
           station = station,
           playback = playback,
           onTogglePlay = connection::togglePlayPause
         )
-        ScheduleSection(
-          entries = station.schedule,
-          onAir = rememberOnAirIndex(station.schedule),
-          modifier = Modifier.padding(bottom = 20.dp)
-        )
+        // only our own station has a schedule
+        if (station.schedule.isNotEmpty()) {
+          ScheduleSection(
+            entries = station.schedule,
+            onAir = rememberOnAirIndex(station.schedule),
+            modifier = Modifier.padding(bottom = 20.dp)
+          )
+        }
       }
     }
   }

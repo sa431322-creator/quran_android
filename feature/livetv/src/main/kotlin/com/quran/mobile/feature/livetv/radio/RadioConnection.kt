@@ -16,7 +16,9 @@ data class RadioPlaybackState(
   val playWhenReady: Boolean = false,
   val isPlaying: Boolean = false,
   val isBuffering: Boolean = false,
-  val hasError: Boolean = false
+  val hasError: Boolean = false,
+  /** The station loaded in the player, or null before anything is loaded. */
+  val stationId: String? = null
 )
 
 /**
@@ -87,7 +89,8 @@ class RadioConnection(context: Context) {
       playWhenReady = player.playWhenReady,
       isPlaying = player.isPlaying,
       isBuffering = player.playbackState == Player.STATE_BUFFERING,
-      hasError = player.playerError != null
+      hasError = player.playerError != null,
+      stationId = player.currentMediaItem?.mediaId
     )
   }
 }
