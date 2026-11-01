@@ -70,6 +70,8 @@ class ConfiguredRepositoriesTest {
   fun theServersOfficialQuranLinkPlaysAsHls() {
     assertThat(remoteStreamOf("https://api.example/api/v1/live/quran").format)
       .isEqualTo(StreamFormat.HLS)
+    assertThat(remoteStreamOf("https://api.example/api/v1/live/quran-radio").format)
+      .isEqualTo(StreamFormat.DASH)
     assertThat(remoteStreamOf("https://radio.example/live").format)
       .isEqualTo(StreamFormat.PROGRESSIVE)
   }
