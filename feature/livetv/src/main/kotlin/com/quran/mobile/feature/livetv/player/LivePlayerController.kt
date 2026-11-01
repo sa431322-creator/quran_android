@@ -73,7 +73,7 @@ class LivePlayerController(
       .setContentType(C.AUDIO_CONTENT_TYPE_MOVIE)
       .build()
 
-    val exoPlayer = ExoPlayer.Builder(appContext)
+    val exoPlayer = liveExoPlayerBuilder(appContext)
       .setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
       .build()
     player = exoPlayer

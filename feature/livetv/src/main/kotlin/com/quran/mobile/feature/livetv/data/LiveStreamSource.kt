@@ -30,13 +30,19 @@ sealed interface LiveStreamSource {
 
 enum class StreamFormat { HLS, DASH, PROGRESSIVE }
 
-/** A stream from the admin panel: .m3u8 plays as HLS, .mpd as DASH, anything else progressively. */
+/**
+ * A stream from the admin panel: .m3u8 plays as HLS, .mpd as DASH, anything else progressively.
+ * The Tasnim server's official Quran channel link has no extension; it redirects to a signed HLS
+ * link (tasneem-backend ADR 0009), and the player picks the format before following redirects.
+ */
 fun remoteStreamOf(url: String): LiveStreamSource.Remote {
   val path = url.substringBefore('#').substringBefore('?').lowercase()
   val format = when {
-    path.endsWith(".m3u8") -> StreamFormat.HLS
+    path.endsWith(".m3u8") || path.endsWith(OFFICIAL_QURAN_PATH) -> StreamFormat.HLS
     path.endsWith(".mpd") -> StreamFormat.DASH
     else -> StreamFormat.PROGRESSIVE
   }
   return LiveStreamSource.Remote(url, format)
 }
+
+private const val OFFICIAL_QURAN_PATH = "/api/v1/live/quran"

@@ -67,6 +67,14 @@ class ConfiguredRepositoriesTest {
   }
 
   @Test
+  fun theServersOfficialQuranLinkPlaysAsHls() {
+    assertThat(remoteStreamOf("https://api.example/api/v1/live/quran").format)
+      .isEqualTo(StreamFormat.HLS)
+    assertThat(remoteStreamOf("https://radio.example/live").format)
+      .isEqualTo(StreamFormat.PROGRESSIVE)
+  }
+
+  @Test
   fun aChannelWithoutALinkIsLeftOut() {
     val onlyQuran = StreamLinks(quranLive = "https://q.example/tv.m3u8")
     assertThat(ConfiguredLiveChannelRepository { onlyQuran }.channels().map { it.id })

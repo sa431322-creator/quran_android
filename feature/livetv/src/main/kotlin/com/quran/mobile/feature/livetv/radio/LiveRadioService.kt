@@ -9,7 +9,6 @@ import androidx.media3.common.C
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.session.MediaSession
 import androidx.media3.session.MediaSessionService
 import com.google.common.util.concurrent.Futures
@@ -19,6 +18,7 @@ import com.quran.mobile.feature.livetv.data.RadioStation
 import com.quran.mobile.feature.livetv.data.RadioStationRepository
 import com.quran.mobile.feature.livetv.di.LiveTvComponentInterface
 import com.quran.mobile.feature.livetv.player.BroadcastClockSync
+import com.quran.mobile.feature.livetv.player.liveExoPlayerBuilder
 
 /**
  * Plays radio stations in the background with a media notification. Media3 starts and
@@ -44,7 +44,7 @@ class LiveRadioService : MediaSessionService() {
       .setUsage(C.USAGE_MEDIA)
       .setContentType(C.AUDIO_CONTENT_TYPE_MUSIC)
       .build()
-    val player = ExoPlayer.Builder(this)
+    val player = liveExoPlayerBuilder(this)
       .setAudioAttributes(audioAttributes, /* handleAudioFocus = */ true)
       .setHandleAudioBecomingNoisy(true)
       .setWakeMode(C.WAKE_MODE_NETWORK)
