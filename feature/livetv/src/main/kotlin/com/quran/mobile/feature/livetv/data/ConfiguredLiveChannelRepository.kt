@@ -7,8 +7,9 @@ import dev.zacsweers.metro.Inject
 /**
  * Our own channel and the Quran channel, with the stream links from the admin panel. A channel
  * without a link is left out. A build without a server has no links, so our channel plays the
- * clip bundled in assets and the Quran channel is left out. Our channel's [bracketed] name and
- * schedule are placeholders for the real ones; the Quran channel has no schedule.
+ * clip bundled in assets and the Quran channel is left out. Our channel's name and schedule come
+ * from the admin panel too; the [bracketed] name and the schedule below are what a build without
+ * a server shows. The Quran channel has no schedule.
  */
 @ContributesBinding(AppScope::class)
 @Inject
@@ -24,12 +25,15 @@ class ConfiguredLiveChannelRepository(
       links.ownLive?.let(::remoteStreamOf)
     }
     return listOfNotNull(
-      own?.let { OWN_CHANNEL.copy(source = it) },
+      own?.let { ownChannel(links).copy(source = it) },
       links?.quranLive?.let { QURAN_CHANNEL.copy(source = remoteStreamOf(it)) }
     )
   }
 
-  override fun ownChannelName(): String = OWN_CHANNEL.name
+  override fun ownChannelName(): String = ownChannel(linksProvider.links()).name
+
+  private fun ownChannel(links: StreamLinks?): LiveChannel =
+    if (links == null) OWN_CHANNEL else OWN_CHANNEL.withInfo(links.ownLiveInfo)
 
   companion object {
     const val SAMPLE_ASSET = "qurhan_42.mp4"

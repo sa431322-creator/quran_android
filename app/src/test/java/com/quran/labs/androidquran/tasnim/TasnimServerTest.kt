@@ -4,6 +4,8 @@ import android.app.Application
 import android.content.Context
 import androidx.test.core.app.ApplicationProvider
 import com.google.common.truth.Truth.assertThat
+import com.quran.mobile.feature.livetv.data.OwnChannelInfo
+import com.quran.mobile.feature.livetv.data.ScheduleEntry
 import com.quran.mobile.feature.livetv.data.StreamLinks
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
@@ -112,14 +114,18 @@ class TasnimServerTest {
     reply(
       200,
       """{"streams":{"ownLive":"https://s.example/live.m3u8","quranLive":null,""" +
-        """"ownRadio":"https://s.example/radio","quranRadio":"https://q.example/r.mp3"}}"""
+        """"ownRadio":"https://s.example/radio","quranRadio":"https://q.example/r.mp3"},""" +
+        """"channels":{"live":{"name":"شبکهٔ تسنیم","schedule":[""" +
+        """{"startMinute":360,"title":"صبح"},{"startMinute":1440,"title":"خارج از روز"}]},""" +
+        """"radio":{"name":null,"schedule":[]}}}"""
     )
     repo().refreshConfig()
     assertThat(links.links()).isEqualTo(
       StreamLinks(
         ownLive = "https://s.example/live.m3u8",
         ownRadio = "https://s.example/radio",
-        quranRadio = "https://q.example/r.mp3"
+        quranRadio = "https://q.example/r.mp3",
+        ownLiveInfo = OwnChannelInfo("شبکهٔ تسنیم", listOf(ScheduleEntry(360, "صبح")))
       )
     )
   }

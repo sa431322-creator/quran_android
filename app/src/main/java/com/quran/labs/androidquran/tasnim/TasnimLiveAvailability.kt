@@ -2,6 +2,8 @@ package com.quran.labs.androidquran.tasnim
 
 import com.quran.data.di.AppScope
 import com.quran.mobile.feature.livetv.data.LiveAvailability
+import com.quran.mobile.feature.livetv.data.OwnChannelInfo
+import com.quran.mobile.feature.livetv.data.ScheduleEntry
 import com.quran.mobile.feature.livetv.data.StreamLinks
 import com.quran.mobile.feature.livetv.data.StreamLinksProvider
 import dev.zacsweers.metro.ContributesBinding
@@ -24,12 +26,23 @@ class TasnimLiveAvailability(private val server: TasnimConfigRepository) : LiveA
 class TasnimStreamLinks(private val server: TasnimConfigRepository) : StreamLinksProvider {
   override fun links(): StreamLinks? {
     if (!server.hasServer) return null
-    val streams = server.cached().streams
+    val config = server.cached()
+    val streams = config.streams
     return StreamLinks(
       ownLive = streams.ownLive,
       quranLive = streams.quranLive,
       ownRadio = streams.ownRadio,
-      quranRadio = streams.quranRadio
+      quranRadio = streams.quranRadio,
+      ownLiveInfo = config.channels.live.toInfo(),
+      ownRadioInfo = config.channels.radio.toInfo()
     )
   }
+
+  private fun AppOwnChannel.toInfo() = OwnChannelInfo(
+    name = name,
+    // drop anything outside the day so the on-air marker stays meaningful
+    schedule = schedule
+      .filter { it.startMinute in 0 until 24 * 60 && it.title.isNotBlank() }
+      .map { ScheduleEntry(it.startMinute, it.title) }
+  )
 }

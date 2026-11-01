@@ -41,6 +41,16 @@ data class AppStreams(
 )
 
 @JsonClass(generateAdapter = true)
+data class AppScheduleEntry(val startMinute: Int = 0, val title: String = "")
+
+/** Our own channel's name (null: keep the app's placeholder) and daily schedule. */
+@JsonClass(generateAdapter = true)
+data class AppOwnChannel(val name: String? = null, val schedule: List<AppScheduleEntry> = emptyList())
+
+@JsonClass(generateAdapter = true)
+data class AppChannels(val live: AppOwnChannel = AppOwnChannel(), val radio: AppOwnChannel = AppOwnChannel())
+
+@JsonClass(generateAdapter = true)
 data class AppFeatures(val library: Boolean = true, val live: Boolean = false, val radio: Boolean = false)
 
 @JsonClass(generateAdapter = true)
@@ -58,6 +68,7 @@ data class AppUpdate(
 data class AppConfig(
   val links: AppLinks = AppLinks(),
   val streams: AppStreams = AppStreams(),
+  val channels: AppChannels = AppChannels(),
   val features: AppFeatures = AppFeatures(),
   val maintenance: AppMaintenance = AppMaintenance(),
   val update: AppUpdate = AppUpdate()
