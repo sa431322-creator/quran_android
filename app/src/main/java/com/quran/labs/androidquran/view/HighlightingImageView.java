@@ -478,7 +478,17 @@ public class HighlightingImageView extends AppCompatImageView {
     FontMetrics fm = overlayParams.paint.getFontMetrics();
 
     final RectF mappedRect = new RectF();
-    matrix.mapRect(mappedRect, pageBounds);
+    if (pageBounds.isEmpty()) {
+      // no ayahinfo bounds for this page; fall back to the edges of the page image
+      final Drawable d = getDrawable();
+      if (d == null || d.getIntrinsicWidth() <= 0 || d.getIntrinsicHeight() <= 0) {
+        return false;
+      }
+      mappedRect.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+      matrix.mapRect(mappedRect);
+    } else {
+      matrix.mapRect(mappedRect, pageBounds);
+    }
 
     // Calculate where the text's baseline should be
     // (for top text and bottom text)

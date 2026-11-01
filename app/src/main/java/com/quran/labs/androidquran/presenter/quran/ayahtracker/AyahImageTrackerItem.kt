@@ -1,5 +1,6 @@
 package com.quran.labs.androidquran.presenter.quran.ayahtracker
 
+import android.graphics.RectF
 import android.view.View
 import com.quran.data.core.QuranInfo
 import com.quran.data.model.AyahGlyph
@@ -28,23 +29,37 @@ open class AyahImageTrackerItem @JvmOverloads constructor(
 ) : AyahTrackerItem(page) {
   @JvmField var coordinates: Map<String, List<AyahBounds>>? = null
   @JvmField var pageGlyphsCoords: PageGlyphsCoords? = null
+  private var hasPageBounds = false
 
   override fun onSetPageBounds(pageCoordinates: PageCoordinates) {
     if (this.page == pageCoordinates.page) {
       // this is only called if overlayText is set
       val pageBounds = pageCoordinates.pageBounds
       if (!pageBounds.isEmpty) {
-        ayahView.setPageBounds(pageBounds)
-        val context = ayahView.context
-        val suraText = quranDisplayData.getSuraNameFromPage(context, page, true)
-        val juzText = quranDisplayData.getJuzDisplayStringForPage(context, page)
-        val pageText = QuranUtils.getLocalizedNumber(page)
-        val rub3Text = QuranDisplayHelper.displayRub3(context, quranInfo, page)
-        val manzilText = quranDisplayData.getManzilForPage(context, page)
-        ayahView.setOverlayText(suraText, juzText, pageText, rub3Text, manzilText)
+        hasPageBounds = true
+        showPageInfo(pageBounds)
       }
       ayahView.setPageData(pageCoordinates, imageDrawHelpers)
     }
+  }
+
+  // Without ayahinfo data, the page info is still shown around the edges of the page image.
+  // The error is sent to every page, so keep the real bounds of a page that did load (dual page).
+  override fun onPageCoordinatesError() {
+    if (!hasPageBounds) {
+      showPageInfo(RectF())
+    }
+  }
+
+  private fun showPageInfo(pageBounds: RectF) {
+    ayahView.setPageBounds(pageBounds)
+    val context = ayahView.context
+    val suraText = quranDisplayData.getSuraNameFromPage(context, page, true)
+    val juzText = quranDisplayData.getJuzDisplayStringForPage(context, page)
+    val pageText = QuranUtils.getLocalizedNumber(page)
+    val rub3Text = QuranDisplayHelper.displayRub3(context, quranInfo, page)
+    val manzilText = quranDisplayData.getManzilForPage(context, page)
+    ayahView.setOverlayText(suraText, juzText, pageText, rub3Text, manzilText)
   }
 
   override fun onSetAyahCoordinates(ayahCoordinates: AyahCoordinates) {
