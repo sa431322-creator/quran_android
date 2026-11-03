@@ -7,8 +7,10 @@ package com.quran.mobile.feature.livetv.data
 data class StreamLinks(
   val ownLive: String? = null,
   val quranLive: String? = null,
+  val sunnahLive: String? = null,
   val ownRadio: String? = null,
   val quranRadio: String? = null,
+  val sunnahRadio: String? = null,
   val ownLiveInfo: OwnChannelInfo = OwnChannelInfo(),
   val ownRadioInfo: OwnChannelInfo = OwnChannelInfo()
 )

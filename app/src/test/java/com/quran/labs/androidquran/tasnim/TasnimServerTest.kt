@@ -114,7 +114,9 @@ class TasnimServerTest {
     reply(
       200,
       """{"streams":{"ownLive":"https://s.example/live.m3u8","quranLive":null,""" +
-        """"ownRadio":"https://s.example/radio","quranRadio":"https://q.example/r.mp3"},""" +
+        """"sunnahLive":"https://a.example/api/v1/live/sunnah",""" +
+        """"ownRadio":"https://s.example/radio","quranRadio":"https://q.example/r.mp3",""" +
+        """"sunnahRadio":"https://a.example/api/v1/live/sunnah-radio"},""" +
         """"channels":{"live":{"name":"شبکهٔ تسنیم","schedule":[""" +
         """{"startMinute":360,"title":"صبح"},{"startMinute":1440,"title":"خارج از روز"}]},""" +
         """"radio":{"name":null,"schedule":[]}}}"""
@@ -123,8 +125,10 @@ class TasnimServerTest {
     assertThat(links.links()).isEqualTo(
       StreamLinks(
         ownLive = "https://s.example/live.m3u8",
+        sunnahLive = "https://a.example/api/v1/live/sunnah",
         ownRadio = "https://s.example/radio",
         quranRadio = "https://q.example/r.mp3",
+        sunnahRadio = "https://a.example/api/v1/live/sunnah-radio",
         ownLiveInfo = OwnChannelInfo("شبکهٔ تسنیم", listOf(ScheduleEntry(360, "صبح")))
       )
     )

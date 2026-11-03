@@ -67,10 +67,52 @@ class ConfiguredRepositoriesTest {
   }
 
   @Test
+  fun theSunnahChannelAndStationComeThirdWithoutASchedule() {
+    val links = StreamLinks(
+      ownLive = "https://s.example/live.m3u8",
+      quranLive = "https://api.example/api/v1/live/quran",
+      sunnahLive = "https://api.example/api/v1/live/sunnah",
+      ownRadio = "https://s.example/radio",
+      quranRadio = "https://api.example/api/v1/live/quran-radio",
+      sunnahRadio = "https://api.example/api/v1/live/sunnah-radio"
+    )
+    val channels = ConfiguredLiveChannelRepository { links }.channels()
+    assertThat(channels.map { it.id }).containsExactly(
+      ConfiguredLiveChannelRepository.OWN_ID,
+      ConfiguredLiveChannelRepository.QURAN_ID,
+      ConfiguredLiveChannelRepository.SUNNAH_ID
+    ).inOrder()
+    assertThat(channels.last().source)
+      .isEqualTo(LiveStreamSource.Remote("https://api.example/api/v1/live/sunnah", StreamFormat.HLS))
+    assertThat(channels.last().schedule).isEmpty()
+
+    val stations = ConfiguredRadioStationRepository { links }.stations()
+    assertThat(stations.map { it.id }).containsExactly(
+      ConfiguredRadioStationRepository.OWN_ID,
+      ConfiguredRadioStationRepository.QURAN_ID,
+      ConfiguredRadioStationRepository.SUNNAH_ID
+    ).inOrder()
+    assertThat(stations.last().source).isEqualTo(
+      LiveStreamSource.Remote("https://api.example/api/v1/live/sunnah-radio", StreamFormat.DASH)
+    )
+
+    // without a Sunnah link the Sunnah channel is left out
+    val noSunnah = links.copy(sunnahLive = null, sunnahRadio = null)
+    assertThat(ConfiguredLiveChannelRepository { noSunnah }.channels().map { it.id })
+      .doesNotContain(ConfiguredLiveChannelRepository.SUNNAH_ID)
+    assertThat(ConfiguredRadioStationRepository { noSunnah }.stations().map { it.id })
+      .doesNotContain(ConfiguredRadioStationRepository.SUNNAH_ID)
+  }
+
+  @Test
   fun theServersOfficialQuranLinkPlaysAsHls() {
     assertThat(remoteStreamOf("https://api.example/api/v1/live/quran").format)
       .isEqualTo(StreamFormat.HLS)
     assertThat(remoteStreamOf("https://api.example/api/v1/live/quran-radio").format)
+      .isEqualTo(StreamFormat.DASH)
+    assertThat(remoteStreamOf("https://api.example/api/v1/live/sunnah").format)
+      .isEqualTo(StreamFormat.HLS)
+    assertThat(remoteStreamOf("https://api.example/api/v1/live/sunnah-radio").format)
       .isEqualTo(StreamFormat.DASH)
     assertThat(remoteStreamOf("https://radio.example/live").format)
       .isEqualTo(StreamFormat.PROGRESSIVE)

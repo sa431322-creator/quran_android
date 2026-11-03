@@ -31,8 +31,10 @@ class TasnimStreamLinks(private val server: TasnimConfigRepository) : StreamLink
     return StreamLinks(
       ownLive = streams.ownLive,
       quranLive = streams.quranLive,
+      sunnahLive = streams.sunnahLive,
       ownRadio = streams.ownRadio,
       quranRadio = streams.quranRadio,
+      sunnahRadio = streams.sunnahRadio,
       ownLiveInfo = config.channels.live.toInfo(),
       ownRadioInfo = config.channels.radio.toInfo()
     )

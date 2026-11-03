@@ -31,13 +31,15 @@ data class AppLinks(
   val messenger: String? = null
 )
 
-/** Stream links for the live and radio screens; our own channel first, then the Quran channel. */
+/** Stream links for the live and radio screens: our own channel, then the Quran and Sunnah ones. */
 @JsonClass(generateAdapter = true)
 data class AppStreams(
   val ownLive: String? = null,
   val quranLive: String? = null,
+  val sunnahLive: String? = null,
   val ownRadio: String? = null,
-  val quranRadio: String? = null
+  val quranRadio: String? = null,
+  val sunnahRadio: String? = null
 )
 
 @JsonClass(generateAdapter = true)
