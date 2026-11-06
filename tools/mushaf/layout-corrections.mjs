@@ -7,7 +7,7 @@
 //   - the V2 page font's own metrics: with the API's line, one line is the widest on its page
 //     (up to +2.6 em) and the next one short; with the print's line both are the page's usual
 //     width (99% of all lines are within 0.23 em of their page's median).
-// Report: docs/text-mushaf/reports/pages-2026-11-06.md.
+// Report: docs/text-mushaf/reports/pages-2026-11-07.md.
 
 /** A word (sura:ayah:position) that the print puts on another line of its page. */
 export const MOVES = [
