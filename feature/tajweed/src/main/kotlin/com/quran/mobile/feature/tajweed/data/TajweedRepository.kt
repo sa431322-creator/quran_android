@@ -13,18 +13,59 @@ import java.net.URL
 import java.util.concurrent.ConcurrentHashMap
 
 /**
- * Page layout from assets, and the per-page QPC V4 tajweed fonts (from QUL, Tarteel's CDN),
+ * Which King Fahd (QPC) page fonts and page layout a text mushaf uses. Both are 604 pages of
+ * 15 lines; every word is one glyph of its page's font.
+ */
+enum class TextMushafEdition(
+  internal val pagesAsset: String,
+  internal val fontBaseUrl: String,
+  internal val fontDirectory: String,
+  /** whether the Tasnim server keeps a copy of these fonts */
+  internal val hasTasnimCopy: Boolean
+) {
+  /** QPC V4 (1441H) with tajweed colors */
+  TAJWEED_V4(
+    "tajweed/pages.json",
+    "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v4-tajweed/ttf",
+    "tajweed/v4",
+    hasTasnimCopy = true
+  ),
+
+  /** QPC V2 (1421H), the plain Madinah mushaf. Trial: its asset holds a few pages only. */
+  MADINAH_V2_TRIAL(
+    "text-mushaf-trial/v2/pages.json",
+    "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v2/ttf",
+    "text-mushaf/v2",
+    hasTasnimCopy = false
+  ),
+
+  /** QCF V1 (1405H), the edition of the app's page images. Trial: a few pages only. */
+  MADINAH_V1_TRIAL(
+    "text-mushaf-trial/v1/pages.json",
+    "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v1/ttf",
+    "text-mushaf/v1",
+    hasTasnimCopy = false
+  )
+}
+
+/**
+ * Page layout from assets, and the per-page QPC fonts (from QUL, Tarteel's CDN),
  * downloaded the first time a page is opened and kept in app storage.
  */
-class TajweedRepository(context: Context, private val fallbackBaseUrl: String) {
+class TajweedRepository(
+  context: Context,
+  fallbackBaseUrl: String,
+  private val edition: TextMushafEdition = TextMushafEdition.TAJWEED_V4
+) {
   private val appContext = context.applicationContext
-  private val fontDirectory = File(appContext.filesDir, "tajweed/v4")
+  private val fallbackBaseUrl = if (edition.hasTasnimCopy) fallbackBaseUrl else ""
+  private val fontDirectory = File(appContext.filesDir, edition.fontDirectory)
   // one lock per page: a slow download never holds up another page's font
   private val pageLocks = ConcurrentHashMap<Int, Mutex>()
 
   /** Parsed once per process, so rotating the screen does not parse the asset again. */
   suspend fun data(): TajweedData = loadMutex.withLock {
-    data ?: withContext(Dispatchers.IO) { readData() }.also { data = it }
+    loaded[edition] ?: withContext(Dispatchers.IO) { readData() }.also { loaded[edition] = it }
   }
 
   fun cachedFont(page: Int): File? = fontFile(page).takeIf { it.isFile }
@@ -45,7 +86,7 @@ class TajweedRepository(context: Context, private val fallbackBaseUrl: String) {
    * again on every page.
    */
   private fun download(page: Int): File {
-    val primary = "$FONT_BASE_URL/p$page.ttf"
+    val primary = "${edition.fontBaseUrl}/p$page.ttf"
     val fallbackUrl = tajweedFontFallbackUrl(fallbackBaseUrl, page) ?: return download(page, primary)
     val tarteelDown = System.currentTimeMillis() - tarteelFailedAt < TARTEEL_DOWN_MS
     val (first, second) = if (tarteelDown) fallbackUrl to primary else primary to fallbackUrl
@@ -92,7 +133,7 @@ class TajweedRepository(context: Context, private val fallbackBaseUrl: String) {
   }
 
   private fun readData(): TajweedData {
-    val text = appContext.assets.open(PAGES_ASSET).bufferedReader().use { it.readText() }
+    val text = appContext.assets.open(edition.pagesAsset).bufferedReader().use { it.readText() }
     val pageArray = JSONObject(text).getJSONArray("pages")
     val raw = List(pageArray.length()) { index ->
       val page = pageArray.getJSONObject(index)
@@ -127,15 +168,13 @@ class TajweedRepository(context: Context, private val fallbackBaseUrl: String) {
 
   companion object {
     private val loadMutex = Mutex()
-    private var data: TajweedData? = null
+    private val loaded = HashMap<TextMushafEdition, TajweedData>()
 
-    private const val PAGES_ASSET = "tajweed/pages.json"
     private const val TARTEEL_DOWN_MS = 5 * 60 * 1000L
 
     /** When a Tarteel download last failed (shared by every page and screen); 0 = working. */
     @Volatile private var tarteelFailedAt = 0L
 
-    private const val FONT_BASE_URL = "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v4-tajweed/ttf"
     private const val TIMEOUT_MS = 20_000
     private const val MIN_FONT_BYTES = 1_000L
   }

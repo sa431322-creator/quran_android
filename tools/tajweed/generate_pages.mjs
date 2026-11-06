@@ -5,19 +5,45 @@
 // code_v2 + line_number give the exact glyphs and lines each page font expects.
 //
 // Usage: node tools/tajweed/generate_pages.mjs
+//
+// The plain King Fahd Madinah mushaf takes --edition v2 (QPC V2, 1421H) or v1 (QCF V1, 1405H,
+// the layout of the app's page images), and --pages limits it to a few pages:
+//   node tools/tajweed/generate_pages.mjs --edition v2 --pages 2,50,76,77 \
+//     --out feature/tajweed/src/main/assets/text-mushaf-trial/v2/pages.json
+//
+// The API ignores its mushaf parameter: the glyph field asked for (code_v1 or code_v2) decides
+// the page_number and line_number it returns.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const MUSHAF_V4_TAJWEED = 19;
 const PAGES = 604;
+const EDITIONS = {
+  v4: { glyphs: 'code_v2', mushaf: 19, name: 'QPC V4 tajweed 1441H' },
+  v2: { glyphs: 'code_v2', mushaf: 1, name: 'QPC V2 Madinah 1421H' },
+  v1: { glyphs: 'code_v1', mushaf: 2, name: 'QCF V1 Madinah 1405H' },
+};
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
-const out = join(root, 'feature', 'tajweed', 'src', 'main', 'assets', 'tajweed', 'pages.json');
+
+function arg(name, fallback) {
+  const at = process.argv.indexOf(`--${name}`);
+  return at > 0 ? process.argv[at + 1] : fallback;
+}
+const EDITION = EDITIONS[arg('edition', 'v4')];
+if (!EDITION) throw new Error('--edition must be v4, v2 or v1');
+// only these pages (a trial), or every page
+const wanted = arg('pages', '').split(',').filter(Boolean).map(Number);
+const outputPages = wanted.length ? wanted : Array.from({ length: PAGES }, (_, i) => i + 1);
+// a verse can start on the page before, so the pages around each wanted page are fetched too
+const fetchPages = [...new Set(outputPages.flatMap((p) => [p - 1, p, p + 1]))]
+  .filter((p) => p >= 1 && p <= PAGES)
+  .sort((a, b) => a - b);
+const out = arg('out', join(root, 'feature', 'tajweed', 'src', 'main', 'assets', 'tajweed', 'pages.json'));
 
 async function fetchPage(page) {
   const url = `https://api.quran.com/api/v4/verses/by_page/${page}` +
-    `?words=true&word_fields=code_v2,line_number,page_number&fields=juz_number` +
-    `&mushaf=${MUSHAF_V4_TAJWEED}&per_page=50`;
+    `?words=true&word_fields=${EDITION.glyphs},line_number,page_number&fields=juz_number` +
+    `&mushaf=${EDITION.mushaf}&per_page=50`;
   for (let attempt = 1; ; attempt++) {
     try {
       const response = await fetch(url);
@@ -36,7 +62,7 @@ async function fetchPage(page) {
 
 // a verse can run over a page boundary, so words are bucketed by their own page_number
 const pageWords = Array.from({ length: PAGES + 1 }, () => new Map());
-for (let page = 1; page <= PAGES; page++) {
+for (const page of fetchPages) {
   for (const verse of await fetchPage(page)) {
     const [sura, ayah] = verse.verse_key.split(':').map(Number);
     verse.words.forEach((word, index) => {
@@ -47,7 +73,7 @@ for (let page = 1; page <= PAGES; page++) {
 }
 
 const pages = [];
-for (let page = 1; page <= PAGES; page++) {
+for (const page of outputPages) {
   const words = [...pageWords[page].values()]
     .sort((a, b) => a.sura - b.sura || a.ayah - b.ayah || a.index - b.index);
   if (words.length === 0) throw new Error(`no words on page ${page}`);
@@ -60,7 +86,7 @@ for (let page = 1; page <= PAGES; page++) {
     if (last && last[0] === word.sura && last[1] === word.ayah) last[2]++;
     else wordAyahs.push([word.sura, word.ayah, 1]);
     if (!lines.has(word.line_number)) lines.set(word.line_number, []);
-    lines.get(word.line_number).push(word.code_v2);
+    lines.get(word.line_number).push(word[EDITION.glyphs]);
     if (word.ayah === 1 && word.index === 0) suraStarts.push([word.sura, word.line_number]);
   }
   pages.push({
@@ -78,5 +104,5 @@ for (let page = 1; page <= PAGES; page++) {
 }
 
 mkdirSync(dirname(out), { recursive: true });
-writeFileSync(out, JSON.stringify({ source: 'quran.com api v4, mushaf 19 (QPC V4 tajweed)', pages }));
+writeFileSync(out, JSON.stringify({ source: `quran.com api v4, ${EDITION.glyphs} (${EDITION.name})`, pages }));
 console.log(`wrote ${out}`);

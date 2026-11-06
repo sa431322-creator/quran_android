@@ -86,6 +86,11 @@
     <activity
         android:name="com.quran.mobile.feature.livetv.radio.RadioActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
+    <!-- trial: QPC V2 text pages next to the page images; open it with adb or the debug menu -->
+    <activity
+        android:name=".ui.TextMushafTrialActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"
+        android:exported="false"/>
     <activity
         android:name=".ui.TajweedReaderActivity"
         android:theme="@style/QuranToolBar.Overlay"

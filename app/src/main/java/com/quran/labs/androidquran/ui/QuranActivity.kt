@@ -42,6 +42,7 @@ import com.quran.labs.androidquran.AboutUsActivity
 import com.quran.labs.androidquran.HelpActivity
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranPreferenceActivity
+import com.quran.labs.androidquran.BuildConfig
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.SearchActivity
 import com.quran.labs.androidquran.ShortcutsActivity
@@ -359,6 +360,11 @@ class QuranActivity : AppCompatActivity(),
       .sortedBy { it.order }
       .forEach { menu.add(Menu.NONE, it.id, Menu.NONE, it.titleResId) }
 
+    // trial of the text (QPC V2) mushaf, debug builds only
+    if (BuildConfig.DEBUG) {
+      menu.add(Menu.NONE, TEXT_MUSHAF_TRIAL_ID, Menu.NONE, "آزمایش مصحف متنی (V2)")
+    }
+
     return true
   }
 
@@ -372,6 +378,9 @@ class QuranActivity : AppCompatActivity(),
       }
       R.id.help -> {
         startActivity(Intent(this, HelpActivity::class.java))
+      }
+      TEXT_MUSHAF_TRIAL_ID -> {
+        startActivity(Intent(this, TextMushafTrialActivity::class.java))
       }
       R.id.about -> {
         startActivity(Intent(this, AboutUsActivity::class.java))
@@ -631,6 +640,7 @@ class QuranActivity : AppCompatActivity(),
   }
 
   companion object {
+    private const val TEXT_MUSHAF_TRIAL_ID = 0x7e57
     private val TITLES = intArrayOf(
         R.string.quran_sura,
         R.string.quran_juz2,
