@@ -11,11 +11,13 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -38,6 +40,8 @@ import androidx.compose.ui.layout.Layout
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextAlign
@@ -63,6 +67,11 @@ private const val JUSTIFY_THRESHOLD = 0.85f
 private const val TYPICAL_LINE_EM = 16.4f
 private const val MIN_ROW_EM = 1.75f
 private const val SCROLL_ROW_EM = 1.95f
+/** the printed page's line spacing (53.8 px rows for 30.2 px text in the V2 print) */
+private const val PRINT_ROW_EM = 1.78f
+/** the page's labels (sura, juz, page number), relative to a text size fitted to the width */
+private const val LABEL_EM = 0.5f
+private const val LABEL_ROW_EM = 2.2f
 
 private val MushafInk = Color(0xFF000000)
 
@@ -96,6 +105,10 @@ data class MushafAyahBounds(val first: Rect, val last: Rect)
 class MushafPageHits {
   internal val lines = HashMap<Int, PlacedLine>()
 
+  /** How the page was sized, in pixels: text size, row height, text column width, scrolling. */
+  var metrics: MushafPageMetrics? = null
+    internal set
+
   /** The [com.quran.mobile.feature.mushaf.data.ayahKey] of the word at [window], if any. */
   fun ayahAt(window: Offset): Int? {
     for (line in lines.values) {
@@ -109,7 +122,26 @@ class MushafPageHits {
   }
 
   fun boundsOf(key: Int): MushafAyahBounds? = boundsOf(key, lines)
+
+  /** Each laid out text line by row: where its words are and how wide the line is (pixels). */
+  fun lineExtents(): Map<Int, MushafLineExtent> = lines.mapValues { (_, line) ->
+    MushafLineExtent(line.lefts.toList(), line.rights.toList(), line.coordinates?.size?.width ?: 0)
+  }
 }
+
+/** A text line as laid out: each word's left and right edge, and the line's width. */
+data class MushafLineExtent(val lefts: List<Float>, val rights: List<Float>, val width: Int)
+
+/** How a page was laid out on this screen (pixels). */
+data class MushafPageMetrics(
+  val pageWidth: Float,
+  val pageHeight: Float,
+  val fontPx: Float,
+  val rowPx: Float,
+  val columnWidth: Float,
+  val labelFontPx: Float,
+  val scrolls: Boolean
+)
 
 /** A touch on a page, reported with its point in window coordinates. */
 enum class MushafGesture { TAP, DOUBLE_TAP, LONG_PRESS }
@@ -169,26 +201,53 @@ fun MushafPageView(
       .background(style.paper)
       .padding(horizontal = 14.dp, vertical = 4.dp)
   ) {
-    PageLabelRow(start = labels.suraName, end = labels.juz, style = style)
-    BoxWithConstraints(Modifier.weight(1f).fillMaxWidth()) {
+    // Everything on the page is sized from the page, never from the system font size, so the
+    // layout (15 lines, the same words on each) only scales: from the width, and in portrait no
+    // larger than lets the 15 rows fit at the print's line spacing; landscape scrolls instead.
+    BoxWithConstraints(Modifier.fillMaxSize()) {
       val density = LocalDensity.current
-      val widthPx = with(density) { maxWidth.toPx() }
-      val heightPx = with(density) { maxHeight.toPx() }
-      val fontPx = widthPx / LINE_EM
-      val fitRow = heightPx / MUSHAF_LINES_PER_PAGE
+      // a host may measure with an open-ended size (a page is measured that way while a tablet
+      // rotates): a size far beyond the window is taken as the window, never as the page
+      val window = LocalWindowInfo.current.containerSize
+      val widthPx = sane(with(density) { maxWidth.toPx() }, window.width)
+      val heightPx = sane(with(density) { maxHeight.toPx() }, window.height)
+      val widthFontPx = widthPx / LINE_EM
+      val labelFontPx = widthFontPx * LABEL_EM
+      val labelRowPx = labelFontPx * LABEL_ROW_EM
+      val textHeightPx = (heightPx - 2 * labelRowPx).coerceAtLeast(1f)
+      val portrait = heightPx >= widthPx
+      val fontPx = if (portrait) {
+        minOf(widthFontPx, textHeightPx / (MUSHAF_LINES_PER_PAGE * PRINT_ROW_EM))
+      } else {
+        widthFontPx
+      }
+      val fitRow = textHeightPx / MUSHAF_LINES_PER_PAGE
       // landscape and short screens scroll instead of squeezing the lines together
       val scrolls = fitRow < fontPx * MIN_ROW_EM
       val rowPx = if (scrolls) fontPx * SCROLL_ROW_EM else fitRow
       val rowHeight = with(density) { rowPx.toDp() }
+      val columnWidthPx = minOf(widthPx, fontPx * LINE_EM)
       val textStyle = TextStyle(
         fontFamily = pageFont,
         fontSize = with(density) { fontPx.toSp() },
         color = style.ink
       )
+      val labelStyle = TextStyle(
+        fontFamily = style.headerFont,
+        color = style.headerColor,
+        fontSize = with(density) { labelFontPx.toSp() }
+      )
+      SideEffect {
+        pageHits.metrics = MushafPageMetrics(widthPx, heightPx, fontPx, rowPx, columnWidthPx, labelFontPx, scrolls)
+      }
 
+      Column(Modifier.fillMaxSize()) {
+      PageLabelRow(start = labels.suraName, end = labels.juz, style = labelStyle, height = labelRowPx)
       Column(
         modifier = Modifier
-          .fillMaxWidth()
+          .weight(1f)
+          .width(with(density) { columnWidthPx.toDp() })
+          .align(Alignment.CenterHorizontally)
           .then(if (scrolls) Modifier.verticalScroll(rememberScrollState()) else Modifier.fillMaxHeight()),
         verticalArrangement = if (page.isOpening) Arrangement.Center else Arrangement.Top
       ) {
@@ -225,28 +284,39 @@ fun MushafPageView(
           }
         }
       }
+      PageLabelRow(center = labels.pageNumber, style = labelStyle, height = labelRowPx)
+      }
     }
-    PageLabelRow(center = labels.pageNumber, style = style)
   }
 }
 
 private fun Modifier.tapToToggle(onTap: () -> Unit, handledAbove: Boolean) =
   if (handledAbove) this else pointerInput(onTap) { detectTapGestures { onTap() } }
 
+/** [size], or the window's [windowSize] when [size] is more than four windows (an open-ended measure). */
+private fun sane(size: Float, windowSize: Int): Float =
+  if (windowSize > 0 && (size.isInfinite() || size > windowSize * 4f)) windowSize.toFloat() else size
+
 /** The page's header (sura and juz) or footer (page number), like the reader's page overlay. */
 @Composable
-private fun PageLabelRow(style: MushafPageStyle, start: String = "", end: String = "", center: String = "") {
-  Row(Modifier.fillMaxWidth().padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
-    val labelStyle = TextStyle(fontFamily = style.headerFont, color = style.headerColor, fontSize = 14.sp)
+private fun PageLabelRow(style: TextStyle, height: Float, start: String = "", end: String = "", center: String = "") {
+  val rowHeight = with(LocalDensity.current) { height.toDp() }
+  Row(
+    Modifier.fillMaxWidth().height(rowHeight).testTag(LABEL_ROW_TAG),
+    verticalAlignment = Alignment.CenterVertically
+  ) {
     if (center.isNotEmpty()) {
-      Text(center, style = labelStyle, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+      Text(center, style = style, maxLines = 1, softWrap = false, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     } else {
       // right to left: the sura on the right, the juz on the left, as on the reader's pages
-      Text(start, style = labelStyle, modifier = Modifier.weight(1f))
-      Text(end, style = labelStyle)
+      Text(start, style = style, maxLines = 1, softWrap = false, modifier = Modifier.weight(1f))
+      Text(end, style = style, maxLines = 1, softWrap = false)
     }
   }
 }
+
+/** Test tag of the page's label rows. */
+const val LABEL_ROW_TAG = "mushafPageLabels"
 
 /** One text line's words, where they were placed, and where the line is in the window. */
 internal class PlacedLine {
@@ -298,7 +368,9 @@ private fun PageLine(
   handledAbove: Boolean,
   modifier: Modifier
 ) {
-  val placed = remember(index) { PlacedLine().also { lines[index] = it } }
+  val placed = remember(index) { PlacedLine() }
+  // registered on every composition: the page view may be given another page, which clears the map
+  lines[index] = placed
   placed.ayahs = ayahs
   // read the latest values from the long-lived gesture detector instead of restarting it
   val currentOnTap by rememberUpdatedState(onTap)

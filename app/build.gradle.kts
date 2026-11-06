@@ -306,6 +306,14 @@ dependencies {
   implementation(libs.timber)
   debugImplementation(libs.leakcanary.android)
 
+  // instrumented tests: the text mushaf on every screen size and font scale
+  androidTestImplementation(platform(libs.compose.bom))
+  androidTestImplementation(libs.compose.ui.test.junit4)
+  androidTestImplementation(libs.androidx.junit)
+  androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.truth)
+  debugImplementation(libs.compose.ui.test.manifest)
+
   testImplementation(project(":common:test-utils"))
   testImplementation(libs.junit)
   testImplementation(libs.truth)
