@@ -1,68 +1,59 @@
-# Text mushaf (King Fahd page fonts instead of page images)
+# Text mushaf: Madinah mushaf V2 only
 
-Branch: `tasnim/text-mushaf-trial`. Status: trial on 4 pages, nothing in the main reader changed.
+Branch: `tasnim/text-mushaf-trial`. Status: trial on 4 pages; the main reader is unchanged.
 
-## What the trial showed (2026-11-06)
+**Decision (2026-11-06): the app uses the Madinah mushaf V2 only, for both the text and the
+page images. V1 (1405H) is not supported. Every comparison is against V2.**
 
-Trial screen: home → ⋮ → «آزمایش مصحف متنی (V2)» (debug builds only). Pages 2, 50, 76, 77,
-each switchable between **V2 text**, **V1 text** and **the current image**.
+## Where things stand
 
-- Rendering works: the tajweed engine (`feature/tajweed`) draws plain King Fahd pages from
-  per-page fonts, sharp and full width on any screen. Sura headers, basmala, and a header
-  that sits on the page before its sura (76 → 77) all work.
-- **The app's images are the 1405H edition (QCF V1), not V2.** V1 text matches the images line
-  for line; V2 (1421H) breaks lines differently.
-- Full scan of all 604 pages, V1 vs V2:
+- The app's current page images (`android.quran.com/data`, `MadaniPageProvider`) are the
+  **1405H (V1)** edition. They have to be replaced by V2 images.
+- V1 and V2 are identical on only 39 of 604 pages: 529 pages break lines differently and 36 pages
+  hold different words (120–123, 144–145, 531–534, 564–600). So bookmarks, the last page read and
+  page-based data have to be moved from V1 page numbers to V2 by ayah. The tajweed mode already
+  does this.
+- V2 text renders correctly: the trial screen (home → ⋮ → «آزمایش مصحف متنی V2», debug only)
+  shows pages 2, 50, 76 and 77 as V2 text or as a V2 reference image. Both match line for line.
+- The V2 reference images in the trial come from King Saud University's electronic mushaf
+  (`quran.ksu.edu.sa/png_big/<page>.png`, 622×917). They are only in debug assets, for comparison,
+  and are not for shipping: they are low resolution, and the license is not checked.
+- The King Fahd Complex site (qurancomplex.gov.sa) was under maintenance, so its official files
+  could not be checked.
+- V2 fonts: about 212 MB on disk, about 135 MB as a zipped download. The current V1 images are
+  74 MB at width 1260.
+- The quran.com API returns the V2 layout when asked for `code_v2`; its `mushaf` parameter is
+  ignored. The generator takes `--edition v2` (or `v4` for tajweed, the default).
 
-  | | pages |
-  |---|---|
-  | identical | 39 |
-  | same words, different line breaks | 529 |
-  | different words on the page | 36 (120–123, 144–145, 531–534, 564–600) |
+## Plan
 
-- The quran.com API ignores its `mushaf` parameter. The glyph field asked for decides the
-  layout it returns: `code_v1` gives 1405H lines, `code_v2` gives 1421H lines. The generator now
-  takes `--edition v1|v2|v4` for this. The old V4 output is unchanged.
-- Font sizes (TTF, one per page) are larger than the current image set (74 MB at width 1260):
-
-  | edition | on disk | zipped download |
-  |---|---|---|
-  | V1 1405H | ~92 MB | ~52 MB |
-  | V2 1421H | ~212 MB | ~135 MB |
-
-- V1 glyphs are narrower than V4/V2, so V1 lines don't fill the width yet. Text size needs a
-  value per edition (`LINE_EM` in `TajweedPageView.kt`).
-
-## Decision needed before the full conversion
-
-| | V1 (1405H) | V2 (1421H) |
-|---|---|---|
-| Same pages and lines as today's images | yes, all 604 | only 39 pages |
-| Bookmarks, last page and page-based data keep working as is | yes | need ayah-based mapping (tajweed mode does this already) |
-| Matches quran.com / most current apps | older print | yes, current print |
-| Download | ~52 MB | ~135 MB |
-
-## Full plan: scan and convert every page
-
-1. **Choose the edition** (V1 or V2, above).
-2. **Generate the full layout**: `node tools/tajweed/generate_pages.mjs --edition <v1|v2>`
-   for all 604 pages into the edition's asset.
-3. **Automated scan of every page** (a new `tools/text-mushaf/scan.mjs`, report checked in):
+1. **V2 layout for every page**:
+   `node tools/tajweed/generate_pages.mjs --edition v2 --out feature/tajweed/src/main/assets/text-mushaf/pages.json`.
+2. **Automated scan of all 604 pages against V2** (new `tools/text-mushaf/scan.mjs`, report
+   checked in):
    - data: 15 lines per page (8 on pages 1–2); every word of the Quran exactly once, in order;
-     every page's first and last ayah agree with the app's page table (V1) or with quran.com (V2).
-   - font: every glyph code of a page exists in that page's font (cmap); each line's width in em
-     from the font's metrics, listing lines that are too wide or too narrow (the problem
-     the V4 fonts have on 46 pages).
-   - visual: render every page on the emulator to PNG and build contact sheets. For V1, compare
-     against the page images line by line; for V2, review by eye.
-4. **Fix what the scan finds**: per-edition text size; per-line adjustments only if the
-   font metrics need them. The Quran text and fonts are never edited.
-5. **Font delivery**: one zipped download for the whole mushaf, like the images today (works
-   offline afterwards), with the Tasnim server as mirror. Per-page download stays as a fallback.
-6. **Main reader**: the text mushaf becomes the default page view in `PagerActivity`, with
-   ayah selection, recitation following, bookmarks and highlights from the tajweed engine.
-   Night mode uses real colors. Page images stay available in settings as a fallback.
-7. **Test** on small and large phones, a tablet, and landscape; compare 20+ pages against the
-   images; run the unit tests.
+     each page's first and last ayah agree with the V2 page table from quran.com.
+   - font: every glyph code of a page exists in that page's font; each line's width in em from
+     the font metrics, listing lines that are too wide or too narrow.
+   - visual: render every page on the emulator and compare each one with a V2 reference image
+     (line breaks, first and last word of every line). Contact sheets for review by eye.
+3. **V2 page images for the image mode**. Two options (to decide):
+   - **a. Generate them from the V2 fonts** (recommended), like quran.com made its images from
+     the V1 fonts: render each page to PNG at the widths the app uses, and compute each ayah's
+     glyph boxes at the same time for the highlight database (`ayahinfo`). The images then
+     match the text mushaf exactly, and there is no third-party license to check.
+   - **b. Use an official V2 image set** (King Fahd Complex when its site is back, or KSU with
+     permission). This also needs an `ayahinfo` database for highlighting, built by locating ayahs
+     in the images.
+   Either way the images go on the Tasnim server and `MadaniPageProvider` points there.
+4. **Move user data from V1 pages to V2**: bookmarks, last page, page-based tags and
+   recitation start pages, converted by ayah, once, on upgrade.
+5. **Font delivery**: one zipped download for the whole mushaf (offline afterwards), with the
+   Tasnim server as mirror and per-page download as the fallback.
+6. **Main reader**: the V2 text becomes the default page view in `PagerActivity`, with ayah
+   selection, recitation following, bookmarks and highlights from the tajweed engine. Night mode
+   uses real colors. V2 images remain in settings as the fallback.
+7. **Test** on small and large phones, a tablet, and landscape. Compare at least 20 pages against
+   the V2 reference, and run the unit tests.
 
-Steps 2–4 can run first and alone: they only produce data and a report, not app changes.
+Steps 1–2 only produce data and a report, and can run first.

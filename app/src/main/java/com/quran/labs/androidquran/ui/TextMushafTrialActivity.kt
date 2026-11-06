@@ -45,7 +45,6 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.util.TypefaceManager
-import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.feature.tajweed.data.TajweedPage
 import com.quran.mobile.feature.tajweed.data.TajweedRepository
@@ -53,22 +52,19 @@ import com.quran.mobile.feature.tajweed.data.TextMushafEdition
 import com.quran.mobile.feature.tajweed.ui.TajweedPageLabels
 import com.quran.mobile.feature.tajweed.ui.TajweedPageStyle
 import com.quran.mobile.feature.tajweed.ui.TajweedPageView
-import java.io.File
 import dev.zacsweers.metro.Inject
 
 /**
- * Trial only: a few pages of the plain Madinah mushaf drawn from the King Fahd page fonts, in
- * both editions (QPC V2 1421H and QCF V1 1405H), each next to the app's own page image, to
- * compare them before converting every page.
+ * Trial only: a few pages of the Madinah mushaf V2 drawn from the King Fahd QPC V2 page fonts,
+ * each next to a V2 page image (debug assets, from King Saud University's electronic mushaf),
+ * to compare them before converting every page.
  */
 class TextMushafTrialActivity : ComponentActivity() {
   @Inject lateinit var quranDisplayData: QuranDisplayData
-  @Inject lateinit var quranFileUtils: QuranFileUtils
 
   private enum class View(val label: String, val edition: TextMushafEdition?) {
-    V2("متن V2 (۱۴۲۱)", TextMushafEdition.MADINAH_V2_TRIAL),
-    V1("متن V1 (۱۴۰۵)", TextMushafEdition.MADINAH_V1_TRIAL),
-    IMAGE("تصویر فعلی", null)
+    TEXT("متن V2", TextMushafEdition.MADINAH_V2_TRIAL),
+    IMAGE("تصویر V2 (مرجع)", null)
   }
 
   override fun onCreate(savedInstanceState: Bundle?) {
@@ -128,7 +124,7 @@ class TextMushafTrialActivity : ComponentActivity() {
   ) {
     val start = pageNumbers.indexOf(firstPage).coerceAtLeast(0)
     val pagerState = rememberPagerState(initialPage = start) { pageNumbers.size }
-    var view by rememberSaveable { mutableStateOf(View.V2) }
+    var view by rememberSaveable { mutableStateOf(View.TEXT) }
     Column(Modifier.fillMaxSize()) {
       Row(
         Modifier.fillMaxWidth().padding(horizontal = 8.dp),
@@ -194,11 +190,13 @@ class TextMushafTrialActivity : ComponentActivity() {
   @Composable
   private fun PageImage(page: Int) {
     val bitmap = remember(page) {
-      pageImageFile(page)?.let { BitmapFactory.decodeFile(it.absolutePath) }
+      runCatching {
+        assets.open("$REFERENCE_IMAGES/page${page.toString().padStart(3, '0')}.png").use(BitmapFactory::decodeStream)
+      }.getOrNull()
     }
     Box(Modifier.fillMaxSize()) {
       if (bitmap == null) {
-        Text("Page image $page is not downloaded", Modifier.align(Alignment.Center))
+        Text("No V2 reference image for page $page", Modifier.align(Alignment.Center))
       } else {
         Image(
           bitmap = bitmap.asImageBitmap(),
@@ -210,16 +208,9 @@ class TextMushafTrialActivity : ComponentActivity() {
     }
   }
 
-  /** The widest downloaded image of [page], whichever width the app downloaded. */
-  private fun pageImageFile(page: Int): File? =
-    quranFileUtils.getQuranImagesBaseDirectory()
-      .listFiles { file -> file.isDirectory && file.name.startsWith("width") }
-      .orEmpty()
-      .sortedByDescending { it.name.substringAfterLast('_').toIntOrNull() ?: 0 }
-      .map { File(it, QuranFileUtils.getPageFileName(page)) }
-      .firstOrNull { it.isFile }
-
   companion object {
     const val EXTRA_PAGE = "page"
+    /** V2 page images for comparison, in the debug build's assets only */
+    private const val REFERENCE_IMAGES = "text-mushaf-trial/v2-reference"
   }
 }

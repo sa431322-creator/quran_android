@@ -6,13 +6,13 @@
 //
 // Usage: node tools/tajweed/generate_pages.mjs
 //
-// The plain King Fahd Madinah mushaf takes --edition v2 (QPC V2, 1421H) or v1 (QCF V1, 1405H,
-// the layout of the app's page images), and --pages limits it to a few pages:
+// The plain King Fahd Madinah mushaf (QPC V2, 1421H) takes --edition v2, and --pages limits it
+// to a few pages:
 //   node tools/tajweed/generate_pages.mjs --edition v2 --pages 2,50,76,77 \
 //     --out feature/tajweed/src/main/assets/text-mushaf-trial/v2/pages.json
 //
-// The API ignores its mushaf parameter: the glyph field asked for (code_v1 or code_v2) decides
-// the page_number and line_number it returns.
+// The API ignores its mushaf parameter: the glyph field asked for decides the page_number and
+// line_number it returns, and code_v2 gives the V2 layout that both editions here share.
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,7 +21,6 @@ const PAGES = 604;
 const EDITIONS = {
   v4: { glyphs: 'code_v2', mushaf: 19, name: 'QPC V4 tajweed 1441H' },
   v2: { glyphs: 'code_v2', mushaf: 1, name: 'QPC V2 Madinah 1421H' },
-  v1: { glyphs: 'code_v1', mushaf: 2, name: 'QCF V1 Madinah 1405H' },
 };
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -30,7 +29,7 @@ function arg(name, fallback) {
   return at > 0 ? process.argv[at + 1] : fallback;
 }
 const EDITION = EDITIONS[arg('edition', 'v4')];
-if (!EDITION) throw new Error('--edition must be v4, v2 or v1');
+if (!EDITION) throw new Error('--edition must be v4 or v2');
 // only these pages (a trial), or every page
 const wanted = arg('pages', '').split(',').filter(Boolean).map(Number);
 const outputPages = wanted.length ? wanted : Array.from({ length: PAGES }, (_, i) => i + 1);

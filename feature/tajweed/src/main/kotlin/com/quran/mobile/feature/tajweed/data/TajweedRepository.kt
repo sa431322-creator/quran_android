@@ -37,14 +37,6 @@ enum class TextMushafEdition(
     "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v2/ttf",
     "text-mushaf/v2",
     hasTasnimCopy = false
-  ),
-
-  /** QCF V1 (1405H), the edition of the app's page images. Trial: a few pages only. */
-  MADINAH_V1_TRIAL(
-    "text-mushaf-trial/v1/pages.json",
-    "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v1/ttf",
-    "text-mushaf/v1",
-    hasTasnimCopy = false
   )
 }
 

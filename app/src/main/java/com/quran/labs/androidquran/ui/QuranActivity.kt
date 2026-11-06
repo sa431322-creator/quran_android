@@ -362,7 +362,7 @@ class QuranActivity : AppCompatActivity(),
 
     // trial of the text (QPC V2) mushaf, debug builds only
     if (BuildConfig.DEBUG) {
-      menu.add(Menu.NONE, TEXT_MUSHAF_TRIAL_ID, Menu.NONE, "آزمایش مصحف متنی (V2)")
+      menu.add(Menu.NONE, TEXT_MUSHAF_TRIAL_ID, Menu.NONE, "آزمایش مصحف متنی V2")
     }
 
     return true
