@@ -25,6 +25,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -169,7 +170,7 @@ fun MushafPages(
         beyondViewportPageCount = 1
       ) { index ->
         val page = loaded.pages[index]
-        MushafPageContent(
+        MushafFontPage(
           page = page,
           repository = repository,
           basmalaFont = basmalaFont,
@@ -203,8 +204,12 @@ private sealed interface FontState {
   data object Failed : FontState
 }
 
+/**
+ * One page with its font: loads the page's font (downloading it the first time), with a message
+ * while it loads or when it cannot, then draws the page.
+ */
 @Composable
-private fun MushafPageContent(
+fun MushafFontPage(
   page: MushafPage,
   repository: MushafRepository,
   basmalaFont: FontFamily,
@@ -215,8 +220,12 @@ private fun MushafPageContent(
   recitedAyah: Int?,
   highlights: Map<Int, Color>,
   onTap: () -> Unit,
-  onAyahLongPress: (Int, MushafAyahBounds) -> Unit
+  onAyahLongPress: (Int, MushafAyahBounds) -> Unit = { _, _ -> },
+  hits: MushafPageHits? = null,
+  onGesture: ((MushafGesture, Offset) -> Unit)? = null
 ) {
+  // the loading and error messages have no words: a tap there is a plain tap
+  val messageTap: () -> Unit = { onGesture?.invoke(MushafGesture.TAP, Offset.Unspecified) ?: onTap() }
   var attempt by remember { mutableIntStateOf(0) }
   val cached = remember(page.page) {
     repository.cachedFont(page.page)?.let { FontState.Ready(FontFamily(Font(it))) }
@@ -242,20 +251,22 @@ private fun MushafPageContent(
       recitedAyah = recitedAyah,
       highlights = highlights,
       onTap = onTap,
-      onAyahLongPress = onAyahLongPress
+      onAyahLongPress = onAyahLongPress,
+      hits = hits,
+      onGesture = onGesture
     )
     FontState.Loading -> PageMessage(
       stringResource(R.string.mushaf_loading),
       style = style,
       showProgress = true,
-      onTap = onTap
+      onTap = messageTap
     )
     FontState.Failed -> PageMessage(
       stringResource(R.string.mushaf_error),
       style = style,
       action = stringResource(R.string.mushaf_retry),
       onAction = { attempt++ },
-      onTap = onTap
+      onTap = messageTap
     )
   }
 }

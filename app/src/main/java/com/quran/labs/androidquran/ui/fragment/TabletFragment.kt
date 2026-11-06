@@ -30,6 +30,7 @@ import com.quran.labs.androidquran.ui.PagerActivity
 import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener
 import com.quran.labs.androidquran.ui.helpers.AyahTracker
 import com.quran.labs.androidquran.ui.helpers.QuranPage
+import com.quran.labs.androidquran.ui.mushaf.QuranTextPageLayout
 import com.quran.labs.androidquran.ui.translation.TranslationView
 import com.quran.labs.androidquran.ui.util.PageController
 import com.quran.labs.androidquran.util.QuranScreenInfo
@@ -267,7 +268,13 @@ class TabletFragment : Fragment(), PageController, TranslationPresenter.Translat
   override fun getAyahTrackerItems(): Array<AyahTrackerItem> {
     val cachedTrackerItems = ayahTrackerItemsStorage
     return if (cachedTrackerItems == null) {
-      if (mode == Mode.ARABIC) {
+      val leftTextPage = mainView.leftPage as? QuranTextPageLayout
+      val rightTextPage = mainView.rightPage as? QuranTextPageLayout
+      if (mode == Mode.ARABIC && leftTextPage != null && rightTextPage != null) {
+        // text pages: each tracks its own ayat
+        val left = if (quranInfo.isValidPage(pageNumber + 1)) leftTextPage.trackerItem else NoOpImageTrackerItem(pageNumber + 1)
+        arrayOf(rightTextPage.trackerItem, left)
+      } else if (mode == Mode.ARABIC) {
         val leftImageView = leftImageView
         val rightImageView = rightImageView
         if (leftImageView != null && rightImageView != null) {

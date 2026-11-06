@@ -17,6 +17,8 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
@@ -76,7 +78,9 @@ data class MushafPageStyle(
   val suraFrameGold: Color,
   val suraFramePill: Color,
   val selection: Color,
-  val recitation: Color
+  val recitation: Color,
+  /** the text's color; a monochrome page font (V2) takes it, a color one (V4 tajweed) keeps its own */
+  val ink: Color = MushafInk
 )
 
 /** The page's header and footer text, as the reader writes them for its own pages. */
@@ -84,6 +88,31 @@ data class MushafPageLabels(val suraName: String, val juz: String, val pageNumbe
 
 /** Where an ayah is on screen, in window coordinates: its first and its last word. */
 data class MushafAyahBounds(val first: Rect, val last: Rect)
+
+/**
+ * Where a laid out page's words are, for a host that handles touches itself: the ayah under a
+ * point and the bounds of an ayah, both in window coordinates.
+ */
+class MushafPageHits {
+  internal val lines = HashMap<Int, PlacedLine>()
+
+  /** The [com.quran.mobile.feature.mushaf.data.ayahKey] of the word at [window], if any. */
+  fun ayahAt(window: Offset): Int? {
+    for (line in lines.values) {
+      val layout = line.coordinates?.takeIf { it.isAttached } ?: continue
+      val local = layout.windowToLocal(window)
+      if (local.y < 0f || local.y > layout.size.height) continue
+      val word = line.wordAt(local.x) ?: continue
+      return line.ayahs.getOrNull(word)
+    }
+    return null
+  }
+
+  fun boundsOf(key: Int): MushafAyahBounds? = boundsOf(key, lines)
+}
+
+/** A touch on a page, reported with its point in window coordinates. */
+enum class MushafGesture { TAP, DOUBLE_TAP, LONG_PRESS }
 
 @Composable
 fun MushafPageView(
@@ -101,14 +130,41 @@ fun MushafPageView(
   /** highlighted ayat ([com.quran.mobile.feature.mushaf.data.ayahKey]) and their colors */
   highlights: Map<Int, Color> = emptyMap(),
   onTap: () -> Unit = {},
-  onAyahLongPress: (key: Int, bounds: MushafAyahBounds) -> Unit = { _, _ -> }
+  onAyahLongPress: (key: Int, bounds: MushafAyahBounds) -> Unit = { _, _ -> },
+  /** filled with the page's word positions, for a host that hit-tests itself */
+  hits: MushafPageHits? = null,
+  /** when set, every touch on the page goes here instead of [onTap] and [onAyahLongPress] */
+  onGesture: ((MushafGesture, Offset) -> Unit)? = null
 ) {
   // each text line's words and position, to find all of a long-pressed ayah's words
-  val lines = remember(page.page) { HashMap<Int, PlacedLine>() }
+  val pageHits = hits ?: remember { MushafPageHits() }
+  val lines = remember(page.page, pageHits) { pageHits.lines.also { it.clear() } }
   val ayahBounds: (Int) -> MushafAyahBounds? = { key -> boundsOf(key, lines) }
+  val handledAbove = onGesture != null
+  val currentOnGesture by rememberUpdatedState(onGesture)
+  var root by remember { mutableStateOf<LayoutCoordinates?>(null) }
+  fun report(gesture: MushafGesture, local: Offset) {
+    val coordinates = root?.takeIf { it.isAttached } ?: return
+    currentOnGesture?.invoke(gesture, coordinates.localToWindow(local))
+  }
 
   Column(
     modifier
+      .then(
+        if (handledAbove) {
+          Modifier
+            .onGloballyPositioned { root = it }
+            .pointerInput(Unit) {
+              detectTapGestures(
+                onTap = { report(MushafGesture.TAP, it) },
+                onDoubleTap = { report(MushafGesture.DOUBLE_TAP, it) },
+                onLongPress = { report(MushafGesture.LONG_PRESS, it) }
+              )
+            }
+        } else {
+          Modifier
+        }
+      )
       .fillMaxSize()
       .background(style.paper)
       .padding(horizontal = 14.dp, vertical = 4.dp)
@@ -127,7 +183,7 @@ fun MushafPageView(
       val textStyle = TextStyle(
         fontFamily = pageFont,
         fontSize = with(density) { fontPx.toSp() },
-        color = MushafInk
+        color = style.ink
       )
 
       Column(
@@ -155,16 +211,17 @@ fun MushafPageView(
               },
               onTap = onTap,
               onLongPress = { key -> ayahBounds(key)?.let { onAyahLongPress(key, it) } },
+              handledAbove = handledAbove,
               modifier = rowModifier
             )
             is MushafLine.SuraHeader -> SuraHeader(
               name = suraHeaderName(line.sura),
               style = style,
               rowHeight = rowHeight,
-              modifier = rowModifier.tapToToggle(onTap)
+              modifier = rowModifier.tapToToggle(onTap, handledAbove)
             )
-            MushafLine.Basmala -> Basmala(basmalaFont, fontPx, rowModifier.tapToToggle(onTap))
-            MushafLine.Blank -> Box(rowModifier.tapToToggle(onTap))
+            MushafLine.Basmala -> Basmala(basmalaFont, fontPx, rowModifier.tapToToggle(onTap, handledAbove), style.ink)
+            MushafLine.Blank -> Box(rowModifier.tapToToggle(onTap, handledAbove))
           }
         }
       }
@@ -173,8 +230,8 @@ fun MushafPageView(
   }
 }
 
-private fun Modifier.tapToToggle(onTap: () -> Unit) =
-  pointerInput(onTap) { detectTapGestures { onTap() } }
+private fun Modifier.tapToToggle(onTap: () -> Unit, handledAbove: Boolean) =
+  if (handledAbove) this else pointerInput(onTap) { detectTapGestures { onTap() } }
 
 /** The page's header (sura and juz) or footer (page number), like the reader's page overlay. */
 @Composable
@@ -192,7 +249,7 @@ private fun PageLabelRow(style: MushafPageStyle, start: String = "", end: String
 }
 
 /** One text line's words, where they were placed, and where the line is in the window. */
-private class PlacedLine {
+internal class PlacedLine {
   var ayahs: List<Int> = emptyList()
   var lefts = FloatArray(0)
   var rights = FloatArray(0)
@@ -238,6 +295,7 @@ private fun PageLine(
   colorFor: (Int) -> Color?,
   onTap: () -> Unit,
   onLongPress: (Int) -> Unit,
+  handledAbove: Boolean,
   modifier: Modifier
 ) {
   val placed = remember(index) { PlacedLine().also { lines[index] = it } }
@@ -248,14 +306,20 @@ private fun PageLine(
   Layout(
     modifier = modifier
       .onGloballyPositioned { placed.coordinates = it }
-      .pointerInput(Unit) {
-        detectTapGestures(
-          onTap = { currentOnTap() },
-          onLongPress = { offset ->
-            placed.wordAt(offset.x)?.let { word -> placed.ayahs.getOrNull(word)?.let(currentOnLongPress) }
+      .then(
+        if (handledAbove) {
+          Modifier
+        } else {
+          Modifier.pointerInput(Unit) {
+            detectTapGestures(
+              onTap = { currentOnTap() },
+              onLongPress = { offset ->
+                placed.wordAt(offset.x)?.let { word -> placed.ayahs.getOrNull(word)?.let(currentOnLongPress) }
+              }
+            )
           }
-        )
-      }
+        }
+      )
       .drawBehind {
         for (word in placed.lefts.indices) {
           val key = ayahs.getOrNull(word) ?: continue
@@ -374,14 +438,14 @@ private fun DrawScope.drawSuraFrame(style: MushafPageStyle) {
 }
 
 @Composable
-private fun Basmala(font: FontFamily, fontPx: Float, modifier: Modifier) {
+private fun Basmala(font: FontFamily, fontPx: Float, modifier: Modifier, ink: Color = MushafInk) {
   val fontSize = with(LocalDensity.current) { (fontPx * 0.95f).toSp() }
   Box(modifier, contentAlignment = Alignment.Center) {
     Text(
       text = BASMALA,
       fontFamily = font,
       fontSize = fontSize,
-      color = MushafInk,
+      color = ink,
       textAlign = TextAlign.Center,
       maxLines = 1,
       softWrap = false

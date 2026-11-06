@@ -6,18 +6,20 @@ import android.net.Uri
 import android.view.Display
 import android.view.WindowManager
 import com.quran.data.constant.DependencyInjectionConstants
-import com.quran.labs.androidquran.BuildConfig
 import com.quran.data.core.QuranFileManager
 import com.quran.data.dao.Settings
 import com.quran.data.di.AppScope
+import com.quran.data.page.provider.madani.MadaniV2PageProvider
 import com.quran.data.source.DisplaySize
 import com.quran.data.source.PageProvider
 import com.quran.data.source.PageSizeCalculator
+import com.quran.labs.androidquran.BuildConfig
 import com.quran.labs.androidquran.common.audio.cache.QariDownloadInfoManager
 import com.quran.labs.androidquran.common.audio.cache.QariDownloadInfoSource
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.data.QuranDisplayInterface
 import com.quran.labs.androidquran.presenter.ContentResolverOps
+import com.quran.labs.androidquran.ui.mushaf.TextPageViewFactoryProvider
 import com.quran.labs.androidquran.util.AudioFileUtils
 import com.quran.labs.androidquran.util.AudioUtils
 import com.quran.labs.androidquran.util.AudioUtilsInterface
@@ -28,6 +30,7 @@ import com.quran.mobile.di.ExtraPreferencesProvider
 import com.quran.mobile.di.ExtraScreenProvider
 import com.quran.mobile.di.qualifier.ApplicationContext
 import com.quran.page.common.data.QuranNaming
+import com.quran.page.common.factory.PageViewFactoryProvider
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.ElementsIntoSet
 import dev.zacsweers.metro.Named
@@ -35,8 +38,8 @@ import dev.zacsweers.metro.Provides
 import dev.zacsweers.metro.SingleIn
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Scheduler
-import okio.FileSystem
 import java.io.File
+import okio.FileSystem
 
 @BindingContainer
 object ApplicationModule {
@@ -78,18 +81,27 @@ object ApplicationModule {
   @Provides
   fun provideTasnimApiBaseUrl(): String = BuildConfig.TASNIM_API_BASE_URL
 
+  /**
+   * The Madinah mushaf V2 for everyone: new installs, and the classic Madani pages (V1, which
+   * Tasnim does not support) are moved to it. The fallback type stays the canonical storage
+   * numbering of reading bookmarks.
+   */
   @Named(DependencyInjectionConstants.CURRENT_PAGE_TYPE)
   @Provides
-  fun provideCurrentPageType(
-    quranSettings: QuranSettings,
-    @Named(DependencyInjectionConstants.FALLBACK_PAGE_TYPE) fallbackPageType: String
-  ): String {
+  fun provideCurrentPageType(quranSettings: QuranSettings): String {
     val currentKey = quranSettings.pageType
-    val result = currentKey ?: fallbackPageType
-    if (currentKey == null) {
-      quranSettings.pageType = result
+    if (currentKey == null || currentKey == CLASSIC_MADANI_PAGE_TYPE) {
+      quranSettings.pageType = MadaniV2PageProvider.PAGE_TYPE
+      return MadaniV2PageProvider.PAGE_TYPE
     }
-    return result
+    return currentKey
+  }
+
+  private const val CLASSIC_MADANI_PAGE_TYPE = "madani"
+
+  @Provides
+  fun providePageViewFactoryProvider(textPages: TextPageViewFactoryProvider): PageViewFactoryProvider {
+    return textPages
   }
 
   @Provides

@@ -296,10 +296,11 @@ public class PageCheck {
         boolean markOk = ok && m.markScore() >= MARK_PASS;
         if (!markOk) {
           count[1]++;
-          markRows.add(new String[] {name, page + "", rowNumber + "", word.ayah(), word.text(), String.format("%.2f / %.2f", m.score(), m.markScore())});
+          String crop = saveWordCrop(String.format("mark-p%03d-r%02d-w%02d.png", page, rowNumber, word.index() + 1), t, m, image, baseline);
+          markRows.add(new String[] {name, page + "", rowNumber + "", word.ayah(), word.text(), String.format("%.2f / %.2f", m.score(), m.markScore()), crop});
         }
         if (c == SAJDA.charAt(0)) {
-          String crop = saveWordCrop(page, rowNumber, word, t, m, image, baseline);
+          String crop = saveWordCrop(String.format("sajda-%s.png", word.ayah().replace(':', '-')), t, m, image, baseline);
           sajdaRows.add(new String[] {word.ayah(), page + "", rowNumber + "", word.text(), String.format("%.2f", m.score()), String.format("%.2f", m.markScore()), crop});
         }
       }
@@ -599,8 +600,7 @@ public class PageCheck {
     problems.add(page + "\t" + row + "\t" + detail + "\t" + crop);
   }
 
-  static String saveWordCrop(int page, int row, Word word, Template t, Match m, BufferedImage image, int baseline) throws IOException {
-    String name = String.format("sajda-%s.png", word.ayah().replace(':', '-'));
+  static String saveWordCrop(String name, Template t, Match m, BufferedImage image, int baseline) throws IOException {
     int left = Math.max(0, m.x() - t.w() - 10), top = Math.max(0, baseline - 45);
     int w = Math.min(image.getWidth() - left, t.w() + 20), h = 64;
     BufferedImage ref = image.getSubimage(left, top, w, Math.min(h, image.getHeight() - top));
@@ -674,8 +674,18 @@ public class PageCheck {
     md.append("\n## Waqf and other marks\n\n| mark | words | not in place |\n|---|---|---|\n");
     for (Map.Entry<String, int[]> e : markCounts.entrySet()) md.append("| ").append(e.getKey()).append(" | ").append(e.getValue()[0]).append(" | ").append(e.getValue()[1]).append(" |\n");
     if (!markRows.isEmpty()) {
-      md.append("\n| mark | page | row | ayah | word | word / mark score |\n|---|---|---|---|---|---|\n");
-      for (String[] m : markRows) md.append("| ").append(String.join(" | ", m)).append(" |\n");
+      md.append("\n| mark | page | row | ayah | word | word / mark score | crop (reference, ours) |\n|---|---|---|---|---|---|---|\n");
+      for (String[] m : markRows) {
+        md.append("| ").append(String.join(" | ", java.util.Arrays.copyOf(m, 6)))
+          .append(" | [").append(m[6]).append("](pages-").append(date).append("/").append(m[6]).append(") |\n");
+      }
+    }
+    if (!markRows.isEmpty()) {
+      md.append("\nThe mark-area score is crude for short words (the mark is a small part of the box) and for marks ")
+        .append("the font draws outside the word's own box. Every word in the table above was compared by eye, ")
+        .append("enlarged, on `marks-review-2026-11-07.png` (2026-11-07): the mark is present and in the same place ")
+        .append("as in the print in all of them; on page 475 the ج of «حَقٌّۭ ۚ» sits over the join with ")
+        .append("«ٱللَّهِ» in both.\n");
     }
     md.append("\n## Weak word matches (line confirmed)\n\n");
     md.append("Lines whose words fill the reference line end to end with print-sized spaces, where some glyphs ")

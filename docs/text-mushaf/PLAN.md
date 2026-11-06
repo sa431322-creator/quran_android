@@ -206,3 +206,17 @@ passing, `/code-review` of the diff.
    screen goes away.
 7. Phone landscape: **scroll the page** (larger text), as tajweed does today.
 8. Existing users: **bookmarks and last page moved to V2 automatically** on update.
+
+## Progress
+
+| step | state |
+|---|---|
+| 1. branch, `feature/tajweed` → `feature/mushaf` | done |
+| 2. full V2 layout, `MadaniV2DataSource`, data checks | done ([data report](reports/data-2026-11-06.md)) |
+| 3–4. page check against the V2 print, fixes | done: 602/602 pages, 6 line-break corrections in `tools/mushaf/layout-corrections.mjs` ([page report](reports/pages-2026-11-07.md)) |
+| 1.5 sajda and waqf marks | done: 15/15 sajda; 4,378 marked words, 35 low scores all checked by eye on `reports/marks-review-2026-11-07.png` |
+| 5. page type `madani_v2` in the reader | done: text pages in `PagerActivity` (phone; tested on the emulator) and `TabletFragment` (two pages; built, not yet run on a tablet); selection, toolbar, tafsir panel, highlights through the reader's `AyahTrackerPresenter`; no page-image download for text pages |
+| 5. stored page numbers | nothing to move: ayah bookmarks and recent pages are stored by ayah, page bookmarks in the canonical `madani` numbering that `ReadingBookmarkPageMapper` maps; the old last-page setting is no longer written. A recent page saved under V1 on one of the 25 pages whose first ayah differs may show one page earlier. |
+| 5. font delivery | per page on demand for now (needs network the first time); one full download still to do |
+| 6. image mode in V2 + the text/image setting | next |
+| 7–10 | to do |

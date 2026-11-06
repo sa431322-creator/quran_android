@@ -31,6 +31,14 @@ enum class MushafEdition(
     hasTasnimCopy = true
   ),
 
+  /** QPC V2 (1421H), the Madinah mushaf: the reader's text pages, all 604. */
+  PLAIN_V2(
+    "mushaf/v2/pages.json",
+    "https://static-cdn.tarteel.ai/qul/fonts/quran_fonts/v2/ttf",
+    "mushaf/v2",
+    hasTasnimCopy = false
+  ),
+
   /** QPC V2 (1421H), the plain Madinah mushaf. Trial: its asset holds a few pages only. */
   MADINAH_V2_TRIAL(
     "text-mushaf-trial/v2/pages.json",
