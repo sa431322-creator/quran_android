@@ -90,7 +90,7 @@ class QuranSettingsFragment : PreferenceFragmentCompat() {
     }
 
     val pageChangePref: Preference? = findPreference(Constants.PREF_PAGE_TYPE)
-    if (pageTypes.size < 2 && pageChangePref != null) {
+    if (pageTypes.values.count { it.isSelectable() } < 2 && pageChangePref != null) {
       val readingPrefs: Preference? = findPreference(Constants.PREF_READING_CATEGORY)
       (readingPrefs as PreferenceGroup).removePreference(pageChangePref)
     }

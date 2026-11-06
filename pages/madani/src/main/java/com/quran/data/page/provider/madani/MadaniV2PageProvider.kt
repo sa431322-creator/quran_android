@@ -23,6 +23,8 @@ class MadaniV2PageProvider(
 
   override fun getPreviewDescription() = R.string.madani_v2_description
 
+  override fun isSelectable() = true
+
   companion object {
     const val PAGE_TYPE = "madani_v2"
     private val dataSource by lazy { MadaniV2DataSource() }

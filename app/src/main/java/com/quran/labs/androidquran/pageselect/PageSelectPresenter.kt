@@ -33,7 +33,7 @@ constructor(
       File(outputPath, ".nomedia").createNewFile()
     }
 
-    val data = pageTypes.map {
+    val data = pageTypes.filter { it.value.isSelectable() }.map {
       val provider = it.value
       val previewImage = File(outputPath, "${it.key}.png")
       val downloadedImage = if (previewImage.exists()) {

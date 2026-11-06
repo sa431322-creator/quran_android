@@ -2,4 +2,6 @@
 <resources>
   <string name="madani_v2_title">مصحف مدینه (متنی)</string>
   <string name="madani_v2_description">مصحف مدینهٔ مجمع ملک فهد، با قلم خودش؛ روی هر صفحه‌نمایشی واضح.</string>
+  <string name="madani_v2_images_title">مصحف مدینه (تصویری)</string>
+  <string name="madani_v2_images_description">همان مصحف مدینه به صورت تصویر صفحه‌ها؛ یک بار دریافت می‌شود.</string>
 </resources>

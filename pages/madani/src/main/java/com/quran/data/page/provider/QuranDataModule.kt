@@ -4,6 +4,7 @@ import com.quran.common.upgrade.LocalDataUpgrade
 import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.constant.DependencyInjectionConstants
 import com.quran.data.page.provider.madani.MadaniPageProvider
+import com.quran.data.page.provider.madani.MadaniV2ImagesPageProvider
 import com.quran.data.page.provider.madani.MadaniV2PageProvider
 import com.quran.data.pageinfo.mapper.AyahMapper
 import com.quran.data.pageinfo.mapper.IdentityAyahMapper
@@ -40,6 +41,17 @@ object QuranDataModule {
   @StringKey(MadaniV2PageProvider.PAGE_TYPE)
   fun provideMadaniV2PageSet(): PageProvider {
     return MadaniV2PageProvider()
+  }
+
+  /** The Madinah mushaf V2 as page images, from the Tasnim server. */
+  @JvmStatic
+  @Provides
+  @IntoMap
+  @StringKey(MadaniV2ImagesPageProvider.PAGE_TYPE)
+  fun provideMadaniV2ImagesPageSet(
+    @Named(DependencyInjectionConstants.TASNIM_API_BASE_URL) tasnimBaseUrl: String
+  ): PageProvider {
+    return MadaniV2ImagesPageProvider(tasnimBaseUrl)
   }
 
   @JvmStatic

@@ -33,4 +33,7 @@ interface PageProvider {
   fun getQaris(): List<Qari>
   fun getDefaultQariId(): Int
   fun pageType(): String = ""
+
+  /** Whether the page type selection lists it (false for a type kept only for its data). */
+  fun isSelectable(): Boolean = true
 }

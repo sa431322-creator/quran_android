@@ -40,3 +40,26 @@ node tools/mushaf/verify/check_data.mjs --rows tools/mushaf/verify/.cache/rows.t
 
 The check was tested on deliberately broken layouts (a word moved to the next line, a word
 dropped, two words swapped): each is reported.
+
+## Page images for the image mode (`images/`)
+
+The reader's image mode (page type `madani_v2_images`) shows the same V2 pages as page images,
+rendered from the same fonts and layout, with their ayah highlighting database:
+
+```bash
+"/c/Program Files/Android/Android Studio/jbr/bin/java" tools/mushaf/images/RenderPages.java 1260
+node tools/mushaf/images/build_ayahinfo.mjs 1260
+"/c/Program Files/Android/Android Studio/jbr/bin/java" tools/mushaf/images/RenderPages.java --zip 1260
+```
+
+(after `verify/prepare.mjs` and `verify/check_data.mjs --rows …`). Run it for each width the app
+uses: 320, 480, 800, 1024 and 1260. Output in `tools/mushaf/images/out` (git-ignored):
+
+| file | goes on the Tasnim server at |
+|---|---|
+| `images_<w>.zip` (604 pages in `width_<w>/`) | `data/madani_v2/zips/images_<w>.zip` |
+| `ayahinfo_<w>.zip` | `data/madani_v2/databases/ayahinfo/ayahinfo_<w>.zip` |
+| `width_<w>/pageNNN.png` (single pages, for the app's missing-page repair) | `data/madani_v2/width_<w>/pageNNN.png` |
+
+Images are black ink in 16 levels on a transparent background (4-bit palette PNG), like the
+classic images: the reader tints them for day and night. At 1260 px the set is about 127 MB.

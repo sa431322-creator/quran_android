@@ -18,6 +18,12 @@ class MadaniPageProvider : PageProvider {
 
   override fun getImageVersion() = 8
 
+  /**
+   * Tasnim reads the Madinah mushaf V2 only: the classic (V1, 1405H) pages stay registered as the
+   * canonical page numbering of reading bookmarks, but cannot be chosen.
+   */
+  override fun isSelectable() = false
+
   override fun getImagesBaseUrl() = "$baseUrl/"
 
   override fun getImagesZipBaseUrl() = "$baseUrl/zips/"
