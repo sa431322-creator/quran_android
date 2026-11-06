@@ -60,7 +60,7 @@ app/.../data/upgrade/
   V1ToV2PageMigration.kt              one-time move of stored page numbers to V2
 
 tools/mushaf/                         replaces tools/tajweed
-  generate_layout.mjs                 layout for every page (was generate_pages.mjs)
+  generate_layout.mjs                 layout for every page (was generate_layout.mjs)
   generate_data_source.mjs            writes MadaniV2DataSource.kt from the layout
   verify/                             page check tool + report (below)
   render_images/                      V2 page images + ayahinfo DB (if option 1a)

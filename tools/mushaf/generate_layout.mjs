@@ -4,11 +4,11 @@
 // glyph code in that page's font. Mushaf 19 on quran.com is the V4 (1441H) layout, so its
 // code_v2 + line_number give the exact glyphs and lines each page font expects.
 //
-// Usage: node tools/mushaf/generate_pages.mjs
+// Usage: node tools/mushaf/generate_layout.mjs
 //
 // The plain King Fahd Madinah mushaf (QPC V2, 1421H) takes --edition v2, and --pages limits it
 // to a few pages:
-//   node tools/mushaf/generate_pages.mjs --edition v2 --pages 2,50,76,77 \
+//   node tools/mushaf/generate_layout.mjs --edition v2 --pages 2,50,76,77 \
 //     --out feature/mushaf/src/main/assets/text-mushaf-trial/v2/pages.json
 //
 // The API ignores its mushaf parameter: the glyph field asked for decides the page_number and
