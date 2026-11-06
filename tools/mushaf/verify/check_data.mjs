@@ -14,6 +14,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { EXTRA_UNITS, SPLITS } from '../layout-corrections.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const at = process.argv.indexOf('--layout');
@@ -99,7 +100,10 @@ for (const page of pages) {
   }
 }
 if (next !== AYAHS) problem(0, 'words', `${next} ayahs instead of ${AYAHS}`);
-if (glyphs !== WORDS + AYAHS) problem(0, 'words', `${glyphs} glyphs instead of ${WORDS} words + ${AYAHS} ayah markers`);
+// a word the print splits over two lines (layout-corrections.mjs) counts once per glyph
+if (glyphs !== WORDS + AYAHS + EXTRA_UNITS) {
+  problem(0, 'words', `${glyphs} glyph units instead of ${WORDS} words + ${AYAHS} ayah markers + ${EXTRA_UNITS} split`);
+}
 
 // sajda: the page and line holding each sajda ayah's last glyph (its marker sits at the end)
 const sajda = SAJDA.map(([s, a]) => {
@@ -122,6 +126,17 @@ const sajda = SAJDA.map(([s, a]) => {
   return { ayah: `${s}:${a}`, page: null, line: null };
 });
 
+// --rows <file>: what each row of each page holds, for the image check (PageCheck.java)
+const rowsAt = process.argv.indexOf('--rows');
+if (rowsAt > 0) {
+  const out = ['page\trow\tkind\tvalue'];
+  rowsOf.forEach((rows, index) => rows.forEach((row, i) => {
+    const [kind, value] = (row ?? 'blank:').split(':');
+    out.push([pages[index].p, i + 1, kind, value].join('\t'));
+  }));
+  writeFileSync(process.argv[rowsAt + 1], out.join('\n') + '\n');
+}
+
 // report
 const date = new Date().toISOString().slice(0, 10);
 const byCheck = (c) => problems.filter((p) => p.check === c);
@@ -131,7 +146,8 @@ md.push(`# Text mushaf data check — ${date}`, '');
 md.push(`Layout: \`${layoutPath.replace(root, '').replace(/\\/g, '/').replace(/^\//, '')}\` (${layout.source ?? 'unknown source'})`, '');
 md.push('| check | result |', '|---|---|');
 for (const c of checks) md.push(`| ${c} | ${byCheck(c).length === 0 ? 'pass' : `**${byCheck(c).length} problems**`} |`);
-md.push('', `Totals: ${pages.length} pages, ${next} ayahs, ${glyphs} glyphs (${glyphs - AYAHS} words + ${AYAHS} ayah markers).`, '');
+md.push('', `Totals: ${pages.length} pages, ${next} ayahs, ${glyphs} glyph units (${WORDS} words + ${AYAHS} ayah markers` +
+  (EXTRA_UNITS ? `; ${SPLITS.map((s) => s.word).join(', ')} split over two lines by the print` : '') + ').', '');
 md.push('## Sajda places', '', '| ayah | page | line |', '|---|---|---|');
 for (const s of sajda) md.push(`| ${s.ayah} | ${s.page} | ${s.line} |`);
 if (problems.length) {

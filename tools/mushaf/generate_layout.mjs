@@ -16,11 +16,13 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { correctPage } from './layout-corrections.mjs';
 
 const PAGES = 604;
 const EDITIONS = {
   v4: { glyphs: 'code_v2', mushaf: 19, name: 'QPC V4 tajweed 1441H' },
-  v2: { glyphs: 'code_v2', mushaf: 1, name: 'QPC V2 Madinah 1421H' },
+  // v2 takes the line corrections in layout-corrections.mjs, so its lines break like the print
+  v2: { glyphs: 'code_v2', mushaf: 1, name: 'QPC V2 Madinah 1421H', corrected: true },
 };
 const root = join(dirname(fileURLToPath(import.meta.url)), '..', '..');
 
@@ -73,8 +75,13 @@ for (const page of fetchPages) {
 
 const pages = [];
 for (const page of outputPages) {
-  const words = [...pageWords[page].values()]
+  let words = [...pageWords[page].values()]
     .sort((a, b) => a.sura - b.sura || a.ayah - b.ayah || a.index - b.index);
+  if (EDITION.corrected) {
+    words = correctPage(page, words.map((w) => ({
+      ...w, line: w.line_number, key: `${w.sura}:${w.ayah}:${w.index + 1}`, code: w[EDITION.glyphs],
+    }))).map((w) => ({ ...w, line_number: w.line, [EDITION.glyphs]: w.code }));
+  }
   if (words.length === 0) throw new Error(`no words on page ${page}`);
   const lines = new Map();
   const suraStarts = [];
@@ -86,7 +93,7 @@ for (const page of outputPages) {
     else wordAyahs.push([word.sura, word.ayah, 1]);
     if (!lines.has(word.line_number)) lines.set(word.line_number, []);
     lines.get(word.line_number).push(word[EDITION.glyphs]);
-    if (word.ayah === 1 && word.index === 0) suraStarts.push([word.sura, word.line_number]);
+    if (word.ayah === 1 && word.index === 0 && !word.part) suraStarts.push([word.sura, word.line_number]);
   }
   pages.push({
     p: page,
