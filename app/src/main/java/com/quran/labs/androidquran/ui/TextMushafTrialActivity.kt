@@ -46,12 +46,12 @@ import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.util.TypefaceManager
 import com.quran.labs.androidquran.util.QuranUtils
-import com.quran.mobile.feature.tajweed.data.TajweedPage
-import com.quran.mobile.feature.tajweed.data.TajweedRepository
-import com.quran.mobile.feature.tajweed.data.TextMushafEdition
-import com.quran.mobile.feature.tajweed.ui.TajweedPageLabels
-import com.quran.mobile.feature.tajweed.ui.TajweedPageStyle
-import com.quran.mobile.feature.tajweed.ui.TajweedPageView
+import com.quran.mobile.feature.mushaf.data.MushafPage
+import com.quran.mobile.feature.mushaf.data.MushafRepository
+import com.quran.mobile.feature.mushaf.data.MushafEdition
+import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
+import com.quran.mobile.feature.mushaf.ui.MushafPageStyle
+import com.quran.mobile.feature.mushaf.ui.MushafPageView
 import dev.zacsweers.metro.Inject
 
 /**
@@ -62,8 +62,8 @@ import dev.zacsweers.metro.Inject
 class TextMushafTrialActivity : ComponentActivity() {
   @Inject lateinit var quranDisplayData: QuranDisplayData
 
-  private enum class View(val label: String, val edition: TextMushafEdition?) {
-    TEXT("متن V2", TextMushafEdition.MADINAH_V2_TRIAL),
+  private enum class View(val label: String, val edition: MushafEdition?) {
+    TEXT("متن V2", MushafEdition.MADINAH_V2_TRIAL),
     IMAGE("تصویر V2 (مرجع)", null)
   }
 
@@ -71,11 +71,11 @@ class TextMushafTrialActivity : ComponentActivity() {
     (application as QuranApplication).applicationComponent.inject(this)
     super.onCreate(savedInstanceState)
     val repositories = View.entries.mapNotNull { view ->
-      view.edition?.let { view to TajweedRepository(this, "", it) }
+      view.edition?.let { view to MushafRepository(this, "", it) }
     }.toMap()
     val basmalaFont = runCatching { FontFamily(TypefaceManager.getUthmaniTypeface(this)) }
       .getOrDefault(FontFamily.Default)
-    val style = TajweedPageStyle(
+    val style = MushafPageStyle(
       paper = Color(ContextCompat.getColor(this, R.color.page_background)),
       headerFont = FontFamily(TypefaceManager.getHeaderFooterTypeface(this)),
       headerColor = Color(ContextCompat.getColor(this, R.color.overlay_text_color)),
@@ -90,7 +90,7 @@ class TextMushafTrialActivity : ComponentActivity() {
     setContentView(ComposeView(this).apply { setContent {
       QuranTheme {
         // every edition's trial pages, by page number
-        val pages by produceState<Map<View, Map<Int, TajweedPage>>?>(null) {
+        val pages by produceState<Map<View, Map<Int, MushafPage>>?>(null) {
           value = repositories.mapValues { (_, repository) ->
             runCatching { repository.data().pages }.getOrDefault(emptyList()).associateBy { it.page }
           }
@@ -116,10 +116,10 @@ class TextMushafTrialActivity : ComponentActivity() {
   @Composable
   private fun TrialPager(
     pageNumbers: List<Int>,
-    pages: Map<View, Map<Int, TajweedPage>>,
-    repositories: Map<View, TajweedRepository>,
+    pages: Map<View, Map<Int, MushafPage>>,
+    repositories: Map<View, MushafRepository>,
     basmalaFont: FontFamily,
-    style: TajweedPageStyle,
+    style: MushafPageStyle,
     firstPage: Int
   ) {
     val start = pageNumbers.indexOf(firstPage).coerceAtLeast(0)
@@ -160,10 +160,10 @@ class TextMushafTrialActivity : ComponentActivity() {
 
   @Composable
   private fun PageText(
-    page: TajweedPage,
-    repository: TajweedRepository,
+    page: MushafPage,
+    repository: MushafRepository,
     basmalaFont: FontFamily,
-    style: TajweedPageStyle
+    style: MushafPageStyle
   ) {
     val font by produceState<FontFamily?>(null, page.page, repository) {
       value = runCatching { FontFamily(Font(repository.font(page.page))) }.getOrNull()
@@ -173,12 +173,12 @@ class TextMushafTrialActivity : ComponentActivity() {
       Box(Modifier.fillMaxSize()) { CircularProgressIndicator(Modifier.align(Alignment.Center)) }
       return
     }
-    TajweedPageView(
+    MushafPageView(
       page = page,
       pageFont = family,
       basmalaFont = basmalaFont,
       style = style,
-      labels = TajweedPageLabels(
+      labels = MushafPageLabels(
         suraName = quranDisplayData.getSuraName(this, page.sura, true),
         juz = String.format(getString(R.string.juz2_description), QuranUtils.getLocalizedNumber(page.juz)),
         pageNumber = QuranUtils.getLocalizedNumber(page.page)

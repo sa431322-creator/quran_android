@@ -92,14 +92,14 @@ import com.quran.mobile.feature.ayahbookmark.readingbookmark.ReadingBookmarkShee
 import com.quran.mobile.feature.ayahbookmark.readingbookmark.di.ReadingBookmarkSheetWrapperInjector
 import com.quran.mobile.feature.qarilist.QariListWrapper
 import com.quran.mobile.feature.qarilist.di.QariListWrapperInjector
-import com.quran.mobile.feature.tajweed.data.TajweedPage
-import com.quran.mobile.feature.tajweed.data.TajweedRepository
-import com.quran.mobile.feature.tajweed.ui.TajweedAyahBounds
-import com.quran.mobile.feature.tajweed.ui.TajweedPageLabels
-import com.quran.mobile.feature.tajweed.ui.TajweedPageStyle
-import com.quran.mobile.feature.tajweed.ui.TajweedPages
-import com.quran.mobile.feature.tajweed.ui.TajweedPagesController
-import com.quran.mobile.feature.tajweed.ui.tajweedAyahKey
+import com.quran.mobile.feature.mushaf.data.MushafPage
+import com.quran.mobile.feature.mushaf.data.MushafRepository
+import com.quran.mobile.feature.mushaf.ui.MushafAyahBounds
+import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
+import com.quran.mobile.feature.mushaf.ui.MushafPageStyle
+import com.quran.mobile.feature.mushaf.ui.MushafPages
+import com.quran.mobile.feature.mushaf.ui.MushafPagesController
+import com.quran.mobile.feature.mushaf.ui.tajweedAyahKey
 import com.quran.page.common.toolbar.AyahToolBar
 import com.quran.page.common.toolbar.di.AyahToolBarInjector
 import com.quran.reading.common.ReadingEventPresenter
@@ -147,7 +147,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
       .generate(object : AyahSelectedListener {})
   }
 
-  private lateinit var repository: TajweedRepository
+  private lateinit var repository: MushafRepository
   private lateinit var toolBarArea: View
   private lateinit var ayahToolBar: AyahToolBar
   private lateinit var audioStatusBar: AudioBarWrapper
@@ -162,12 +162,12 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
   private lateinit var audioStatusRepositoryBridge: AudioStatusRepositoryBridge
   private var requestPermissionLauncher: androidx.activity.result.ActivityResultLauncher<String>? = null
 
-  private val controller = TajweedPagesController()
+  private val controller = MushafPagesController()
   private val selectedAyah = mutableStateOf<Int?>(null)
   private val recitedAyah = mutableStateOf<Int?>(null)
   private val highlights = mutableStateOf<Map<Int, Color>>(emptyMap())
-  private var pages: List<TajweedPage> = emptyList()
-  private var currentPage: TajweedPage? = null
+  private var pages: List<MushafPage> = emptyList()
+  private var currentPage: MushafPage? = null
 
   private var isActionBarHidden = true
   private var isDraggingPageSlider = false
@@ -192,7 +192,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
       if (sura > 0 && ayah > 0) startPosition = sura to ayah
     }
 
-    repository = TajweedRepository(this, BuildConfig.TASNIM_API_BASE_URL)
+    repository = MushafRepository(this, BuildConfig.TASNIM_API_BASE_URL)
     toolBarArea = findViewById(R.id.toolbar_area)
     ayahToolBar = findViewById(R.id.ayah_toolbar)
     audioStatusBar = findViewById(R.id.audio_area)
@@ -310,7 +310,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
     val basmalaFont = runCatching { FontFamily(TypefaceManager.getUthmaniTypeface(this)) }
       .getOrDefault(FontFamily.Default)
     val headerFont = FontFamily(TypefaceManager.getHeaderFooterTypeface(this))
-    val style = TajweedPageStyle(
+    val style = MushafPageStyle(
       paper = Color(ContextCompat.getColor(this, R.color.page_background)),
       headerFont = headerFont,
       headerColor = Color(ContextCompat.getColor(this, R.color.overlay_text_color)),
@@ -326,7 +326,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
         val selected by selectedAyah
         val recited by recitedAyah
         val highlighted by highlights
-        TajweedPages(
+        MushafPages(
           repository = repository,
           basmalaFont = basmalaFont,
           style = style,
@@ -354,21 +354,21 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
     }
   }
 
-  private fun labelsFor(page: TajweedPage): TajweedPageLabels =
-    TajweedPageLabels(
+  private fun labelsFor(page: MushafPage): MushafPageLabels =
+    MushafPageLabels(
       suraName = quranDisplayData.getSuraName(this, page.sura, true),
       juz = String.format(getString(R.string.juz2_description), QuranUtils.getLocalizedNumber(page.juz)),
       pageNumber = QuranUtils.getLocalizedNumber(page.page)
     )
 
-  private fun subtitleFor(page: TajweedPage): String =
+  private fun subtitleFor(page: MushafPage): String =
     String.format(
       getString(R.string.page_description),
       QuranUtils.getLocalizedNumber(page.page),
       QuranUtils.getLocalizedNumber(page.juz)
     )
 
-  private fun updateActionBarTitle(page: TajweedPage) {
+  private fun updateActionBarTitle(page: MushafPage) {
     val sura = quranDisplayData.getSuraName(this, page.sura, true)
     supportActionBar?.let { actionBar ->
       actionBar.setDisplayShowTitleEnabled(true)
@@ -386,7 +386,7 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
     }
   }
 
-  private fun onAyahLongPress(sura: Int, ayah: Int, bounds: TajweedAyahBounds) {
+  private fun onAyahLongPress(sura: Int, ayah: Int, bounds: MushafAyahBounds) {
     val indicator = SelectionIndicator.SelectedItemPosition(bounds.first.toSelection(), bounds.last.toSelection())
     readingEventPresenter.onAyahSelection(AyahSelection.Ayah(SuraAyah(sura, ayah), indicator))
     toggleActionBarVisibility(false)
