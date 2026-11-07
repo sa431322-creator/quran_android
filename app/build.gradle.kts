@@ -247,6 +247,9 @@ dependencies {
   implementation(project(":feature:downloadmanager"))
   implementation(project(":feature:library"))
   implementation(project(":feature:livetv"))
+  // Ads (ADR 0010): only the ads-noop module for now, so no ad code runs. House ads come with
+  // ads-house; builds made with -PnoAds (F-Droid) will keep ads-noop.
+  implementation(project(":feature:ads-noop"))
   implementation(project(":feature:tajweed"))
   implementation(project(":feature:qarilist"))
   implementation(project(":feature:sync"))
