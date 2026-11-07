@@ -1,5 +1,8 @@
 package com.quran.mobile.feature.library
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.quran.mobile.feature.ads.AdProvider
+import com.quran.mobile.feature.ads.LocalAdProvider
 import android.os.Bundle
 import android.os.SystemClock
 import androidx.activity.compose.setContent
@@ -26,6 +29,9 @@ class LibraryActivity : AppCompatActivity() {
   @Inject
   lateinit var presenter: LibraryPresenter
 
+  @Inject
+  lateinit var adProvider: AdProvider
+
   private val scope = MainScope()
   private lateinit var store: LibraryReadingStore
   private var shelf by mutableStateOf(LibraryShelf())
@@ -47,15 +53,17 @@ class LibraryActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        LibraryScreen(
-          presenter = presenter,
-          shelf = shelf,
-          isOffline = { LibraryFiles.isOffline(this, it) },
-          onOpenBook = { LibraryNavigation.openDetails(this, it) },
-          onContinueBook = { LibraryNavigation.openReader(this, it) },
-          onOpenBookmark = { book, page -> LibraryNavigation.openReader(this, book, page) },
-          onBack = onBackPressedDispatcher::onBackPressed
-        )
+        CompositionLocalProvider(LocalAdProvider provides adProvider) {
+          LibraryScreen(
+            presenter = presenter,
+            shelf = shelf,
+            isOffline = { LibraryFiles.isOffline(this, it) },
+            onOpenBook = { LibraryNavigation.openDetails(this, it) },
+            onContinueBook = { LibraryNavigation.openReader(this, it) },
+            onOpenBookmark = { book, page -> LibraryNavigation.openReader(this, book, page) },
+            onBack = onBackPressedDispatcher::onBackPressed
+          )
+        }
       }
     }
   }

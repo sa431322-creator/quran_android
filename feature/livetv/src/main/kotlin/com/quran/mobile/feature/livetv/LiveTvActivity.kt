@@ -13,6 +13,9 @@ import com.quran.mobile.feature.livetv.di.LiveTvComponentInterface
 import com.quran.mobile.feature.livetv.radio.RadioActivity
 import com.quran.mobile.feature.livetv.ui.LiveTvScreen
 import com.quran.mobile.feature.livetv.ui.UnavailableScreen
+import androidx.compose.runtime.CompositionLocalProvider
+import com.quran.mobile.feature.ads.AdProvider
+import com.quran.mobile.feature.ads.LocalAdProvider
 import dev.zacsweers.metro.Inject
 
 class LiveTvActivity : AppCompatActivity() {
@@ -22,6 +25,9 @@ class LiveTvActivity : AppCompatActivity() {
 
   @Inject
   lateinit var liveAvailability: LiveAvailability
+
+  @Inject
+  lateinit var adProvider: AdProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -48,15 +54,17 @@ class LiveTvActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        LiveTvScreen(
-          channels = channels,
-          onBack = onBackPressedDispatcher::onBackPressed,
-          onOpenAudio = {
-            // the switch swaps screens rather than stacking them
-            startActivity(Intent(this, RadioActivity::class.java))
-            finish()
-          }
-        )
+        CompositionLocalProvider(LocalAdProvider provides adProvider) {
+          LiveTvScreen(
+            channels = channels,
+            onBack = onBackPressedDispatcher::onBackPressed,
+            onOpenAudio = {
+              // the switch swaps screens rather than stacking them
+              startActivity(Intent(this, RadioActivity::class.java))
+              finish()
+            }
+          )
+        }
       }
     }
   }

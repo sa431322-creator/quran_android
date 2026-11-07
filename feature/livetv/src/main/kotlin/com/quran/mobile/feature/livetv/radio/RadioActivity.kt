@@ -12,6 +12,9 @@ import com.quran.mobile.feature.livetv.data.RadioStationRepository
 import com.quran.mobile.feature.livetv.di.LiveTvComponentInterface
 import com.quran.mobile.feature.livetv.ui.RadioScreen
 import com.quran.mobile.feature.livetv.ui.UnavailableScreen
+import androidx.compose.runtime.CompositionLocalProvider
+import com.quran.mobile.feature.ads.AdProvider
+import com.quran.mobile.feature.ads.LocalAdProvider
 import dev.zacsweers.metro.Inject
 
 class RadioActivity : AppCompatActivity() {
@@ -21,6 +24,9 @@ class RadioActivity : AppCompatActivity() {
 
   @Inject
   lateinit var liveAvailability: LiveAvailability
+
+  @Inject
+  lateinit var adProvider: AdProvider
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
@@ -38,7 +44,9 @@ class RadioActivity : AppCompatActivity() {
     setContent {
       QuranTheme {
         if (isAvailable) {
-          RadioScreen(stations = stations, onBack = onBackPressedDispatcher::onBackPressed)
+          CompositionLocalProvider(LocalAdProvider provides adProvider) {
+            RadioScreen(stations = stations, onBack = onBackPressedDispatcher::onBackPressed)
+          }
         } else {
           UnavailableScreen(
             message = getString(R.string.livetv_unavailable_radio),

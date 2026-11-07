@@ -1,6 +1,8 @@
 package com.quran.mobile.feature.livetv.ui
 
 import android.app.Activity
+import com.quran.mobile.feature.ads.AdBanner
+import com.quran.mobile.feature.ads.AdSlot
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.widget.Toast
@@ -131,6 +133,11 @@ fun LiveTvScreen(
               .verticalScroll(rememberScrollState())
               .padding(bottom = 16.dp)
           ) {
+            // ad slot: under the player, away from its controls; never shown in fullscreen
+            AdBanner(
+              slot = AdSlot.LIVE_TV,
+              modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp)
+            )
             if (channels.size > 1) {
               Box(
                 modifier = Modifier

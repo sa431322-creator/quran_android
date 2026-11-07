@@ -11,6 +11,9 @@ dependencies {
   implementation(project(":common:di"))
   implementation(project(":common:networking"))
   implementation(project(":common:ui:core"))
+  // ad card in the book list and a banner on the book page (ADR 0010); interface only.
+  // Never in the book reader: AdsPlacementGuardTest checks the reader package.
+  implementation(project(":feature:ads-api"))
 
   implementation(libs.androidx.activity.compose)
   // AppCompatActivity applies the app's own light/dark choice (AppCompatDelegate)

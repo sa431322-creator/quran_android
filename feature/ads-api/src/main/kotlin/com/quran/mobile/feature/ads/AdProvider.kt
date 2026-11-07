@@ -36,6 +36,9 @@ interface AdProvider {
 
   @Composable
   fun Render(content: AdContent, modifier: Modifier)
+
+  /** The library list shows its ad card after this many books (server setting, 3–30). */
+  fun libraryListEvery(): Int = AdsConfig.DEFAULT_LIBRARY_LIST_EVERY
 }
 
 /** Shows nothing, ever. Used by ads-noop and when no provider was given to the screen. */

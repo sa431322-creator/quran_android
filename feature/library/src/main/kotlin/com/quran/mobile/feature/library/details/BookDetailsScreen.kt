@@ -1,5 +1,7 @@
 package com.quran.mobile.feature.library.details
 
+import com.quran.mobile.feature.ads.AdBanner
+import com.quran.mobile.feature.ads.AdSlot
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -244,6 +246,13 @@ private fun Details(
     }
     if (similar.isNotEmpty()) {
       item(key = "similar") { Similar(books = similar, onOpenBook = onOpenBook) }
+    }
+    // ad slot: the bottom of the page, after everything about the book
+    item(key = "ad", contentType = "ad") {
+      AdBanner(
+        slot = AdSlot.LIBRARY_DETAILS,
+        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 24.dp)
+      )
     }
   }
 }
