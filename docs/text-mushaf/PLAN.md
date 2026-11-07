@@ -198,7 +198,9 @@ passing, `/code-review` of the diff.
 ## Decisions (approved 2026-11-06)
 1. Image mode: **generate V2 images from the V2 fonts** (option 1a), plus the ayahinfo DB.
 2. Verification reference: **KSU V2 page images**, used by the check tool only, never shipped.
-3. Card translation: **still open**. The xlsx has no ayah translation; decide before Phase 2.
+3. Card translation: **Jami' al-Bayan only** (decided 2026-11-07). The card's Persian text is the
+   bundled «جامع البیان – ترجمۀ تفسیری» (Dehghan, `persian_tafsir.db`), offline; one global toggle
+   and a per-card toggle show or hide it. No other translation is added.
 4. Ayah-number marker: **our own marker drawn in the font glyph's box** (layout unchanged).
 5. Fonts: **one download for the whole mushaf** (offline afterwards), Tasnim mirror, per-page
    download as fallback.
