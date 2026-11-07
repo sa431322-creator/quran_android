@@ -15,6 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
@@ -31,14 +32,26 @@ data class AppLinks(
   val messenger: String? = null
 )
 
-/** Stream links for the live and radio screens; our own channel first, then the Quran channel. */
+/** Stream links for the live and radio screens: our own channel, then the Quran and Sunnah ones. */
 @JsonClass(generateAdapter = true)
 data class AppStreams(
   val ownLive: String? = null,
   val quranLive: String? = null,
+  val sunnahLive: String? = null,
   val ownRadio: String? = null,
-  val quranRadio: String? = null
+  val quranRadio: String? = null,
+  val sunnahRadio: String? = null
 )
+
+@JsonClass(generateAdapter = true)
+data class AppScheduleEntry(val startMinute: Int = 0, val title: String = "")
+
+/** Our own channel's name (null: keep the app's placeholder) and daily schedule. */
+@JsonClass(generateAdapter = true)
+data class AppOwnChannel(val name: String? = null, val schedule: List<AppScheduleEntry> = emptyList())
+
+@JsonClass(generateAdapter = true)
+data class AppChannels(val live: AppOwnChannel = AppOwnChannel(), val radio: AppOwnChannel = AppOwnChannel())
 
 @JsonClass(generateAdapter = true)
 data class AppFeatures(val library: Boolean = true, val live: Boolean = false, val radio: Boolean = false)
@@ -58,6 +71,7 @@ data class AppUpdate(
 data class AppConfig(
   val links: AppLinks = AppLinks(),
   val streams: AppStreams = AppStreams(),
+  val channels: AppChannels = AppChannels(),
   val features: AppFeatures = AppFeatures(),
   val maintenance: AppMaintenance = AppMaintenance(),
   val update: AppUpdate = AppUpdate()
@@ -81,8 +95,9 @@ data class Announcement(
 data class AnnouncementList(val items: List<Announcement> = emptyList())
 
 internal interface TasnimService {
+  /** Raw, so the saved copy also keeps sections this class does not model (e.g. `ads`). */
   @GET("api/v1/app/config")
-  suspend fun config(): AppConfig
+  suspend fun config(): ResponseBody
 
   @GET("api/v1/announcements")
   suspend fun announcements(
@@ -141,17 +156,21 @@ class TasnimConfigRepository internal constructor(
 
   /** The last settings received, or the defaults. Instant; safe on the main thread. */
   fun cached(): AppConfig =
-    prefs.getString(KEY_CONFIG, null)
+    cachedJson()
       ?.let { runCatching { configAdapter.fromJson(it) }.getOrNull() }
       ?: AppConfig()
+
+  /** The whole settings body last received (with sections other modules read, like `ads`). */
+  fun cachedJson(): String? = prefs.getString(KEY_CONFIG, null)
 
   /** Fresh settings from the server (saved for next time), or the cached ones on any failure. */
   suspend fun refreshConfig(): AppConfig {
     val api = service ?: return cached()
     return try {
-      val fresh = api.config()
+      val raw = withContext(Dispatchers.IO) { api.config().use { it.string() } }
+      val fresh = configAdapter.fromJson(raw) ?: return cached()
       withContext(Dispatchers.IO) {
-        prefs.edit { putString(KEY_CONFIG, configAdapter.toJson(fresh)) }
+        prefs.edit { putString(KEY_CONFIG, raw) }
       }
       fresh
     } catch (e: CancellationException) {

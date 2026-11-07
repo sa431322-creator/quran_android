@@ -42,12 +42,17 @@ sealed interface LiveStreamSource {
 
 enum class StreamFormat { HLS, DASH, PROGRESSIVE }
 
-/** A stream from the admin panel: .m3u8 plays as HLS, .mpd as DASH, anything else progressively. */
+/**
+ * A stream from the admin panel: .m3u8 plays as HLS, .mpd as DASH, anything else progressively.
+ * The Tasnim server's official Quran and Sunnah links have no extension and redirect to signed
+ * links (tasneem-backend ADR 0009): HLS for the TV channels, DASH for the radios (audio-only track).
+ * The player picks the format before following redirects, so they are recognised by path.
+ */
 fun remoteStreamOf(url: String): LiveStreamSource.Remote {
   val path = url.substringBefore('#').substringBefore('?').lowercase()
   val format = when {
-    path.endsWith(".m3u8") -> StreamFormat.HLS
-    path.endsWith(".mpd") -> StreamFormat.DASH
+    path.endsWith(".m3u8") || OFFICIAL_TV_PATHS.any(path::endsWith) -> StreamFormat.HLS
+    path.endsWith(".mpd") || OFFICIAL_RADIO_PATHS.any(path::endsWith) -> StreamFormat.DASH
     else -> StreamFormat.PROGRESSIVE
   }
   return LiveStreamSource.Remote(url, format)
@@ -110,3 +115,6 @@ private fun hostOf(url: String): String? {
   return url.substringAfter("://").substringBefore('/').substringBefore('?')
     .substringBefore('#').substringAfter('@').substringBefore(':').lowercase()
 }
+
+private val OFFICIAL_TV_PATHS = listOf("/api/v1/live/quran", "/api/v1/live/sunnah")
+private val OFFICIAL_RADIO_PATHS = listOf("/api/v1/live/quran-radio", "/api/v1/live/sunnah-radio")

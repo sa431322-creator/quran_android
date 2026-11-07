@@ -1,6 +1,8 @@
 package com.quran.mobile.feature.livetv.ui
 
 import androidx.compose.animation.core.animateFloatAsState
+import com.quran.mobile.feature.ads.AdBanner
+import com.quran.mobile.feature.ads.AdSlot
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -105,6 +107,11 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
           .verticalScroll(rememberScrollState())
       ) {
         LiveHeader(onBack = onBack) { PhaseChip() }
+        // ad slot: above the station list, 16 dp from the header and the controls below it
+        AdBanner(
+          slot = AdSlot.RADIO,
+          modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 8.dp, bottom = 16.dp)
+        )
         if (stations.size > 1) {
           Box(
             modifier = Modifier

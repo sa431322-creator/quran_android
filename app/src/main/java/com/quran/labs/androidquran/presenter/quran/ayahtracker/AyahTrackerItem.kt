@@ -14,6 +14,7 @@ import com.quran.page.common.data.PageCoordinates
 
 open class AyahTrackerItem internal constructor(val page: Int) {
   open fun onSetPageBounds(pageCoordinates: PageCoordinates) {}
+  open fun onPageCoordinatesError() {}
   open fun onSetAyahCoordinates(ayahCoordinates: AyahCoordinates) {}
 
   open fun onHighlight(page: Int, highlightInfo: HighlightInfo): Boolean {

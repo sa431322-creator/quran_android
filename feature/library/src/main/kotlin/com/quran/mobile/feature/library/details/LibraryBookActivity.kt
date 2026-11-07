@@ -1,5 +1,8 @@
 package com.quran.mobile.feature.library.details
 
+import androidx.compose.runtime.CompositionLocalProvider
+import com.quran.mobile.feature.ads.AdProvider
+import com.quran.mobile.feature.ads.LocalAdProvider
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -37,6 +40,9 @@ class LibraryBookActivity : AppCompatActivity() {
   @Inject
   lateinit var repository: LibraryRepository
 
+  @Inject
+  lateinit var adProvider: AdProvider
+
   private val scope = MainScope()
   private lateinit var store: LibraryReadingStore
   private lateinit var bookId: String
@@ -68,21 +74,23 @@ class LibraryBookActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        BookDetailsScreen(
-          state = state,
-          device = device,
-          download = download,
-          onBack = onBackPressedDispatcher::onBackPressed,
-          onRetry = ::load,
-          onToggleSaved = {
-            store.toggleSaved(bookId)
-            refreshDevice()
-          },
-          onShare = ::share,
-          onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
-          onDownload = ::startDownload,
-          onOpenBook = { LibraryNavigation.openDetails(this, it) }
-        )
+        CompositionLocalProvider(LocalAdProvider provides adProvider) {
+          BookDetailsScreen(
+            state = state,
+            device = device,
+            download = download,
+            onBack = onBackPressedDispatcher::onBackPressed,
+            onRetry = ::load,
+            onToggleSaved = {
+              store.toggleSaved(bookId)
+              refreshDevice()
+            },
+            onShare = ::share,
+            onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
+            onDownload = ::startDownload,
+            onOpenBook = { LibraryNavigation.openDetails(this, it) }
+          )
+        }
       }
     }
   }

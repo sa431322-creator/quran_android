@@ -5,10 +5,11 @@ import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
 /**
- * Our own station and the Quran station, with the stream links from the admin panel. A station
- * without a link is left out. A build without a server has no links, so our station plays the
- * audio of the bundled sample clip (the radio player ignores its video track) and the Quran
- * station is left out. Our station's [bracketed] name and schedule are placeholders.
+ * Our own station, the Quran station and the Sunnah station, with the stream links from the admin
+ * panel. A station without a link is left out. A build without a server has no links, so our
+ * station plays the audio of the bundled sample clip (the radio player ignores its video track)
+ * and the other two are left out. Our station's name and schedule come from the admin panel too; the
+ * [bracketed] name and the schedule below are what a build without a server shows.
  */
 @ContributesBinding(AppScope::class)
 @Inject
@@ -24,14 +25,19 @@ class ConfiguredRadioStationRepository(
       links.ownRadio?.let(::radioStreamOf)
     }
     return listOfNotNull(
-      own?.let { OWN_STATION.copy(source = it) },
-      links?.quranRadio?.let(::radioStreamOf)?.let { QURAN_STATION.copy(source = it) }
+      own?.let {
+        val station = if (links == null) OWN_STATION else OWN_STATION.withInfo(links.ownRadioInfo)
+        station.copy(source = it)
+      },
+      links?.quranRadio?.let(::radioStreamOf)?.let { QURAN_STATION.copy(source = it) },
+      links?.sunnahRadio?.let(::radioStreamOf)?.let { SUNNAH_STATION.copy(source = it) }
     )
   }
 
   companion object {
     const val OWN_ID = "radio-main"
     const val QURAN_ID = "radio-quran"
+    const val SUNNAH_ID = "radio-sunnah"
 
     private val OWN_STATION = RadioStation(
       id = OWN_ID,
@@ -51,6 +57,15 @@ class ConfiguredRadioStationRepository(
     private val QURAN_STATION = RadioStation(
       id = QURAN_ID,
       name = "رادیو قرآن کریم",
+      description = "پخش زنده",
+      isLive = true,
+      source = LiveStreamSource.LocalAsset(ConfiguredLiveChannelRepository.SAMPLE_ASSET),
+      schedule = emptyList()
+    )
+
+    private val SUNNAH_STATION = RadioStation(
+      id = SUNNAH_ID,
+      name = "رادیو سنت نبوی",
       description = "پخش زنده",
       isLive = true,
       source = LiveStreamSource.LocalAsset(ConfiguredLiveChannelRepository.SAMPLE_ASSET),

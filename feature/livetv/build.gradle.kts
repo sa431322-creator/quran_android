@@ -13,6 +13,8 @@ dependencies {
   implementation(project(":common:data"))
   implementation(project(":common:di"))
   implementation(project(":common:ui:core"))
+  // the ad slots under the player and above the station list (ADR 0010); interface only
+  implementation(project(":feature:ads-api"))
 
   implementation(libs.androidx.activity.compose)
   // AppCompatActivity applies the app's own light/dark choice (AppCompatDelegate)
