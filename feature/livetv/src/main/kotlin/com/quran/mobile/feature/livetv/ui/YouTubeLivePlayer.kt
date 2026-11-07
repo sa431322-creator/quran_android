@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color as AndroidColor
 import android.util.Log
+import android.view.ViewGroup
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.compose.foundation.background
@@ -18,6 +19,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +58,11 @@ fun YouTubeLivePlayer(source: LiveStreamSource.YouTube, modifier: Modifier = Mod
   DisposableEffect(lifecycleOwner, webView) {
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
-        Lifecycle.Event.ON_START -> webView.onResume()
+        Lifecycle.Event.ON_START -> {
+          webView.onResume()
+          // back from the background the live stream plays again, as the ExoPlayer one does
+          webView.evaluateJavascript("player && player.playVideo && player.playVideo()", null)
+        }
         Lifecycle.Event.ON_STOP -> {
           webView.evaluateJavascript("player && player.pauseVideo && player.pauseVideo()", null)
           webView.onPause()
@@ -67,6 +73,8 @@ fun YouTubeLivePlayer(source: LiveStreamSource.YouTube, modifier: Modifier = Mod
     lifecycleOwner.lifecycle.addObserver(observer)
     onDispose {
       lifecycleOwner.lifecycle.removeObserver(observer)
+      // a WebView must leave its window before it is destroyed
+      (webView.parent as? ViewGroup)?.removeView(webView)
       webView.destroy()
     }
   }
@@ -93,11 +101,14 @@ fun YouTubeLivePlayer(source: LiveStreamSource.YouTube, modifier: Modifier = Mod
         }
       }
     } else {
-      AndroidView(
-        factory = { webView },
-        update = { it.keepScreenOn = isPlaying },
-        modifier = Modifier.fillMaxSize()
-      )
+      // keyed so a new source's WebView replaces the old one; the factory only runs once per key
+      key(webView) {
+        AndroidView(
+          factory = { webView },
+          update = { it.keepScreenOn = isPlaying },
+          modifier = Modifier.fillMaxSize()
+        )
+      }
     }
   }
 }
@@ -114,8 +125,8 @@ private class YouTubeBridge {
 
   @JavascriptInterface
   fun onError(code: Int) {
-    // 2 bad id, 5 html5 player, 100 not found or private, 101/150 owner forbids embedding,
-    // 152/153 the embedding page was refused (missing origin or referrer)
+    // -1 the api did not load (offline), 2 bad id, 5 html5 player, 100 not found or private,
+    // 101/150 owner forbids embedding, 152/153 the embedding page was refused (no origin/referrer)
     Log.w(TAG, "YouTube player error $code")
     isPlaying.value = false
     failed.value = true
@@ -176,6 +187,8 @@ private fun youTubePlayerHtml(source: LiveStreamSource.YouTube, origin: String):
       }});
     }
   </script>
-  <script src="https://www.youtube.com/iframe_api"></script>
+  <!-- offline, the api never loads and no player event would come: report it as an error -->
+  <script src="https://www.youtube.com/iframe_api"
+    onerror="TasnimYouTube.onError(-1)"></script>
   </body></html>
 """.trimIndent()

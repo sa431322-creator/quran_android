@@ -80,7 +80,9 @@ private val YOUTUBE_HOSTS = setOf(
 private val VIDEO_ID = Regex("[A-Za-z0-9_-]{11}")
 private val CHANNEL_ID = Regex("UC[A-Za-z0-9_-]{22}")
 
-internal fun isYouTubeLink(url: String): Boolean = hostOf(url) in YOUTUBE_HOSTS
+// any youtube.com subdomain (music., gaming., …) counts, so it never reaches ExoPlayer
+internal fun isYouTubeLink(url: String): Boolean =
+  hostOf(url)?.let { it in YOUTUBE_HOSTS || it.endsWith(".youtube.com") } == true
 
 /**
  * Reads youtu.be/ID, /watch?v=ID, /live/ID, /embed/ID, /shorts/ID and, for a channel's

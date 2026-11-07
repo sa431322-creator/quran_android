@@ -56,6 +56,8 @@ class YouTubeLinksTest {
   @Test
   fun radioIgnoresYouTubeLinks() {
     assertThat(directStreamOf("https://youtu.be/dQw4w9WgXcQ")).isNull()
+    // any youtube.com subdomain is youtube too
+    assertThat(directStreamOf("https://music.youtube.com/watch?v=dQw4w9WgXcQ")).isNull()
     assertThat(directStreamOf("https://q.example/radio.mp3"))
       .isEqualTo(LiveStreamSource.Remote("https://q.example/radio.mp3", StreamFormat.PROGRESSIVE))
   }
