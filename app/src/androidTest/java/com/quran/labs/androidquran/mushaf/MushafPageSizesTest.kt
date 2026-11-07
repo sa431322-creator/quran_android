@@ -73,7 +73,7 @@ class MushafPageSizesTest {
     }
     val style = MushafPageStyle(
       paper = Color.White, headerFont = FontFamily.Default, headerColor = Color.DarkGray,
-      suraFrameFill = Color.DarkGray, suraFrameGold = Color.Yellow, suraFramePill = Color.White,
+      accent = Color.DarkGray, gilt = Color.Yellow,
       selection = Color.Cyan, recitation = Color.Green
     )
     val hits = MushafPageHits()

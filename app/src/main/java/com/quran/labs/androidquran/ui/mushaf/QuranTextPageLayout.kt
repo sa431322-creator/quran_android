@@ -101,6 +101,9 @@ class QuranTextPageLayout(
 
   private val headerFont: FontFamily by lazy { FontFamily(TypefaceManager.getHeaderFooterTypeface(context)) }
 
+  // sura names in the Kitab face, as in Tasnim's identity guide
+  private val titleFont: FontFamily by lazy { FontFamily(TypefaceManager.getTafseerTypeface(context)) }
+
   private val labels: MushafPageLabels by lazy {
     MushafPageLabels(
       suraName = quranDisplayData.getSuraNameFromPage(context, page, true),
@@ -117,13 +120,13 @@ class QuranTextPageLayout(
     return MushafPageStyle(
       paper = Color.Transparent,
       headerFont = headerFont,
-      headerColor = if (nightMode) ink else color(R.color.overlay_text_color),
-      suraFrameFill = color(R.color.mushaf_sura_header_fill),
-      suraFrameGold = color(R.color.mushaf_sura_header_gold),
-      suraFramePill = color(R.color.mushaf_sura_header_pill),
+      headerColor = color(if (nightMode) R.color.mushaf_label_night else R.color.mushaf_label),
+      accent = color(R.color.mushaf_accent),
+      gilt = color(if (nightMode) R.color.mushaf_gilt_night else R.color.mushaf_gilt),
       selection = color(R.color.selection_highlight),
       recitation = color(R.color.audio_highlight),
-      ink = ink
+      ink = ink,
+      titleFont = titleFont
     )
   }
 

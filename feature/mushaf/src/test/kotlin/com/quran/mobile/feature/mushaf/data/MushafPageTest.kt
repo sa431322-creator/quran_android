@@ -78,6 +78,23 @@ class MushafPageTest {
     assertThat(suraHeaderPages(pages)).containsExactly(1, 1, 2, 2, 4, 3)
   }
 
+  @Test
+  fun anAyahsLastWordIsItsEndMarkerUnlessItGoesOnToTheNextPage() {
+    // page 1: 1:1 (2 words), 1:2 (3 words, the last one only begins here and goes on to page 2)
+    val first = RawMushafPage(
+      1, 1, 1, 1 to 1, mapOf(1 to listOf("a", "b", "c"), 2 to listOf("d", "e")), emptyList(),
+      listOf(ayahKey(1, 1), ayahKey(1, 1), ayahKey(1, 2), ayahKey(1, 2), ayahKey(1, 2))
+    )
+    val second = RawMushafPage(
+      2, 1, 1, 1 to 2, mapOf(1 to listOf("f", "g")), emptyList(),
+      listOf(ayahKey(1, 2), ayahKey(1, 2))
+    )
+    val pages = buildMushafPages(listOf(first, second))
+    assertThat((pages[0].lines[0] as MushafLine.Text).ends).containsExactly(false, true, false).inOrder()
+    assertThat((pages[0].lines[1] as MushafLine.Text).ends).containsExactly(false, false).inOrder()
+    assertThat((pages[1].lines[0] as MushafLine.Text).ends).containsExactly(false, true).inOrder()
+  }
+
   private fun textPage(page: Int, vararg ayahs: Pair<Int, Int>) = MushafPage(
     page, ayahs.first().first, 1, ayahs.first(),
     listOf(MushafLine.Text(ayahs.map { "x" }, ayahs.map { (sura, ayah) -> ayahKey(sura, ayah) }))

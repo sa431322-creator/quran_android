@@ -1,5 +1,12 @@
 package com.quran.mobile.feature.mushaf.ui
 
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.graphics.drawscope.Fill
+import androidx.compose.ui.graphics.drawscope.rotate
+import androidx.compose.ui.text.TextMeasurer
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -83,13 +90,16 @@ data class MushafPageStyle(
   val paper: Color,
   val headerFont: FontFamily,
   val headerColor: Color,
-  val suraFrameFill: Color,
-  val suraFrameGold: Color,
-  val suraFramePill: Color,
+  /** the page's accent (Tasnim teal): progress and buttons on the page */
+  val accent: Color,
+  /** the gilding: ayah markers, the sura frame, the page number's star */
+  val gilt: Color,
   val selection: Color,
   val recitation: Color,
   /** the text's color; a monochrome page font (V2) takes it, a color one (V4 tajweed) keeps its own */
-  val ink: Color = MushafInk
+  val ink: Color = MushafInk,
+  /** sura names, in the header frame and the page's label */
+  val titleFont: FontFamily = headerFont
 )
 
 /** The page's header and footer text, as the reader writes them for its own pages. */
@@ -242,7 +252,10 @@ fun MushafPageView(
       }
 
       Column(Modifier.fillMaxSize()) {
-      PageLabelRow(start = labels.suraName, end = labels.juz, style = labelStyle, height = labelRowPx)
+      PageLabelRow(
+        start = labels.suraName, end = labels.juz, style = labelStyle, height = labelRowPx,
+        startStyle = labelStyle.copy(fontFamily = style.titleFont, fontSize = labelStyle.fontSize * 1.3f)
+      )
       Column(
         modifier = Modifier
           .weight(1f)
@@ -259,7 +272,10 @@ fun MushafPageView(
               lines = lines,
               words = line.words,
               ayahs = line.ayahs,
+              ends = line.ends,
               textStyle = textStyle,
+              gilt = style.gilt,
+              markerFont = style.headerFont, // plain digits: the Uthmani face draws its own ayah ornament around them
               centered = page.isOpening,
               colorFor = { key ->
                 when (key) {
@@ -284,7 +300,7 @@ fun MushafPageView(
           }
         }
       }
-      PageLabelRow(center = labels.pageNumber, style = labelStyle, height = labelRowPx)
+      PageNumber(labels.pageNumber, labelStyle.copy(color = style.ink), style.gilt, labelRowPx)
       }
     }
   }
@@ -299,7 +315,14 @@ private fun sane(size: Float, windowSize: Int): Float =
 
 /** The page's header (sura and juz) or footer (page number), like the reader's page overlay. */
 @Composable
-private fun PageLabelRow(style: TextStyle, height: Float, start: String = "", end: String = "", center: String = "") {
+private fun PageLabelRow(
+  style: TextStyle,
+  height: Float,
+  start: String = "",
+  end: String = "",
+  center: String = "",
+  startStyle: TextStyle = style
+) {
   val rowHeight = with(LocalDensity.current) { height.toDp() }
   Row(
     Modifier.fillMaxWidth().height(rowHeight).testTag(LABEL_ROW_TAG),
@@ -309,10 +332,39 @@ private fun PageLabelRow(style: TextStyle, height: Float, start: String = "", en
       Text(center, style = style, maxLines = 1, softWrap = false, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     } else {
       // right to left: the sura on the right, the juz on the left, as on the reader's pages
-      Text(start, style = style, maxLines = 1, softWrap = false, modifier = Modifier.weight(1f))
+      Text(start, style = startStyle, maxLines = 1, softWrap = false, modifier = Modifier.weight(1f))
       Text(end, style = style, maxLines = 1, softWrap = false)
     }
   }
+}
+
+/** The page number in a gilt eight-pointed star, centered under the page. */
+@Composable
+private fun PageNumber(number: String, style: TextStyle, gilt: Color, height: Float) {
+  val rowHeight = with(LocalDensity.current) { height.toDp() }
+  Box(Modifier.fillMaxWidth().height(rowHeight).testTag(LABEL_ROW_TAG), contentAlignment = Alignment.Center) {
+    Box(
+      Modifier
+        .height(rowHeight * 0.95f)
+        .aspectRatio(1f)
+        .drawBehind { drawStar(gilt, center, size.minDimension * 0.5f, size.minDimension * 0.04f, filled = false) },
+      contentAlignment = Alignment.Center
+    ) {
+      Text(number, style = style, maxLines = 1, softWrap = false)
+    }
+  }
+}
+
+/**
+ * An eight-pointed star: two squares, one turned 45°, of half-side [radius] * 0.55 around [center]
+ * (the same proportions as the ayah markers).
+ */
+private fun DrawScope.drawStar(color: Color, center: Offset, radius: Float, strokeWidth: Float, filled: Boolean) {
+  val half = radius * 0.55f
+  val square = Rect(center.x - half, center.y - half, center.x + half, center.y + half)
+  val paint = if (filled) Fill else Stroke(strokeWidth)
+  drawRect(color, square.topLeft, square.size, style = paint)
+  rotate(45f, center) { drawRect(color, square.topLeft, square.size, style = paint) }
 }
 
 /** Test tag of the page's label rows. */
@@ -360,7 +412,10 @@ private fun PageLine(
   lines: MutableMap<Int, PlacedLine>,
   words: List<String>,
   ayahs: List<Int>,
+  ends: List<Boolean>,
   textStyle: TextStyle,
+  gilt: Color,
+  markerFont: FontFamily,
   centered: Boolean,
   colorFor: (Int) -> Color?,
   onTap: () -> Unit,
@@ -375,6 +430,7 @@ private fun PageLine(
   // read the latest values from the long-lived gesture detector instead of restarting it
   val currentOnTap by rememberUpdatedState(onTap)
   val currentOnLongPress by rememberUpdatedState(onLongPress)
+  val measurer = rememberTextMeasurer()
   Layout(
     modifier = modifier
       .onGloballyPositioned { placed.coordinates = it }
@@ -399,6 +455,16 @@ private fun PageLine(
           // words run right to left, so the next word is on the left; cover the gap up to it
           val left = if (ayahs.getOrNull(word + 1) == key) placed.rights[word + 1] else placed.lefts[word]
           drawRect(color = color, topLeft = Offset(left, 0f), size = Size(placed.rights[word] - left, size.height))
+        }
+      }
+      .drawWithContent {
+        drawContent()
+        for (word in placed.lefts.indices) {
+          if (ends.getOrNull(word) != true) continue
+          val number = ayahNumber(ayahs[word])
+          val diameter = minOf((placed.rights[word] - placed.lefts[word]) * 1.35f, size.height * 0.8f)
+          val center = Offset((placed.lefts[word] + placed.rights[word]) / 2f, size.height / 2f)
+          drawAyahMarker(measurer, number, center, diameter, gilt, textStyle.color, markerFont)
         }
       },
     content = {
@@ -425,7 +491,10 @@ private fun PageLine(
         right -= placeable.width * scale
         placed.lefts[index] = right
         val y = (height - placeable.height) / 2
-        if (scale < 1f) {
+        if (ends.getOrNull(index) == true) {
+          // an ayah's end marker keeps its glyph's place in the line, but the page draws its own
+          // gilt marker there instead of the font's (which has colors of its own)
+        } else if (scale < 1f) {
           placeable.placeWithLayer(right.toInt(), y) {
             scaleX = scale
             scaleY = scale
@@ -441,73 +510,91 @@ private fun PageLine(
 }
 
 /**
- * The reader's sura header frame (MushafSuraHeaderDrawer): a teal panel with a gold border and
- * gold diamonds around a cream pill that holds the sura's name.
+ * The sura header frame (Tasnim's gilt design): a double gilt rule around a gilt-outlined pill
+ * with the sura's name, between two filled eight-pointed stars.
  */
 @Composable
 private fun SuraHeader(name: String, style: MushafPageStyle, rowHeight: Dp, modifier: Modifier) {
-  Box(modifier.padding(vertical = rowHeight * 0.08f), contentAlignment = Alignment.Center) {
-    Box(
+  Box(modifier.padding(vertical = rowHeight * 0.09f), contentAlignment = Alignment.Center) {
+    Row(
       Modifier
         .fillMaxSize()
-        .drawBehind { drawSuraFrame(style) },
-      contentAlignment = Alignment.Center
+        .drawBehind { drawSuraFrame(style.gilt) },
+      horizontalArrangement = Arrangement.spacedBy(rowHeight * 0.22f, Alignment.CenterHorizontally),
+      verticalAlignment = Alignment.CenterVertically
     ) {
-      Text(
-        text = name,
-        style = TextStyle(
-          fontFamily = style.headerFont,
-          color = MushafInk,
-          fontSize = with(LocalDensity.current) { (rowHeight * 0.42f).toSp() }
-        ),
-        maxLines = 1
-      )
+      FrameStar(style.gilt, rowHeight * 0.26f)
+      Box(
+        Modifier
+          .height(rowHeight * 0.56f)
+          .drawBehind {
+            val radius = CornerRadius(size.height / 2, size.height / 2)
+            drawRoundRect(style.gilt, cornerRadius = radius, style = Stroke(1.5.dp.toPx()))
+          }
+          .padding(horizontal = rowHeight * 0.45f),
+        contentAlignment = Alignment.Center
+      ) {
+        Text(
+          text = name,
+          style = TextStyle(
+            fontFamily = style.titleFont,
+            color = style.ink,
+            fontSize = with(LocalDensity.current) { (rowHeight * 0.36f).toSp() }
+          ),
+          maxLines = 1,
+          softWrap = false
+        )
+      }
+      FrameStar(style.gilt, rowHeight * 0.26f)
     }
   }
 }
 
-private fun DrawScope.drawSuraFrame(style: MushafPageStyle) {
-  val corner = size.height * 0.08f
-  drawRoundRect(style.suraFrameFill, cornerRadius = CornerRadius(corner, corner))
-  val goldWidth = 1.5.dp.toPx()
-  val inset = size.height * 0.08f
-  drawRoundRect(
-    style.suraFrameGold,
-    topLeft = Offset(inset, inset),
-    size = Size(size.width - inset * 2, size.height - inset * 2),
-    cornerRadius = CornerRadius(corner / 2, corner / 2),
-    style = Stroke(goldWidth)
-  )
-  // the cream pill in the middle half
-  val pillHeight = size.height * 0.72f
-  val pill = Rect(
-    Offset(size.width * 0.25f, (size.height - pillHeight) / 2),
-    Size(size.width * 0.5f, pillHeight)
-  )
-  val pillRadius = CornerRadius(pillHeight / 2, pillHeight / 2)
-  drawRoundRect(style.suraFramePill, pill.topLeft, pill.size, pillRadius)
-  drawRoundRect(style.suraFrameGold, pill.topLeft, pill.size, pillRadius, style = Stroke(goldWidth))
-  // a gold diamond in the middle of each side panel
-  val diamond = size.height * 0.16f
-  listOf((inset + pill.left) / 2, (pill.right + size.width - inset) / 2).forEach { cx ->
-    val path = Path().apply {
-      moveTo(cx, center.y - diamond)
-      lineTo(cx + diamond, center.y)
-      lineTo(cx, center.y + diamond)
-      lineTo(cx - diamond, center.y)
-      close()
-    }
-    drawPath(path, style.suraFrameGold, style = Stroke(goldWidth))
-    val inner = Path().apply {
-      moveTo(cx, center.y - diamond / 2)
-      lineTo(cx + diamond / 2, center.y)
-      lineTo(cx, center.y + diamond / 2)
-      lineTo(cx - diamond / 2, center.y)
-      close()
-    }
-    drawPath(inner, style.suraFrameGold)
-  }
+@Composable
+private fun FrameStar(gilt: Color, size: Dp) {
+  Box(Modifier.height(size).aspectRatio(1f).drawBehind { drawStar(gilt, center, this.size.minDimension / 2f, 0f, filled = true) })
 }
+
+/** The header's double gilt rule: an outer line and a finer one just inside it. */
+private fun DrawScope.drawSuraFrame(gilt: Color) {
+  val outer = 1.5.dp.toPx()
+  val inner = 1.dp.toPx()
+  val inset = 5.dp.toPx()
+  val corner = CornerRadius(4.dp.toPx(), 4.dp.toPx())
+  drawRoundRect(gilt, Offset(outer / 2, outer / 2), Size(size.width - outer, size.height - outer), corner, Stroke(outer))
+  drawRoundRect(
+    gilt, Offset(inset, inset), Size(size.width - inset * 2, size.height - inset * 2),
+    CornerRadius(2.dp.toPx(), 2.dp.toPx()), Stroke(inner)
+  )
+}
+
+/**
+ * The ayah's end marker (Tasnim's gilt design): a gilt eight-pointed star and ring around the
+ * ayah's number, in Arabic-Indic digits.
+ */
+private fun DrawScope.drawAyahMarker(
+  measurer: TextMeasurer,
+  number: Int,
+  center: Offset,
+  diameter: Float,
+  gilt: Color,
+  ink: Color,
+  font: FontFamily
+) {
+  val radius = diameter / 2f
+  drawStar(gilt, center, radius, diameter * 0.05f, filled = false)
+  drawCircle(gilt, radius * 0.62f, center, style = Stroke(diameter * 0.03f))
+  val digits = number.toString().map { '٠' + (it - '0') }.joinToString("")
+  val layout = measurer.measure(
+    digits,
+    TextStyle(fontFamily = font, color = ink, fontSize = (diameter * if (number > 99) 0.36f else 0.5f).toSp()),
+    softWrap = false,
+    maxLines = 1
+  )
+  drawText(layout, topLeft = Offset(center.x - layout.size.width / 2f, center.y - layout.size.height / 2f))
+}
+
+private fun ayahNumber(key: Int): Int = com.quran.mobile.feature.mushaf.data.ayahKeyAyah(key)
 
 @Composable
 private fun Basmala(font: FontFamily, fontPx: Float, modifier: Modifier, ink: Color = MushafInk) {

@@ -18,6 +18,12 @@
   <color name="mushaf_sura_header_fill">#ff1f4e56</color>
   <color name="mushaf_sura_header_gold">#ffd4af37</color>
   <color name="mushaf_sura_header_pill">@color/page_background</color>
+  <!-- text mushaf decorations (Tasnim gilt design, docs/text-mushaf/PLAN.md step 8) -->
+  <color name="mushaf_gilt">#ffb08c45</color>
+  <color name="mushaf_gilt_night">#ffb8964f</color>
+  <color name="mushaf_accent">#ff1f4e56</color>
+  <color name="mushaf_label">#ff5a5347</color>
+  <color name="mushaf_label_night">#ffa9a08c</color>
   <!-- page ornament drawn in the free space above and below a mushaf page (night text follows the page) -->
   <color name="mushaf_ornament_gold">#ffb08c45</color>
   <color name="mushaf_ornament_gold_night">#ff8f7440</color>

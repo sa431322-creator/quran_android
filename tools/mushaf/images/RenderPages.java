@@ -4,10 +4,13 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Shape;
 import java.awt.font.FontRenderContext;
 import java.awt.font.GlyphVector;
 import java.awt.font.TextLayout;
 import java.awt.geom.AffineTransform;
+import java.awt.geom.Ellipse2D;
+import java.awt.geom.Rectangle2D;
 import java.awt.geom.Path2D;
 import java.awt.geom.RoundRectangle2D;
 import java.awt.image.BufferedImage;
@@ -20,7 +23,9 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -34,12 +39,16 @@ import javax.imageio.ImageIO;
  * highlighting database.
  *
  * Like the app's other page images they are black ink on a transparent background (the reader
- * decodes them as alpha and tints them for day and night), with the sura header frame as line art.
- * Sura names, juz and page numbers around the page are drawn by the reader, not in the image.
+ * decodes them as alpha and tints them for day and night). The decorations are the text mode's
+ * (Tasnim's gilt design, docs/text-mushaf/PLAN.md step 8) as line art in the same ink: the sura
+ * header frame, and each ayah's end marker as an eight-pointed star and ring around its number in
+ * place of the font's marker glyph. Sura names, juz and page numbers around the page are drawn by
+ * the reader, not in the image.
  *
  * Input (tools/mushaf/verify/.cache, from prepare.mjs and check_data.mjs --rows): words.tsv,
  * rows.tsv, fonts/p<N>.ttf. Fonts of the app: app/src/madani/assets/uthmanic_hafs_ver12.otf (the
- * basmala) and app/src/main/assets/UthmanTN1Ver10.otf (the sura title).
+ * basmala), app/src/main/assets/kitab.ttf (the sura title) and app/src/main/assets/UthmanTN1Ver10.otf
+ * (the ayah numbers).
  *
  *   java tools/mushaf/images/RenderPages.java <width> [pages]      pages and glyphs-<width>.tsv
  *   java tools/mushaf/images/RenderPages.java --zip <width>         images_<width>.zip and
@@ -75,7 +84,8 @@ public class RenderPages {
     Map<Integer, Map<Integer, String[]>> rows = readRows();
     String[] suraNames = readSuraNames();
     Font basmalaFont = Font.createFont(Font.TRUETYPE_FONT, ROOT.resolve("app/src/madani/assets/uthmanic_hafs_ver12.otf").toFile());
-    Font titleFont = Font.createFont(Font.TRUETYPE_FONT, ROOT.resolve("app/src/main/assets/UthmanTN1Ver10.otf").toFile());
+    Font titleFont = Font.createFont(Font.TRUETYPE_FONT, ROOT.resolve("app/src/main/assets/kitab.ttf").toFile());
+    Font numberFont = Font.createFont(Font.TRUETYPE_FONT, ROOT.resolve("app/src/main/assets/UthmanTN1Ver10.otf").toFile());
 
     Path dir = OUT.resolve("width_" + width);
     Files.createDirectories(dir);
@@ -84,7 +94,11 @@ public class RenderPages {
       out.write("page\tline\tsura\tayah\tposition\tmin_x\tmax_x\tmin_y\tmax_y\n");
       for (int page : pages) {
         Font pageFont = Font.createFont(Font.TRUETYPE_FONT, CACHE.resolve("fonts/p" + page + ".ttf").toFile());
-        BufferedImage image = renderPage(page, width, words.get(page), rows.get(page), pageFont, basmalaFont, titleFont, suraNames, out);
+        // an ayah that goes on to the next page has its end marker there
+        List<Word> next = words.get(page + 1);
+        String nextPageFirstAyah = next == null || next.isEmpty() ? "" : next.get(0).ayah();
+        BufferedImage image = renderPage(page, width, words.get(page), rows.get(page), nextPageFirstAyah,
+          pageFont, basmalaFont, titleFont, numberFont, suraNames, out);
         ImageIO.write(toFourBit(image), "png", dir.resolve(String.format("page%03d.png", page)).toFile());
         if (page % 50 == 0) System.out.println("page " + page);
       }
@@ -93,7 +107,8 @@ public class RenderPages {
   }
 
   static BufferedImage renderPage(int page, int width, List<Word> pageWords, Map<Integer, String[]> pageRows,
-      Font pageFont, Font basmalaFont, Font titleFont, String[] suraNames, BufferedWriter glyphsOut) throws IOException {
+      String nextPageFirstAyah, Font pageFont, Font basmalaFont, Font titleFont, Font numberFont, String[] suraNames,
+      BufferedWriter glyphsOut) throws IOException {
     int height = (int) Math.round(width * ASPECT);
     BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
     Graphics2D g = image.createGraphics();
@@ -114,7 +129,13 @@ public class RenderPages {
     FontRenderContext frc = g.getFontRenderContext();
 
     Map<Integer, List<Word>> byLine = new TreeMap<>();
-    for (Word w : pageWords) byLine.computeIfAbsent(w.line(), k -> new ArrayList<>()).add(w);
+    Set<Word> ends = new HashSet<>();
+    for (int i = 0; i < pageWords.size(); i++) {
+      Word w = pageWords.get(i);
+      byLine.computeIfAbsent(w.line(), k -> new ArrayList<>()).add(w);
+      String nextAyah = i + 1 < pageWords.size() ? pageWords.get(i + 1).ayah() : nextPageFirstAyah;
+      if (!nextAyah.equals(w.ayah())) ends.add(w);
+    }
 
     for (int row = 1; row <= rowCount; row++) {
       String[] slot = pageRows.get(row);
@@ -123,7 +144,8 @@ public class RenderPages {
       switch (kind) {
         case "header" -> drawHeader(g, titleFont, "سُورَةُ " + suraNames[Integer.parseInt(slot[1]) - 1], marginX, rowTop, contentWidth, pitch);
         case "basmala" -> drawCentered(g, basmalaFont.deriveFont((float) (fontPx * 0.95)), BASMALA, width, rowTop + pitch * 0.66);
-        case "text" -> drawLine(g, font, frc, byLine.getOrDefault(row, List.of()), page <= 2, marginX, contentWidth, rowTop, pitch, page, row, glyphsOut);
+        case "text" -> drawLine(g, font, frc, byLine.getOrDefault(row, List.of()), ends, numberFont, page <= 2,
+          marginX, contentWidth, rowTop, pitch, page, row, glyphsOut);
         default -> { }
       }
     }
@@ -132,7 +154,8 @@ public class RenderPages {
   }
 
   /** One text line, right to left: justified edge to edge, or centered when short. */
-  static void drawLine(Graphics2D g, Font font, FontRenderContext frc, List<Word> line, boolean opening,
+  static void drawLine(Graphics2D g, Font font, FontRenderContext frc, List<Word> line, Set<Word> ends,
+      Font numberFont, boolean opening,
       int marginX, int contentWidth, double rowTop, double pitch, int page, int row, BufferedWriter glyphsOut) throws IOException {
     if (line.isEmpty()) return;
     List<GlyphVector> vectors = new ArrayList<>();
@@ -158,11 +181,19 @@ public class RenderPages {
       AffineTransform at = new AffineTransform();
       at.translate(left, baseline);
       at.scale(scale, 1);
-      Graphics2D gw = (Graphics2D) g.create();
-      gw.transform(at);
-      gw.drawGlyphVector(gv, 0, 0);
-      gw.dispose();
       Rectangle ink = gv.getPixelBounds(null, 0, 0);
+      if (ends.contains(line.get(i))) {
+        // the marker glyph keeps its place in the line; the star is drawn there instead of it
+        // the image's lines are closer than the screen's, so the star stays within its glyph's width
+        double diameter = Math.min(advance * 1.1, pitch * 0.8);
+        double cy = baseline + ink.y + ink.height / 2.0;
+        drawAyahMarker(g, numberFont, Integer.parseInt(line.get(i).ayah().split(":")[1]), left + advance / 2, cy, diameter);
+      } else {
+        Graphics2D gw = (Graphics2D) g.create();
+        gw.transform(at);
+        gw.drawGlyphVector(gv, 0, 0);
+        gw.dispose();
+      }
       int minX = (int) Math.floor(left + Math.min(ink.x, 0) * scale);
       int maxX = (int) Math.ceil(left + Math.max(ink.x + ink.width, gv.getLogicalBounds().getWidth()) * scale);
       Word w = line.get(i);
@@ -173,10 +204,13 @@ public class RenderPages {
     }
   }
 
-  /** The sura header frame as line art (the page is tinted as a whole), with the sura's name. */
+  /**
+   * The sura header as the text mode draws it (MushafPageView's SuraHeader), as line art: a double
+   * rule around a pill with the sura's name, between two filled eight-pointed stars.
+   */
   static void drawHeader(Graphics2D g, Font titleFont, String title, int marginX, double rowTop, int contentWidth, double pitch) {
-    double y = rowTop + pitch * 0.1;
-    double h = pitch * 0.8;
+    double y = rowTop + pitch * 0.09;
+    double h = pitch * 0.82;
     double x = marginX;
     double w = contentWidth;
     float stroke = (float) Math.max(1.5, pitch * 0.025);
@@ -185,30 +219,58 @@ public class RenderPages {
     double corner = h * 0.16;
     gg.draw(new RoundRectangle2D.Double(x, y, w, h, corner, corner));
     double inset = h * 0.08;
-    gg.setStroke(new BasicStroke(stroke * 0.6f));
+    gg.setStroke(new BasicStroke(stroke * 0.66f));
     gg.draw(new RoundRectangle2D.Double(x + inset, y + inset, w - 2 * inset, h - 2 * inset, corner / 2, corner / 2));
-    double pillH = h * 0.72;
-    double pillY = y + (h - pillH) / 2;
-    double pillX = x + w * 0.25;
-    double pillW = w * 0.5;
-    gg.setStroke(new BasicStroke(stroke));
-    gg.draw(new RoundRectangle2D.Double(pillX, pillY, pillW, pillH, pillH, pillH));
+
+    Font f = titleFont.deriveFont((float) (pitch * 0.36));
+    TextLayout layout = new TextLayout(title, f, g.getFontRenderContext());
     double cy = y + h / 2;
-    double d = h * 0.16;
-    for (double cx : new double[] {(x + inset + pillX) / 2, (pillX + pillW + x + w - inset) / 2}) {
-      Path2D outer = new Path2D.Double();
-      outer.moveTo(cx, cy - d); outer.lineTo(cx + d, cy); outer.lineTo(cx, cy + d); outer.lineTo(cx - d, cy); outer.closePath();
-      gg.draw(outer);
-      Path2D inner = new Path2D.Double();
-      inner.moveTo(cx, cy - d / 2); inner.lineTo(cx + d / 2, cy); inner.lineTo(cx, cy + d / 2); inner.lineTo(cx - d / 2, cy); inner.closePath();
-      gg.fill(inner);
+    double pillH = pitch * 0.56;
+    double pillW = layout.getAdvance() + pitch * 0.9;
+    double pillX = x + (w - pillW) / 2;
+    gg.setStroke(new BasicStroke(stroke));
+    gg.draw(new RoundRectangle2D.Double(pillX, cy - pillH / 2, pillW, pillH, pillH, pillH));
+    double star = pitch * 0.26;
+    double spacing = pitch * 0.22;
+    for (double cx : new double[] {pillX - spacing - star / 2, pillX + pillW + spacing + star / 2}) {
+      drawStar(gg, cx, cy, star / 2, 0, true);
     }
     gg.dispose();
-    Font f = titleFont.deriveFont((float) (pitch * 0.42));
-    TextLayout layout = new TextLayout(title, f, g.getFontRenderContext());
-    double tx = pillX + (pillW - layout.getAdvance()) / 2;
-    double ty = cy + (layout.getAscent() - layout.getDescent()) / 2;
-    layout.draw(g, (float) tx, (float) ty);
+    layout.draw(g, (float) (pillX + (pillW - layout.getAdvance()) / 2), (float) (cy + (layout.getAscent() - layout.getDescent()) / 2));
+  }
+
+  /** An eight-pointed star: two squares, one turned 45 degrees (MushafPageView's drawStar). */
+  static void drawStar(Graphics2D g, double cx, double cy, double radius, float stroke, boolean filled) {
+    double half = radius * 0.55;
+    Rectangle2D square = new Rectangle2D.Double(cx - half, cy - half, half * 2, half * 2);
+    for (int turn = 0; turn < 2; turn++) {
+      Shape shape = AffineTransform.getRotateInstance(Math.toRadians(45 * turn), cx, cy).createTransformedShape(square);
+      if (filled) {
+        g.fill(shape);
+      } else {
+        Graphics2D gs = (Graphics2D) g.create();
+        gs.setStroke(new BasicStroke(stroke, BasicStroke.CAP_BUTT, BasicStroke.JOIN_MITER));
+        gs.draw(shape);
+        gs.dispose();
+      }
+    }
+  }
+
+  /** An ayah's end marker as the text mode draws it (MushafPageView's drawAyahMarker). */
+  static void drawAyahMarker(Graphics2D g, Font numberFont, int number, double cx, double cy, double diameter) {
+    double radius = diameter / 2;
+    drawStar(g, cx, cy, radius, (float) (diameter * 0.04), false);
+    Graphics2D gs = (Graphics2D) g.create();
+    gs.setStroke(new BasicStroke((float) (diameter * 0.025)));
+    double ring = radius * 0.62;
+    gs.draw(new Ellipse2D.Double(cx - ring, cy - ring, ring * 2, ring * 2));
+    gs.dispose();
+    StringBuilder digits = new StringBuilder();
+    for (char c : String.valueOf(number).toCharArray()) digits.append((char) ('٠' + (c - '0')));
+    Font f = numberFont.deriveFont((float) (diameter * (number > 99 ? 0.36 : 0.5)));
+    TextLayout layout = new TextLayout(digits.toString(), f, g.getFontRenderContext());
+    Rectangle2D bounds = layout.getBounds();
+    layout.draw(g, (float) (cx - bounds.getCenterX()), (float) (cy - bounds.getCenterY()));
   }
 
   static void drawCentered(Graphics2D g, Font font, String text, int width, double baseline) {

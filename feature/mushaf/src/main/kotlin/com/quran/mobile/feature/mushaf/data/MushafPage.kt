@@ -1,12 +1,17 @@
 package com.quran.mobile.feature.mushaf.data
 
-/** One row of a tajweed mushaf page. */
+/** One row of a text mushaf page. */
 sealed interface MushafLine {
   /**
-   * Words of one line; each word is glyph codes for that page's QPC V4 tajweed font, and
-   * [ayahs] holds each word's ayah as [ayahKey].
+   * Words of one line; each word is glyph codes for that page's QPC font, [ayahs] holds each
+   * word's ayah as [ayahKey], and [ends] marks the words that are an ayah's end marker (the
+   * page draws its own marker in their place).
    */
-  data class Text(val words: List<String>, val ayahs: List<Int>) : MushafLine
+  data class Text(
+    val words: List<String>,
+    val ayahs: List<Int>,
+    val ends: List<Boolean> = List(words.size) { false }
+  ) : MushafLine
   data class SuraHeader(val sura: Int) : MushafLine
   data object Basmala : MushafLine
   data object Blank : MushafLine
@@ -62,11 +67,19 @@ fun buildMushafPages(raw: List<RawMushafPage>): List<MushafPage> {
   }
 
   raw.forEachIndexed { index, page ->
+    // an ayah's last word is its end marker, unless the ayah goes on onto the next page
+    val continuesOnNextPage = raw.getOrNull(index + 1)?.wordAyahs?.firstOrNull()
+    val isEnd = { w: Int ->
+      val key = page.wordAyahs.getOrElse(w) { 0 }
+      val next = page.wordAyahs.getOrNull(w + 1)
+      key != 0 && if (next == null) key != continuesOnNextPage else next != key
+    }
     var word = 0
     page.lines.toSortedMap().forEach { (line, words) ->
       val ayahs = List(words.size) { page.wordAyahs.getOrElse(word + it) { 0 } }
+      val ends = List(words.size) { isEnd(word + it) }
       word += words.size
-      slots[index][line - 1] = MushafLine.Text(words, ayahs)
+      slots[index][line - 1] = MushafLine.Text(words, ayahs, ends)
     }
     page.suraStarts.forEach { (sura, line) ->
       val decorations = if (sura == SURA_FATIHA || sura == SURA_TAWBA) {

@@ -289,10 +289,10 @@ private fun PageMessage(
     verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
     horizontalAlignment = Alignment.CenterHorizontally
   ) {
-    if (showProgress) CircularProgressIndicator(color = style.suraFrameFill)
+    if (showProgress) CircularProgressIndicator(color = style.accent)
     Text(message, color = style.headerColor, fontSize = 14.sp)
     if (action != null) {
-      TextButton(onClick = onAction) { Text(action, color = style.suraFrameFill) }
+      TextButton(onClick = onAction) { Text(action, color = style.accent) }
     }
   }
 }

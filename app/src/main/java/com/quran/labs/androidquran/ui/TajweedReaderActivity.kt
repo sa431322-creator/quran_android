@@ -314,9 +314,9 @@ class TajweedReaderActivity : AppCompatActivity(), AudioPresenterScreen, AudioBa
       paper = Color(ContextCompat.getColor(this, R.color.page_background)),
       headerFont = headerFont,
       headerColor = Color(ContextCompat.getColor(this, R.color.overlay_text_color)),
-      suraFrameFill = Color(ContextCompat.getColor(this, R.color.mushaf_sura_header_fill)),
-      suraFrameGold = Color(ContextCompat.getColor(this, R.color.mushaf_sura_header_gold)),
-      suraFramePill = Color(ContextCompat.getColor(this, R.color.mushaf_sura_header_pill)),
+      accent = Color(ContextCompat.getColor(this, R.color.mushaf_accent)),
+      gilt = Color(ContextCompat.getColor(this, R.color.mushaf_gilt)),
+      titleFont = FontFamily(TypefaceManager.getTafseerTypeface(this)),
       selection = Color(ContextCompat.getColor(this, R.color.selection_highlight)),
       recitation = Color(ContextCompat.getColor(this, R.color.audio_highlight))
     )
