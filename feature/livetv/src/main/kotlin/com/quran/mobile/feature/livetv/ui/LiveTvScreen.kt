@@ -1,12 +1,12 @@
 package com.quran.mobile.feature.livetv.ui
 
-import android.app.Activity
 import com.quran.mobile.feature.ads.AdBanner
 import com.quran.mobile.feature.ads.AdSlot
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -184,7 +184,7 @@ fun LiveTvScreen(
 /** Landscape with hidden system bars while fullscreen; back to normal otherwise. */
 @Composable
 private fun FullscreenEffect(isFullscreen: Boolean) {
-  val activity = LocalContext.current as? Activity ?: return
+  val activity = LocalActivity.current ?: return
   DisposableEffect(activity, isFullscreen) {
     val window = activity.window
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)

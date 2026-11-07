@@ -3,6 +3,7 @@ package com.quran.mobile.feature.livetv.ui
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color as AndroidColor
+import android.util.Log
 import android.webkit.JavascriptInterface
 import android.webkit.WebView
 import androidx.compose.foundation.background
@@ -113,11 +114,16 @@ private class YouTubeBridge {
 
   @JavascriptInterface
   fun onError(code: Int) {
+    // 2 bad id, 5 html5 player, 100 not found or private, 101/150 owner forbids embedding,
+    // 152/153 the embedding page was refused (missing origin or referrer)
+    Log.w(TAG, "YouTube player error $code")
     isPlaying.value = false
     failed.value = true
   }
 
   private companion object {
+    const val TAG = "YouTubeLivePlayer"
+
     // YT.PlayerState.PLAYING
     const val PLAYING = 1
   }

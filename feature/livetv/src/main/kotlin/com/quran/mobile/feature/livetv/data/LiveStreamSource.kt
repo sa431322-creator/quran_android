@@ -59,15 +59,19 @@ fun remoteStreamOf(url: String): LiveStreamSource.Remote {
 }
 
 /**
- * A live video link from the admin panel: a YouTube link plays in YouTube's player, anything
- * else as [remoteStreamOf]. Null for a YouTube link that names no video or channel id (such as
- * an @handle, which only the YouTube Data API can resolve), so that channel is left out.
+ * Our own channel's live video link from the admin panel, the only link that may be YouTube: a
+ * YouTube link plays in YouTube's player, anything else as [remoteStreamOf]. Null for a YouTube
+ * link that names no video or channel id (such as an @handle, which only the YouTube Data API
+ * can resolve), so the channel is left out.
  */
-fun liveStreamOf(url: String): LiveStreamSource? =
+fun ownLiveStreamOf(url: String): LiveStreamSource? =
   if (isYouTubeLink(url)) youTubeSourceOf(url) else remoteStreamOf(url)
 
-/** A radio link from the admin panel; null for a YouTube link, which cannot play as audio. */
-fun radioStreamOf(url: String): LiveStreamSource.Remote? =
+/**
+ * Any other link from the admin panel (the Quran and Sunnah channels, and every radio), which
+ * plays only in ExoPlayer; null for a YouTube link, so that channel or station is left out.
+ */
+fun directStreamOf(url: String): LiveStreamSource.Remote? =
   if (isYouTubeLink(url)) null else remoteStreamOf(url)
 
 private val YOUTUBE_HOSTS = setOf(

@@ -21,16 +21,16 @@ class YouTubeLinksTest {
       "https://www.youtube-nocookie.com/embed/dQw4w9WgXcQ",
       "https://www.youtube.com/shorts/dQw4w9WgXcQ",
       "HTTPS://WWW.YOUTUBE.COM/watch?v=dQw4w9WgXcQ"
-    ).forEach { assertThat(liveStreamOf(it)).isEqualTo(video) }
+    ).forEach { assertThat(ownLiveStreamOf(it)).isEqualTo(video) }
   }
 
   @Test
   fun aChannelLinkPlaysItsCurrentLiveStream() {
-    assertThat(liveStreamOf("https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv"))
+    assertThat(ownLiveStreamOf("https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv"))
       .isEqualTo(channel)
-    assertThat(liveStreamOf("https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv/live"))
+    assertThat(ownLiveStreamOf("https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv/live"))
       .isEqualTo(channel)
-    assertThat(liveStreamOf("https://www.youtube.com/embed/live_stream?channel=UCabcdefghijklmnopqrstuv"))
+    assertThat(ownLiveStreamOf("https://www.youtube.com/embed/live_stream?channel=UCabcdefghijklmnopqrstuv"))
       .isEqualTo(channel)
   }
 
@@ -41,33 +41,36 @@ class YouTubeLinksTest {
       "https://www.youtube.com/@tasnim/live",
       "https://www.youtube.com/watch?v=short",
       "https://www.youtube.com/"
-    ).forEach { assertThat(liveStreamOf(it)).isNull() }
+    ).forEach { assertThat(ownLiveStreamOf(it)).isNull() }
   }
 
   @Test
   fun otherLinksStayOnExoPlayer() {
-    assertThat(liveStreamOf("https://s.example/live/index.m3u8"))
+    assertThat(ownLiveStreamOf("https://s.example/live/index.m3u8"))
       .isEqualTo(LiveStreamSource.Remote("https://s.example/live/index.m3u8", StreamFormat.HLS))
     // a lookalike host is not youtube
-    assertThat(liveStreamOf("https://notyoutube.com/watch?v=dQw4w9WgXcQ"))
+    assertThat(ownLiveStreamOf("https://notyoutube.com/watch?v=dQw4w9WgXcQ"))
       .isInstanceOf(LiveStreamSource.Remote::class.java)
   }
 
   @Test
   fun radioIgnoresYouTubeLinks() {
-    assertThat(radioStreamOf("https://youtu.be/dQw4w9WgXcQ")).isNull()
-    assertThat(radioStreamOf("https://q.example/radio.mp3"))
+    assertThat(directStreamOf("https://youtu.be/dQw4w9WgXcQ")).isNull()
+    assertThat(directStreamOf("https://q.example/radio.mp3"))
       .isEqualTo(LiveStreamSource.Remote("https://q.example/radio.mp3", StreamFormat.PROGRESSIVE))
   }
 
   @Test
-  fun channelsWithYouTubeLinksUseTheYouTubePlayer() {
+  fun onlyOurOwnChannelTakesAYouTubeLink() {
     val links = StreamLinks(
       ownLive = "https://youtu.be/dQw4w9WgXcQ",
-      quranLive = "https://www.youtube.com/@quran",
+      quranLive = "https://youtu.be/dQw4w9WgXcQ",
+      sunnahLive = "https://www.youtube.com/channel/UCabcdefghijklmnopqrstuv",
       ownRadio = "https://youtu.be/dQw4w9WgXcQ"
     )
+    // the Quran and Sunnah channels are left out rather than playing youtube
     val channels = ConfiguredLiveChannelRepository { links }.channels()
+    assertThat(channels.map { it.id }).containsExactly(ConfiguredLiveChannelRepository.OWN_ID)
     assertThat(channels.map { it.source }).containsExactly(video)
     assertThat(ConfiguredRadioStationRepository { links }.stations()).isEmpty()
   }
