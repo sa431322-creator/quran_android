@@ -5,6 +5,7 @@ import com.quran.mobile.feature.ads.adLinkProblem
 import com.squareup.moshi.Moshi
 import java.time.Instant
 import java.time.ZoneOffset
+import kotlinx.coroutines.launch
 import kotlin.random.Random
 
 // Pure logic of house ads, kept apart from Android so unit tests cover it: reading the server
@@ -97,3 +98,56 @@ private val TEHRAN = ZoneOffset.ofHoursMinutes(3, 30)
 /** "YYYY-MM-DD" of [epochMs] in Tehran — the day counts are filed under (server contract). */
 fun tehranDay(epochMs: Long): String =
   Instant.ofEpochMilli(epochMs).atOffset(TEHRAN).toLocalDate().toString()
+
+/**
+ * The impression rule: counted once the ad has been [ready] (≥ 50 % visible, screen resumed,
+ * picture drawn) for [IMPRESSION_MS] without a break; once per screen visit. A tap before that
+ * counts the view too, and only the first tap of a visit counts, so clicks never exceed
+ * impressions.
+ */
+class ImpressionGate(
+  private val scope: kotlinx.coroutines.CoroutineScope,
+  /** Kept by the provider per screen, so a view re-created on the same visit remembers it. */
+  private val visit: VisitState = VisitState(),
+  private val onCount: (impressions: Int, clicks: Int) -> Unit,
+) {
+  val counted get() = visit.counted
+  private var timer: kotlinx.coroutines.Job? = null
+
+  fun update(ready: Boolean) {
+    if (counted) return
+    if (!ready) {
+      timer?.cancel()
+      timer = null
+    } else if (timer?.isActive != true) {
+      timer = scope.launch {
+        kotlinx.coroutines.delay(IMPRESSION_MS)
+        visit.counted = true
+        onCount(1, 0)
+      }
+    }
+  }
+
+  fun click() {
+    timer?.cancel()
+    if (visit.clicked) return
+    onCount(if (visit.counted) 0 else 1, 1)
+    visit.counted = true
+    visit.clicked = true
+  }
+
+  /** The screen came back after being stopped: a new visit may count again. */
+  fun newVisit() {
+    timer?.cancel()
+    timer = null
+    visit.counted = false
+    visit.clicked = false
+  }
+
+  companion object {
+    const val IMPRESSION_MS = 1_000L
+  }
+}
+
+/** What one ad already counted on one screen visit. */
+class VisitState(var counted: Boolean = false, var clicked: Boolean = false)

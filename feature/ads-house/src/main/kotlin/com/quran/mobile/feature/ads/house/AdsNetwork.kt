@@ -184,7 +184,10 @@ class AdsRepository(
 /** Answer of one send: done (delete the batch) or try again later with the same id. */
 enum class SendResult { DONE, RETRY }
 
-/** `POST /api/v1/ads/events`. 2xx/400/413 → done; 429, 5xx and network errors → retry. */
+/**
+ * `POST /api/v1/ads/events`. 2xx, 400/422 (refused as invalid) and 413 → done, the batch is
+ * dropped; 429, 5xx and network errors → retry with the same batch id.
+ */
 class AdEventsSender(private val client: OkHttpClient, private val baseUrl: String) {
   suspend fun send(batch: PendingBatch): SendResult = withContext(Dispatchers.IO) {
     val url = baseUrl.toHttpUrlOrNull()?.newBuilder()?.addPathSegments("api/v1/ads/events")?.build()
@@ -207,7 +210,7 @@ class AdEventsSender(private val client: OkHttpClient, private val baseUrl: Stri
       client.newCall(
         Request.Builder().url(url).post(json.toRequestBody(JSON)).build()
       ).execute().use { res ->
-        if (res.isSuccessful || res.code == 400 || res.code == 413) SendResult.DONE else SendResult.RETRY
+        if (res.isSuccessful || res.code in DONE_CODES) SendResult.DONE else SendResult.RETRY
       }
     } catch (e: CancellationException) {
       throw e
@@ -218,6 +221,8 @@ class AdEventsSender(private val client: OkHttpClient, private val baseUrl: Stri
 
   companion object {
     private val JSON = "application/json".toMediaType()
+    /** The server answers 422 for a body it will never accept (zod validation). */
+    private val DONE_CODES = setOf(400, 413, 422)
     private val adapter = Moshi.Builder().build().adapter(Map::class.java)
 
     /** A small client of its own for the worker, which may run before the app's graph exists. */

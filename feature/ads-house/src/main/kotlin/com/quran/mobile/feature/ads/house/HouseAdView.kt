@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -53,7 +54,6 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.quran.mobile.feature.ads.AdContent
 import com.quran.mobile.feature.ads.adLinkProblem
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 
 private const val LABEL = "تبلیغ"
@@ -81,18 +81,23 @@ internal fun HouseAdView(content: AdContent, provider: HouseAdProvider, modifier
     mutableStateOf(lifecycleOwner.lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED))
   }
   var halfVisible by remember { mutableStateOf(false) }
-  // Once per ad per screen visit; a new visit starts after the screen was stopped.
-  var counted by remember(content.id) { mutableStateOf(false) }
+  val scope = rememberCoroutineScope()
+  // Once per ad per screen visit. The visit is kept by the provider per kind of screen, so
+  // leaving fullscreen or rotating does not count again; it ends when the screen really stops.
+  val screen = lifecycleOwner.javaClass.name
+  val gate = remember(content.id, lifecycleOwner) {
+    ImpressionGate(scope, provider.visitState(screen, content)) { impressions, clicks ->
+      provider.record(content, impressions, clicks)
+    }
+  }
+  val activity = LocalContext.current.findActivity()
   DisposableEffect(lifecycleOwner, content.id) {
-    var stopped = false
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
         Lifecycle.Event.ON_RESUME -> resumed = true
         Lifecycle.Event.ON_PAUSE -> resumed = false
-        Lifecycle.Event.ON_STOP -> stopped = true
-        Lifecycle.Event.ON_START -> if (stopped) {
-          stopped = false
-          counted = false
+        Lifecycle.Event.ON_STOP -> if (activity?.isChangingConfigurations != true) {
+          provider.endVisit(screen)
         }
         else -> Unit
       }
@@ -101,13 +106,8 @@ internal fun HouseAdView(content: AdContent, provider: HouseAdProvider, modifier
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
   val drawn = bitmap != null
-  LaunchedEffect(halfVisible, resumed, drawn, counted) {
-    if (halfVisible && resumed && drawn && !counted) {
-      delay(IMPRESSION_MS)
-      counted = true
-      provider.record(content, impressions = 1, clicks = 0)
-    }
-  }
+  val ready = halfVisible && resumed && drawn
+  LaunchedEffect(gate, ready) { gate.update(ready) }
 
   var menu by remember { mutableStateOf(false) }
   val link = content.actionUrl?.takeIf { adLinkProblem(it) == null }
@@ -138,8 +138,7 @@ internal fun HouseAdView(content: AdContent, provider: HouseAdProvider, modifier
           onClick = {
             if (link == null) return@combinedClickable
             // A tap also counts the view if the 1-second rule had not yet (clicks ≤ impressions).
-            provider.record(content, impressions = if (counted) 0 else 1, clicks = 1)
-            counted = true
+            gate.click()
             open(context, link, provider)
           },
           onLongClick = { menu = true },
@@ -187,8 +186,6 @@ internal fun HouseAdView(content: AdContent, provider: HouseAdProvider, modifier
   }
 }
 
-private const val IMPRESSION_MS = 1_000L
-
 /** Checked again here (same rules as the server); a book link opens inside the app. */
 private fun open(context: Context, link: String, provider: HouseAdProvider) {
   if (adLinkProblem(link) != null) return
@@ -219,4 +216,10 @@ private fun report(context: Context, content: AdContent, links: List<String>) {
       // try the next one
     }
   }
+}
+
+private tailrec fun Context.findActivity(): android.app.Activity? = when (this) {
+  is android.app.Activity -> this
+  is android.content.ContextWrapper -> baseContext.findActivity()
+  else -> null
 }

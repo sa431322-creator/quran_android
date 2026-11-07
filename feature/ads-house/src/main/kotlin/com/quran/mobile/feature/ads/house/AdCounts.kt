@@ -119,7 +119,7 @@ class AdCountStore(dir: File) {
     pending
   }
 
-  /** After 2xx/400/413: the batch is done (stored, a duplicate, or refused for good). */
+  /** After 2xx/400/413/422: the batch is done (stored, a duplicate, or refused for good). */
   suspend fun finish(batchId: String) = mutex.withLock {
     if (readPending()?.batchId == batchId) pendingFile.delete()
   }

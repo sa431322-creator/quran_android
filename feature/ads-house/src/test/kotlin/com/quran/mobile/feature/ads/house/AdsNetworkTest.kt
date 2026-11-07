@@ -95,7 +95,7 @@ class AdsNetworkTest {
     val sender = AdEventsSender(OkHttpClient(), base())
     val batch = PendingBatch("b-1", listOf(CountRow(7, "live_tv", "2026-11-07", 3, 1)))
     for ((code, expected) in listOf(
-      204 to SendResult.DONE, 400 to SendResult.DONE, 413 to SendResult.DONE,
+      204 to SendResult.DONE, 400 to SendResult.DONE, 413 to SendResult.DONE, 422 to SendResult.DONE,
       429 to SendResult.RETRY, 503 to SendResult.RETRY,
     )) {
       server.enqueue(MockResponse().setResponseCode(code))

@@ -76,6 +76,20 @@ class HouseAdProvider internal constructor(
   private var job: Job? = null
   private var lastRefreshMs = Long.MIN_VALUE / 2
   private var refreshEveryMs = MIN_REFRESH_MS
+  /** Per kind of screen and ad: what the current visit already counted (main thread only). */
+  private val visits = mutableMapOf<String, MutableMap<Pair<AdSlot, Int>, VisitState>>()
+
+  internal fun visitState(screen: String, content: AdContent): VisitState =
+    visits.getOrPut(screen) { mutableMapOf() }.getOrPut(content.slot to content.id) { VisitState() }
+
+  /** The screen was really left (not rotated): the next visit may count again. */
+  internal fun endVisit(screen: String) {
+    visits[screen]?.values?.forEach {
+      it.counted = false
+      it.clicked = false
+    }
+  }
+
   /** Ads shown from a preview token: never counted. */
   private var previewIds = emptySet<Int>()
 
