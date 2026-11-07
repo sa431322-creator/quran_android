@@ -1,6 +1,5 @@
 package com.quran.labs.androidquran.ui.mushaf
 
-import android.content.Context
 import android.view.View
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.ui.geometry.Offset
@@ -13,8 +12,6 @@ import com.quran.data.model.selection.SelectionRectangle
 import com.quran.labs.androidquran.presenter.quran.ayahtracker.AyahTrackerItem
 import com.quran.labs.androidquran.ui.helpers.HighlightTypes
 import com.quran.labs.androidquran.view.TabletView
-import com.quran.mobile.feature.mushaf.data.MushafEdition
-import com.quran.mobile.feature.mushaf.data.MushafRepository
 import com.quran.mobile.feature.mushaf.data.ayahKey
 import com.quran.mobile.feature.mushaf.data.ayahKeyAyah
 import com.quran.mobile.feature.mushaf.data.ayahKeySura
@@ -116,13 +113,3 @@ class TextPageHighlights {
       .toMap()
 }
 
-/** The text mushaf's pages and fonts, shared by every page of the reader. */
-object TextMushaf {
-  @Volatile private var repository: MushafRepository? = null
-
-  fun repository(context: Context): MushafRepository =
-    repository ?: synchronized(this) {
-      repository ?: MushafRepository(context.applicationContext, "", MushafEdition.PLAIN_V2)
-        .also { repository = it }
-    }
-}

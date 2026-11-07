@@ -125,7 +125,7 @@
           android:progressDrawable="@drawable/tasnim_continue_progress" />
     </LinearLayout>
 
-    <!-- separate, experimental tajweed mushaf; the main mushaf is unchanged -->
+    <!-- opens the reader's text pages drawn as the tajweed mushaf -->
     <TextView
         android:id="@+id/tajweed_button"
         android:layout_width="match_parent"

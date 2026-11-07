@@ -106,40 +106,8 @@ fun buildMushafPages(raw: List<RawMushafPage>): List<MushafPage> {
   }
 }
 
-/**
- * The tajweed page showing [sura]:[ayah]: the last page whose first ayah is not after it. Pages
- * follow the V4 (1441H) layout, so this, not the page number, is how to move from another mushaf.
- */
-fun List<MushafPage>.pageFor(sura: Int, ayah: Int): Int {
-  var low = 0
-  var high = lastIndex
-  while (low < high) {
-    val middle = (low + high + 1) / 2
-    val (pageSura, pageAyah) = this[middle].firstAyah
-    if (pageSura < sura || (pageSura == sura && pageAyah <= ayah)) low = middle else high = middle - 1
-  }
-  return this[low].page
-}
-
 /** The page showing each sura's header, which is the page before its text for some suras. */
 fun suraHeaderPages(pages: List<MushafPage>): Map<Int, Int> =
   pages.flatMap { page ->
     page.lines.filterIsInstance<MushafLine.SuraHeader>().map { it.sura to page.page }
   }.toMap()
-
-/** Whether any word of the ayah [key] (an [ayahKey]) is on this page. */
-fun MushafPage.hasAyah(key: Int): Boolean =
-  lines.any { it is MushafLine.Text && key in it.ayahs }
-
-/**
- * The page index to turn to while [sura]:[ayah] is recited, or null when the page at
- * [currentIndex] already shows some of it. An ayah running over a page turn is followed from the
- * page it starts on, which is the one before [pageFor]'s when the next page starts with it.
- */
-fun List<MushafPage>.indexToFollow(sura: Int, ayah: Int, currentIndex: Int): Int? {
-  if (isEmpty()) return null
-  val key = ayahKey(sura, ayah)
-  if (getOrNull(currentIndex)?.hasAyah(key) == true) return null
-  val index = indexOfFirst { it.page == pageFor(sura, ayah) }.takeIf { it >= 0 } ?: return null
-  return if (index > 0 && this[index - 1].hasAyah(key)) index - 1 else index
-}

@@ -1,6 +1,6 @@
 ---
 name: check-qul-tajweed
-description: Check whether QUL (Tarteel's Quranic Universal Library) has published the proofread QPC V4 tajweed fonts that Tasnim's tajweed mushaf uses, and whether the 46 pages with over-wide lines are fixed. Use at the start of any session that touches the tajweed mushaf (feature/mushaf, TajweedReaderActivity, tools/mushaf), when the user says "شيك على كوال", "هل نشرت كوال الخطوط", "check QUL", "check the tajweed fonts", "any QUL update", or about once a month otherwise.
+description: Check whether QUL (Tarteel's Quranic Universal Library) has published the proofread QPC V4 tajweed fonts that Tasnim's tajweed mushaf uses, and whether the 46 pages with over-wide lines are fixed. Use at the start of any session that touches the tajweed mushaf (feature/mushaf, the reader's text pages in app/.../ui/mushaf, tools/mushaf), when the user says "شيك على كوال", "هل نشرت كوال الخطوط", "check QUL", "check the tajweed fonts", "any QUL update", or about once a month otherwise.
 ---
 
 # Check QUL for the proofread V4 tajweed fonts — فحص تحديثات خطوط التجويد في كوال

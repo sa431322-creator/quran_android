@@ -27,19 +27,6 @@ class MushafPageTest {
   }
 
   @Test
-  fun pageForFindsThePageWhereTheAyahIs() {
-    // first ayahs of pages 1, 2, 3, 76, 77 and 604 in the V4 layout
-    val pages = listOf(page(1, 1, 1), page(2, 2, 1), page(3, 2, 6), page(76, 3, 195), page(77, 4, 1), page(604, 112, 1))
-    assertThat(pages.pageFor(1, 7)).isEqualTo(1)
-    assertThat(pages.pageFor(2, 1)).isEqualTo(2)
-    assertThat(pages.pageFor(2, 5)).isEqualTo(2)
-    assertThat(pages.pageFor(2, 6)).isEqualTo(3)
-    assertThat(pages.pageFor(3, 200)).isEqualTo(76)
-    assertThat(pages.pageFor(4, 1)).isEqualTo(77)
-    assertThat(pages.pageFor(114, 6)).isEqualTo(604)
-  }
-
-  @Test
   fun fatihaHasHeaderButNoSeparateBasmala() {
     val pages = buildMushafPages(listOf(raw(1, 2..8, listOf(1 to 2))))
     assertThat(pages[0].lines).hasSize(8)
@@ -93,25 +80,5 @@ class MushafPageTest {
     assertThat((pages[0].lines[0] as MushafLine.Text).ends).containsExactly(false, true, false).inOrder()
     assertThat((pages[0].lines[1] as MushafLine.Text).ends).containsExactly(false, false).inOrder()
     assertThat((pages[1].lines[0] as MushafLine.Text).ends).containsExactly(false, true).inOrder()
-  }
-
-  private fun textPage(page: Int, vararg ayahs: Pair<Int, Int>) = MushafPage(
-    page, ayahs.first().first, 1, ayahs.first(),
-    listOf(MushafLine.Text(ayahs.map { "x" }, ayahs.map { (sura, ayah) -> ayahKey(sura, ayah) }))
-  )
-
-  @Test
-  fun followingPlaybackTurnsToThePageOfTheRecitedAyah() {
-    // 2:5 runs from the end of page 2 onto page 3
-    val pages = listOf(textPage(1, 1 to 1, 1 to 7), textPage(2, 2 to 1, 2 to 5), textPage(3, 2 to 5, 2 to 6))
-    assertThat(pages.indexToFollow(1, 7, currentIndex = 0)).isNull()
-    assertThat(pages.indexToFollow(2, 1, currentIndex = 0)).isEqualTo(1)
-    assertThat(pages.indexToFollow(2, 6, currentIndex = 1)).isEqualTo(2)
-    // an ayah over a page turn starts on the page before, and either page already shows it
-    assertThat(pages.indexToFollow(2, 5, currentIndex = 0)).isEqualTo(1)
-    assertThat(pages.indexToFollow(2, 5, currentIndex = 1)).isNull()
-    assertThat(pages.indexToFollow(2, 5, currentIndex = 2)).isNull()
-    assertThat(pages.indexToFollow(1, 1, currentIndex = 2)).isEqualTo(0)
-    assertThat(emptyList<MushafPage>().indexToFollow(1, 1, currentIndex = 0)).isNull()
   }
 }

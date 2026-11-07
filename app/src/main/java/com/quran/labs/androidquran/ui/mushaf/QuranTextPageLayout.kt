@@ -32,6 +32,7 @@ import com.quran.mobile.feature.mushaf.ui.MushafGesture
 import com.quran.mobile.feature.mushaf.ui.MushafPageHits
 import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
 import com.quran.mobile.feature.mushaf.ui.MushafPageStyle
+import com.quran.mobile.feature.mushaf.ui.nightGlyphFilter
 
 /**
  * One page of the text (font) mushaf in the reader, in the reader's own page frame (borders,
@@ -73,8 +74,11 @@ class QuranTextPageLayout(
 
   @androidx.compose.runtime.Composable
   private fun Content() {
+    // plain or tajweed: reading the shared setting here redraws the page when it changes
     val repository = TextMushaf.repository(context)
-    val mushafPage by produceState<MushafPage?>(null, page) {
+    val mushafPage by produceState<MushafPage?>(null, page, repository) {
+      // never the last edition's page with this edition's font
+      value = null
       value = runCatching { repository.data().pages.getOrNull(page - 1) }.getOrNull()
     }
     val current = mushafPage ?: return
@@ -126,7 +130,8 @@ class QuranTextPageLayout(
       selection = color(R.color.selection_highlight),
       recitation = color(R.color.audio_highlight),
       ink = ink,
-      titleFont = titleFont
+      titleFont = titleFont,
+      glyphFilter = if (nightMode) nightGlyphFilter(ink) else null
     )
   }
 

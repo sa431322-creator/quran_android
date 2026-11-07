@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
 import androidx.core.view.updatePadding
 import androidx.core.widget.TextViewCompat
@@ -34,6 +35,7 @@ import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
+import com.quran.data.page.provider.madani.MadaniV2PageProvider
 import com.quran.data.core.QuranInfo
 import com.quran.data.dao.RecentPagesDao
 import com.quran.data.model.Page
@@ -42,7 +44,6 @@ import com.quran.labs.androidquran.AboutUsActivity
 import com.quran.labs.androidquran.HelpActivity
 import com.quran.labs.androidquran.QuranApplication
 import com.quran.labs.androidquran.QuranPreferenceActivity
-import com.quran.labs.androidquran.BuildConfig
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.SearchActivity
 import com.quran.labs.androidquran.ShortcutsActivity
@@ -63,6 +64,7 @@ import com.quran.labs.androidquran.ui.fragment.TagBookmarkDialog.OnBookmarkTagsU
 import com.quran.labs.androidquran.ui.helpers.JumpDestination
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.ui.helpers.QuranRow
+import com.quran.labs.androidquran.ui.mushaf.TextMushaf
 import com.quran.labs.androidquran.ui.util.TypefaceManager
 import com.quran.labs.androidquran.util.AudioUtils
 import com.quran.labs.androidquran.util.QuranSettings
@@ -236,6 +238,8 @@ class QuranActivity : AppCompatActivity(),
 
   public override fun onResume() {
     super.onResume()
+    // tajweed needs the text pages; the page type may have changed in the settings
+    findViewById<View>(R.id.tajweed_button)?.isVisible = settings.pageType == MadaniV2PageProvider.PAGE_TYPE
     val isRtl = isRtl()
     if (isRtl != this.isRtl) {
       val i = intent
@@ -360,11 +364,6 @@ class QuranActivity : AppCompatActivity(),
       .sortedBy { it.order }
       .forEach { menu.add(Menu.NONE, it.id, Menu.NONE, it.titleResId) }
 
-    // trial of the text (QPC V2) mushaf, debug builds only
-    if (BuildConfig.DEBUG) {
-      menu.add(Menu.NONE, TEXT_MUSHAF_TRIAL_ID, Menu.NONE, "آزمایش مصحف متنی V2")
-    }
-
     return true
   }
 
@@ -378,9 +377,6 @@ class QuranActivity : AppCompatActivity(),
       }
       R.id.help -> {
         startActivity(Intent(this, HelpActivity::class.java))
-      }
-      TEXT_MUSHAF_TRIAL_ID -> {
-        startActivity(Intent(this, TextMushafTrialActivity::class.java))
       }
       R.id.about -> {
         startActivity(Intent(this, AboutUsActivity::class.java))
@@ -455,8 +451,11 @@ class QuranActivity : AppCompatActivity(),
     findViewById<View>(R.id.radio_button).setOnClickListener {
       startActivity(Intent(this, RadioActivity::class.java))
     }
+    // the tajweed mushaf is the reader's text pages in tajweed colors, at the last page read
     findViewById<View>(R.id.tajweed_button).setOnClickListener {
-      startActivity(Intent(this, TajweedReaderActivity::class.java))
+      TextMushaf.setTajweed(this, true)
+      // on the mushaf pages, even when the reader was last left on its translation
+      jumpToLastPage(showTranslation = false)
     }
     findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
@@ -491,11 +490,12 @@ class QuranActivity : AppCompatActivity(),
     }
   }
 
-  private fun jumpToLastPage() {
+  private fun jumpToLastPage(showTranslation: Boolean = settings.wasShowingTranslation) {
     lifecycleScope.launch {
       val recentPage = latestPage()
-      jumpTo(
-        if (recentPage == Constants.NO_PAGE) 1 else recentPage
+      quranNavigator.jumpTo(
+        Page(if (recentPage == Constants.NO_PAGE) 1 else recentPage),
+        showTranslation = showTranslation
       )
     }
   }
@@ -640,7 +640,6 @@ class QuranActivity : AppCompatActivity(),
   }
 
   companion object {
-    private const val TEXT_MUSHAF_TRIAL_ID = 0x7e57
     private val TITLES = intArrayOf(
         R.string.quran_sura,
         R.string.quran_juz2,

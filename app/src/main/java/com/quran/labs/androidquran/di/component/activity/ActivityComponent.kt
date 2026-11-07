@@ -13,7 +13,6 @@ interface ActivityComponent {
   // subcomponents
   fun pagerActivityComponentFactory(): PagerActivityComponent.Factory
   fun quranActivityComponentFactory(): QuranActivityComponent.Factory
-  fun tajweedReaderComponentFactory(): TajweedReaderComponent.Factory
 
   @GraphExtension.Factory
   interface Factory {

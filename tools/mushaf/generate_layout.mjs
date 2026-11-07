@@ -6,10 +6,9 @@
 //
 // Usage: node tools/mushaf/generate_layout.mjs
 //
-// The plain King Fahd Madinah mushaf (QPC V2, 1421H) takes --edition v2, and --pages limits it
-// to a few pages:
-//   node tools/mushaf/generate_layout.mjs --edition v2 --pages 2,50,76,77 \
-//     --out feature/mushaf/src/main/assets/text-mushaf-trial/v2/pages.json
+// The plain King Fahd Madinah mushaf (QPC V2, 1421H) takes --edition v2 (with the line-break
+// corrections of layout-corrections.mjs); --pages limits it to a few pages:
+//   node tools/mushaf/generate_layout.mjs --edition v2 --out feature/mushaf/src/main/assets/mushaf/v2/pages.json
 //
 // The API ignores its mushaf parameter: the glyph field asked for decides the page_number and
 // line_number it returns, and code_v2 gives the V2 layout that both editions here share.

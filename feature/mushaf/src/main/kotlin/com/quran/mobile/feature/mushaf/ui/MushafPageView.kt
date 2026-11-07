@@ -1,5 +1,9 @@
 package com.quran.mobile.feature.mushaf.ui
 
+import androidx.compose.ui.graphics.ColorFilter
+import androidx.compose.ui.graphics.ColorMatrix
+import androidx.compose.ui.graphics.Paint
+import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -99,8 +103,36 @@ data class MushafPageStyle(
   /** the text's color; a monochrome page font (V2) takes it, a color one (V4 tajweed) keeps its own */
   val ink: Color = MushafInk,
   /** sura names, in the header frame and the page's label */
-  val titleFont: FontFamily = headerFont
+  val titleFont: FontFamily = headerFont,
+  /**
+   * Applied to the page font's glyphs only (not the decorations): a color page font (V4 tajweed)
+   * draws its letters in black of its own, which [ink] cannot change, so a night page needs one.
+   */
+  val glyphFilter: ColorFilter? = null
 )
+
+/**
+ * A night page's [MushafPageStyle.glyphFilter]: dark glyphs turn into [ink] and colors lighten by
+ * as much as they are dark, keeping their hue, so tajweed colors stay told apart on a dark page.
+ * White stays white and transparent stays transparent.
+ */
+fun nightGlyphFilter(ink: Color): ColorFilter {
+  // each channel: c + ink_c * (1 - average of r, g, b), in 0..255 like Android's color matrix
+  fun row(channel: Int, inkChannel: Float): FloatArray {
+    val lift = inkChannel * ink.alpha
+    return FloatArray(5) { column ->
+      when (column) {
+        channel -> 1f - lift / 3f
+        in 0..2 -> -lift / 3f
+        4 -> 255f * lift
+        else -> 0f
+      }
+    }
+  }
+  return ColorFilter.colorMatrix(
+    ColorMatrix(row(0, ink.red) + row(1, ink.green) + row(2, ink.blue) + floatArrayOf(0f, 0f, 0f, 1f, 0f))
+  )
+}
 
 /** The page's header and footer text, as the reader writes them for its own pages. */
 data class MushafPageLabels(val suraName: String, val juz: String, val pageNumber: String)
@@ -275,6 +307,7 @@ fun MushafPageView(
               ends = line.ends,
               textStyle = textStyle,
               gilt = style.gilt,
+              glyphFilter = style.glyphFilter,
               markerFont = style.headerFont, // plain digits: the Uthmani face draws its own ayah ornament around them
               centered = page.isOpening,
               colorFor = { key ->
@@ -416,6 +449,7 @@ private fun PageLine(
   textStyle: TextStyle,
   gilt: Color,
   markerFont: FontFamily,
+  glyphFilter: ColorFilter?,
   centered: Boolean,
   colorFor: (Int) -> Color?,
   onTap: () -> Unit,
@@ -458,7 +492,15 @@ private fun PageLine(
         }
       }
       .drawWithContent {
-        drawContent()
+        if (glyphFilter == null) {
+          drawContent()
+        } else {
+          drawIntoCanvas { canvas ->
+            canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply { colorFilter = glyphFilter })
+            drawContent()
+            canvas.restore()
+          }
+        }
         for (word in placed.lefts.indices) {
           if (ends.getOrNull(word) != true) continue
           val number = ayahNumber(ayahs[word])

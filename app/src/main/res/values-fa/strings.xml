@@ -267,7 +267,7 @@
   <string name="collapse_collection">جمع کردن</string>
   <string name="open_collection">باز کردن مجموعه</string>
   <plurals name="removed_highlights">
-    <item quantity="one">یک برجسته‌سازی حذف شد</item>
+    <item quantity="one">%d برجسته‌سازی حذف شد</item>
     <item quantity="other">%d برجسته‌سازی حذف شد</item>
   </plurals>
   <string name="remove_highlight">حذف برجسته‌سازی</string>

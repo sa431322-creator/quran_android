@@ -49,6 +49,7 @@ import androidx.viewpager.widget.ViewPager.OnPageChangeListener
 import androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
+import com.quran.data.page.provider.madani.MadaniV2PageProvider
 import com.quran.data.core.QuranInfo
 import com.quran.data.dao.BookmarksDao
 import com.quran.data.model.Page
@@ -110,6 +111,7 @@ import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.helpers.QuranPageAdapter
 import com.quran.labs.androidquran.ui.helpers.SlidingPagerAdapter
 import com.quran.labs.androidquran.ui.listener.AudioBarListener
+import com.quran.labs.androidquran.ui.mushaf.TextMushaf
 import com.quran.labs.androidquran.ui.readingbookmark.createReadingBookmarkToastView
 import com.quran.labs.androidquran.ui.util.ToastCompat.makeText
 import com.quran.labs.androidquran.ui.util.TranslationsSpinnerAdapter
@@ -218,30 +220,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var readerModePersian: TextView
   private lateinit var readerModeTajweed: TextView
 
-  // the tajweed mushaf has its own page layout, so the two hand each other an ayah, not a page
-  private var tajweedOpen = false
-  private val tajweedLauncher = registerForActivityResult(TajweedReaderActivity.Contract()) { result ->
-    tajweedOpen = false
-    setReaderMode(ReaderMode.MUSHAF)
-    result?.let { (sura, ayah, panel) ->
-      val page = quranInfo.getPageFromSuraAyah(sura, ayah)
-      viewPager.currentItem = quranInfo.getPositionFromPage(page, isDualPageVisible)
-      // tajweed's Persian and translation buttons open this reader's own panels at the ayah
-      when (panel) {
-        TajweedReaderActivity.Panel.PERSIAN_TAFSIR -> {
-          readingEventPresenterBridge.setSelection(sura, ayah, false)
-          openPersianTafsir()
-        }
-        TajweedReaderActivity.Panel.TRANSLATION -> {
-          readingEventPresenterBridge.setSelection(sura, ayah, false)
-          val translationPage = slidingPagerAdapter.getPagePosition(SlidingPagerAdapter.TRANSLATION_PAGE)
-          handler.post { showSlider(translationPage) }
-        }
-        TajweedReaderActivity.Panel.TRANSLATION_MODE -> if (translations != null) switchToTranslation()
-        TajweedReaderActivity.Panel.NONE -> Unit
-      }
-    }
-  }
   private lateinit var pageSliderArea: View
   private lateinit var pageSlider: SeekBar
   private lateinit var pageSliderBubble: TextView
@@ -2080,8 +2058,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   /**
    * The Tasnim "mushaf / Persian translation and tafsir / tajweed" toggle. The Persian side opens
-   * the Persian tafsir panel and the tajweed side opens the tajweed mushaf, both at the selected
-   * ayah or the first ayah on the page.
+   * the Persian tafsir panel at the selected ayah or the first ayah on the page. The mushaf and
+   * tajweed sides draw the reader's own text pages plain or in tajweed colors: both mushafs hold
+   * the same ayahs on every page, so the reader stays where it is. Tajweed needs the text pages,
+   * so it is not offered with page images.
    */
   private fun initReaderModeToggle() {
     readerModeMushaf = findViewById(R.id.reader_mode_mushaf)
@@ -2091,11 +2071,28 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       if (slidingPanel.isPaneVisible) {
         slidingPanel.collapsePane()
       }
-      setReaderMode(ReaderMode.MUSHAF)
+      setPagesMode(tajweed = false)
     }
     readerModePersian.setOnClickListener { openPersianTafsir() }
-    readerModeTajweed.setOnClickListener { openTajweedMushaf() }
-    setReaderMode(ReaderMode.MUSHAF)
+    readerModeTajweed.setOnClickListener {
+      if (slidingPanel.isPaneVisible) {
+        slidingPanel.collapsePane()
+      }
+      setPagesMode(tajweed = true)
+    }
+    readerModeTajweed.isVisible = hasTextPages()
+    setReaderMode(pagesMode())
+  }
+
+  private fun hasTextPages() = quranSettings.pageType == MadaniV2PageProvider.PAGE_TYPE
+
+  /** The side of the toggle that shows how the pages are drawn (plain or tajweed). */
+  private fun pagesMode(): ReaderMode =
+    if (hasTextPages() && TextMushaf.isTajweed(this)) ReaderMode.TAJWEED else ReaderMode.MUSHAF
+
+  private fun setPagesMode(tajweed: Boolean) {
+    if (hasTextPages()) TextMushaf.setTajweed(this, tajweed)
+    setReaderMode(pagesMode())
   }
 
   private fun setReaderMode(mode: ReaderMode) {
@@ -2111,21 +2108,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       view.setBackgroundResource(if (selected) R.drawable.tasnim_segment_selected else 0)
       view.setTextColor(if (selected) selectedText else normalText)
     }
-  }
-
-  private fun openTajweedMushaf() {
-    // a second tap while it opens would stack another copy
-    if (tajweedOpen) return
-    tajweedOpen = true
-    val start = selectionStart?.let { it.sura to it.ayah } ?: run {
-      val bounds = quranInfo.getPageBounds(currentPage)
-      bounds[0] to bounds[1]
-    }
-    if (slidingPanel.isPaneVisible) {
-      slidingPanel.collapsePane()
-    }
-    setReaderMode(ReaderMode.TAJWEED)
-    tajweedLauncher.launch(start)
   }
 
   private fun openPersianTafsir() {
@@ -2200,7 +2182,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
       slidingPanel.hidePane()
       readingEventPresenter.onPanelClosed()
-      setReaderMode(ReaderMode.MUSHAF)
+      setReaderMode(pagesMode())
     }
 
     override fun onPanelExpanded(panel: View) {
@@ -2208,7 +2190,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       setReaderMode(
         if (slidingPager.currentItem ==
           slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
-        ) ReaderMode.PERSIAN else ReaderMode.MUSHAF
+        ) ReaderMode.PERSIAN else pagesMode()
       )
     }
 
