@@ -21,11 +21,11 @@ class ConfiguredLiveChannelRepository(
     val own = if (links == null) {
       LiveStreamSource.LocalAsset(SAMPLE_ASSET)
     } else {
-      links.ownLive?.let(::remoteStreamOf)
+      links.ownLive?.let(::liveStreamOf)
     }
     return listOfNotNull(
       own?.let { OWN_CHANNEL.copy(source = it) },
-      links?.quranLive?.let { QURAN_CHANNEL.copy(source = remoteStreamOf(it)) }
+      links?.quranLive?.let(::liveStreamOf)?.let { QURAN_CHANNEL.copy(source = it) }
     )
   }
 
