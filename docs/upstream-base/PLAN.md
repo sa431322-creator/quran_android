@@ -167,6 +167,12 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   `oauth.properties` gives `QURAN_OAUTH_CLIENT_ID`. Tasnim ships none, so it stays hidden while its
   code keeps merging cleanly. Keep `oauth.properties` out of Tasnim builds. The icon-based accent
   is replaced by Tasnim's (step 2).
+- **Step 6 done (2026-11-11).** `tasnim/ads` ⊂ `tasnim/live-youtube` = `tasnim-rebrand-v2`
+  (`fd4922eeb`), so one merge of `tasnim-rebrand-v2` brought all three: ads-api / ads-house /
+  ads-noop (house ads in live TV, radio and library, never on Quran pages) and YouTube playback
+  for the live channels. One conflict (`app/build.gradle.kts`): ads modules kept, `feature:tajweed`
+  dropped since it was renamed `feature:mushaf`. App, ads, livetv and library tests pass; the
+  `-PnoAds` build compiles.
 - **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page
