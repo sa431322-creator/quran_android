@@ -2,8 +2,6 @@ package com.quran.mobile.feature.mushaf.ui
 
 import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.graphics.ColorMatrix
-import androidx.compose.ui.graphics.Paint
-import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.ui.draw.drawWithContent
 import androidx.compose.ui.graphics.drawscope.Fill
@@ -392,7 +390,7 @@ private fun PageNumber(number: String, style: TextStyle, gilt: Color, height: Fl
  * An eight-pointed star: two squares, one turned 45°, of half-side [radius] * 0.55 around [center]
  * (the same proportions as the ayah markers).
  */
-private fun DrawScope.drawStar(color: Color, center: Offset, radius: Float, strokeWidth: Float, filled: Boolean) {
+internal fun DrawScope.drawStar(color: Color, center: Offset, radius: Float, strokeWidth: Float, filled: Boolean) {
   val half = radius * 0.55f
   val square = Rect(center.x - half, center.y - half, center.x + half, center.y + half)
   val paint = if (filled) Fill else Stroke(strokeWidth)
@@ -492,15 +490,7 @@ private fun PageLine(
         }
       }
       .drawWithContent {
-        if (glyphFilter == null) {
-          drawContent()
-        } else {
-          drawIntoCanvas { canvas ->
-            canvas.saveLayer(Rect(Offset.Zero, size), Paint().apply { colorFilter = glyphFilter })
-            drawContent()
-            canvas.restore()
-          }
-        }
+        drawContentFiltered(glyphFilter)
         for (word in placed.lefts.indices) {
           if (ends.getOrNull(word) != true) continue
           val number = ayahNumber(ayahs[word])
@@ -556,7 +546,7 @@ private fun PageLine(
  * with the sura's name, between two filled eight-pointed stars.
  */
 @Composable
-private fun SuraHeader(name: String, style: MushafPageStyle, rowHeight: Dp, modifier: Modifier) {
+internal fun SuraHeader(name: String, style: MushafPageStyle, rowHeight: Dp, modifier: Modifier) {
   Box(modifier.padding(vertical = rowHeight * 0.09f), contentAlignment = Alignment.Center) {
     Row(
       Modifier
@@ -614,7 +604,7 @@ private fun DrawScope.drawSuraFrame(gilt: Color) {
  * The ayah's end marker (Tasnim's gilt design): a gilt eight-pointed star and ring around the
  * ayah's number, in Arabic-Indic digits.
  */
-private fun DrawScope.drawAyahMarker(
+internal fun DrawScope.drawAyahMarker(
   measurer: TextMeasurer,
   number: Int,
   center: Offset,
@@ -639,7 +629,7 @@ private fun DrawScope.drawAyahMarker(
 private fun ayahNumber(key: Int): Int = com.quran.mobile.feature.mushaf.data.ayahKeyAyah(key)
 
 @Composable
-private fun Basmala(font: FontFamily, fontPx: Float, modifier: Modifier, ink: Color = MushafInk) {
+internal fun Basmala(font: FontFamily, fontPx: Float, modifier: Modifier, ink: Color = MushafInk) {
   val fontSize = with(LocalDensity.current) { (fontPx * 0.95f).toSp() }
   Box(modifier, contentAlignment = Alignment.Center) {
     Text(

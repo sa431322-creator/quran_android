@@ -8,6 +8,15 @@
   <string name="tasnim_section_mushaf" translatable="false">مصحف</string>
   <string name="tasnim_section_live" translatable="false">پخش زنده</string>
   <string name="tasnim_tajweed_mushaf" translatable="false">مصحف تجوید</string>
+  <!-- ayah cards -->
+  <string name="tasnim_cards_show_text" translatable="false">نمایش ترجمهٔ تفسیری</string>
+  <string name="tasnim_cards_open_text" translatable="false">ترجمهٔ تفسیری</string>
+  <string name="tasnim_cards_close_text" translatable="false">بستن ترجمه</string>
+  <string name="tasnim_cards_play" translatable="false">پخش از آیهٔ %s</string>
+  <string name="tasnim_cards_bookmark" translatable="false">نشانک آیهٔ %s</string>
+  <string name="tasnim_cards_ayah" translatable="false">آیهٔ %s</string>
+  <string name="tasnim_cards_actions" translatable="false">گزینه‌های آیه</string>
+  <string name="tasnim_cards_source" translatable="false">ترجمه: جامع البیان – ترجمهٔ تفسیری قرآن کریم، عبدالقدوس دهقان</string>
   <string name="tasnim_section_radio" translatable="false">رادیو</string>
   <string name="tasnim_section_library" translatable="false">کتابخانه</string>
   <string name="tasnim_sections_description" translatable="false">بخش‌های اصلی</string>

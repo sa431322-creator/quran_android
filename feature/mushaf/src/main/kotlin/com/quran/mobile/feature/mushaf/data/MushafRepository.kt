@@ -172,7 +172,10 @@ class MushafRepository(
   }
 }
 
-class MushafData(val pages: List<MushafPage>, val suraHeaderPages: Map<Int, Int>)
+class MushafData(val pages: List<MushafPage>, val suraHeaderPages: Map<Int, Int>) {
+  /** each ayah's words with their pages, for drawing an ayah on its own (the ayah cards) */
+  val ayahs: Map<Int, List<AyahGlyph>> by lazy { ayahGlyphs(pages) }
+}
 
 /** The Tasnim server's copy of a page's font, or null without a Tasnim server. */
 internal fun tajweedFontFallbackUrl(baseUrl: String, page: Int): String? {

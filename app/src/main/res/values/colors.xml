@@ -24,6 +24,25 @@
   <color name="mushaf_accent">#ff1f4e56</color>
   <color name="mushaf_label">#ff5a5347</color>
   <color name="mushaf_label_night">#ffa9a08c</color>
+  <!-- ayah cards (docs/text-mushaf/PLAN.md Phase 2), day and the reader's night mode -->
+  <color name="mushaf_cards_background">#fff7f0e1</color>
+  <color name="mushaf_cards_background_night">#ff0e1518</color>
+  <color name="mushaf_card">#fffffbf0</color>
+  <color name="mushaf_card_night">#ff141c20</color>
+  <color name="mushaf_card_border">#ffe8dcbf</color>
+  <color name="mushaf_card_border_night">#ff26332f</color>
+  <color name="mushaf_card_text">#ff3a352c</color>
+  <color name="mushaf_card_text_night">#ffd6cdb8</color>
+  <color name="mushaf_card_rule">#ffe2d3ac</color>
+  <color name="mushaf_card_rule_night">#ff3a3a2c</color>
+  <color name="mushaf_card_action">#ff1f4e56</color>
+  <color name="mushaf_card_action_night">#ff9cc9cf</color>
+  <color name="mushaf_card_playing">#ffe5efec</color>
+  <color name="mushaf_card_playing_night">#ff16302f</color>
+  <color name="mushaf_card_playing_border">#ff9dbdbe</color>
+  <color name="mushaf_card_playing_border_night">#ff2e6b73</color>
+  <color name="mushaf_card_selected">#fff3e6c4</color>
+  <color name="mushaf_card_selected_night">#ff2a2a1e</color>
   <!-- page ornament drawn in the free space above and below a mushaf page (night text follows the page) -->
   <color name="mushaf_ornament_gold">#ffb08c45</color>
   <color name="mushaf_ornament_gold_night">#ff8f7440</color>

@@ -31,7 +31,7 @@ import com.quran.mobile.feature.mushaf.data.MushafRepository
 import kotlinx.coroutines.CancellationException
 
 /** Runs [block], returning null when it fails; cancellation still propagates. */
-private suspend fun <T : Any> orNull(block: suspend () -> T): T? =
+internal suspend fun <T : Any> orNull(block: suspend () -> T): T? =
   try {
     block()
   } catch (e: CancellationException) {

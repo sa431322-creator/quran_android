@@ -14,7 +14,6 @@ import androidx.compose.ui.geometry.isSpecified
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.ComposeView
 import androidx.compose.ui.platform.ViewCompositionStrategy
-import androidx.compose.ui.text.font.FontFamily
 import androidx.core.content.ContextCompat
 import com.quran.data.model.highlight.HighlightType
 import com.quran.labs.androidquran.R
@@ -22,7 +21,6 @@ import com.quran.labs.androidquran.common.ui.core.QuranTheme
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener
 import com.quran.labs.androidquran.ui.helpers.HighlightTypes
-import com.quran.labs.androidquran.ui.util.TypefaceManager
 import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.QuranPageLayout
@@ -31,8 +29,6 @@ import com.quran.mobile.feature.mushaf.ui.MushafFontPage
 import com.quran.mobile.feature.mushaf.ui.MushafGesture
 import com.quran.mobile.feature.mushaf.ui.MushafPageHits
 import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
-import com.quran.mobile.feature.mushaf.ui.MushafPageStyle
-import com.quran.mobile.feature.mushaf.ui.nightGlyphFilter
 
 /**
  * One page of the text (font) mushaf in the reader, in the reader's own page frame (borders,
@@ -82,11 +78,12 @@ class QuranTextPageLayout(
       value = runCatching { repository.data().pages.getOrNull(page - 1) }.getOrNull()
     }
     val current = mushafPage ?: return
-    val style = pageStyle()
+    // the page frame draws the paper (day or night); the text page draws only on top of it
+    val style = TextMushafStyle.pageStyle(context, nightMode, nightBrightness)
     MushafFontPage(
       page = current,
       repository = repository,
-      basmalaFont = basmalaFont,
+      basmalaFont = TextMushafStyle.basmalaFont(context),
       style = style,
       labels = labels,
       suraHeaderName = { sura -> quranDisplayData.getSuraName(context, sura, true) },
@@ -99,15 +96,6 @@ class QuranTextPageLayout(
     )
   }
 
-  private val basmalaFont: FontFamily by lazy {
-    runCatching { FontFamily(TypefaceManager.getUthmaniTypeface(context)) }.getOrDefault(FontFamily.Default)
-  }
-
-  private val headerFont: FontFamily by lazy { FontFamily(TypefaceManager.getHeaderFooterTypeface(context)) }
-
-  // sura names in the Kitab face, as in Tasnim's identity guide
-  private val titleFont: FontFamily by lazy { FontFamily(TypefaceManager.getTafseerTypeface(context)) }
-
   private val labels: MushafPageLabels by lazy {
     MushafPageLabels(
       suraName = quranDisplayData.getSuraNameFromPage(context, page, true),
@@ -117,23 +105,6 @@ class QuranTextPageLayout(
   }
 
   private fun color(id: Int) = Color(ContextCompat.getColor(context, id))
-
-  private fun pageStyle(): MushafPageStyle {
-    // the page frame draws the paper (day or night); the text page draws only on top of it
-    val ink = if (nightMode) Color(255, 255, 255, nightBrightness) else Color.Black
-    return MushafPageStyle(
-      paper = Color.Transparent,
-      headerFont = headerFont,
-      headerColor = color(if (nightMode) R.color.mushaf_label_night else R.color.mushaf_label),
-      accent = color(R.color.mushaf_accent),
-      gilt = color(if (nightMode) R.color.mushaf_gilt_night else R.color.mushaf_gilt),
-      selection = color(R.color.selection_highlight),
-      recitation = color(R.color.audio_highlight),
-      ink = ink,
-      titleFont = titleFont,
-      glyphFilter = if (nightMode) nightGlyphFilter(ink) else null
-    )
-  }
 
   private fun colorOf(type: HighlightType): Color =
     color(if (nightMode) type.nightColorResId else type.colorResId)

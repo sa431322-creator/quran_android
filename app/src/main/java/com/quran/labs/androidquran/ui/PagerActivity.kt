@@ -59,6 +59,7 @@ import com.quran.data.model.bookmark.ReadingBookmarkTarget
 import com.quran.data.model.selection.AyahSelection
 import com.quran.data.model.selection.AyahSelection.AyahRange
 import com.quran.data.model.selection.SelectionIndicator
+import com.quran.data.model.selection.SelectionRectangle
 import com.quran.data.model.selection.endSuraAyah
 import com.quran.data.model.selection.selectionIndicator
 import com.quran.data.model.selection.startSuraAyah
@@ -111,6 +112,8 @@ import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.helpers.QuranPageAdapter
 import com.quran.labs.androidquran.ui.helpers.SlidingPagerAdapter
 import com.quran.labs.androidquran.ui.listener.AudioBarListener
+import com.quran.labs.androidquran.ui.cards.AyahCardsActions
+import com.quran.labs.androidquran.ui.cards.ReaderAyahCards
 import com.quran.labs.androidquran.ui.mushaf.TextMushaf
 import com.quran.labs.androidquran.ui.readingbookmark.createReadingBookmarkToastView
 import com.quran.labs.androidquran.ui.util.ToastCompat.makeText
@@ -127,6 +130,9 @@ import com.quran.labs.androidquran.view.IconPageIndicator
 import com.quran.labs.androidquran.view.QuranSpinner
 import com.quran.labs.androidquran.view.SlidingUpPanelLayout
 import com.quran.mobile.common.download.DownloadInfoStreams
+import com.quran.mobile.feature.mushaf.data.MushafEdition
+import com.quran.mobile.feature.mushaf.data.ayahKey
+import com.quran.mobile.persiantafsir.data.PersianTafsirRepository
 import com.quran.mobile.di.AyahActionFragmentProvider
 import com.quran.mobile.di.QuranReadingActivityComponent
 import com.quran.mobile.di.QuranReadingActivityComponentProvider
@@ -171,6 +177,7 @@ import java.lang.ref.WeakReference
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
 import kotlin.math.abs
+import androidx.core.view.doOnLayout
 import androidx.core.view.isVisible
 
 /**
@@ -220,6 +227,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var readerModePersian: TextView
   private lateinit var readerModeTajweed: TextView
 
+  // the ayah cards (Phase 2 of docs/text-mushaf/PLAN.md), over the pages
+  private val ayahCards by lazy {
+    ReaderAyahCards({ viewPager }, { sura -> quranDisplayData.getSuraName(this, sura, true) }, AyahCardsHandler())
+  }
+
   private lateinit var pageSliderArea: View
   private lateinit var pageSlider: SeekBar
   private lateinit var pageSliderBubble: TextView
@@ -230,6 +242,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private var isSplitScreen = false
 
   private lateinit var onClearAyahModeBackCallback: OnBackPressedCallback
+  private lateinit var onAyahCardsBackCallback: OnBackPressedCallback
+  private var persianTextJob: Job? = null
   private lateinit var onShowingTranslationBackCallback: OnBackPressedCallback
   private lateinit var onEndSessionBackCallback: OnBackPressedCallback
 
@@ -253,6 +267,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   @Inject lateinit var audioPresenter: AudioPresenter
   @Inject lateinit var quranEventLogger: QuranEventLogger
   @Inject lateinit var audioStatusRepository: AudioStatusRepository
+  @Inject lateinit var persianTafsirRepository: PersianTafsirRepository
   @Inject lateinit var readingEventPresenter: ReadingEventPresenter
   @Inject lateinit var pageProviderFactoryProvider: PageViewFactoryProvider
   @Inject lateinit var additionalAyahPanels: Set<@JvmSuppressWildcards AyahActionFragmentProvider>
@@ -484,6 +499,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
     initAyahActionPanel()
     initReaderModeToggle()
+    if (savedInstanceState?.getBoolean(LAST_SHOWING_AYAH_CARDS) == true) {
+      // after onCreate (the pages are set up below) and once the bars are laid out, for the
+      // cards' insets
+      handler.post { toolBarArea.doOnLayout { openAyahCards() } }
+    }
 
     if (showingTranslation && translationNames.isNotEmpty()) {
       updateActionBarSpinner()
@@ -665,6 +685,15 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
     onBackPressedDispatcher.addCallback(this, onShowingTranslationBackCallback)
 
+    // after the translation's and before the ayah mode's: a selected ayah is cleared first
+    onAyahCardsBackCallback = object : OnBackPressedCallback(false) {
+      override fun handleOnBackPressed() {
+        hideAyahCards()
+        setReaderMode(pagesMode())
+      }
+    }
+    onBackPressedDispatcher.addCallback(this, onAyahCardsBackCallback)
+
     onClearAyahModeBackCallback = object : OnBackPressedCallback(selectionStart != null) {
       override fun handleOnBackPressed() {
         endAyahMode()
@@ -758,6 +787,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   }
 
   private fun onAudioPlaybackAyahChanged(suraAyah: SuraAyah?) {
+    ayahCards.onPlaybackAyah(suraAyah)
     if (suraAyah != null) {
       // continue to snap back to the page when the playback ayah changes
       ensurePage(suraAyah.sura, suraAyah.ayah)
@@ -771,6 +801,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       viewPager.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
     }
 
+    ayahCards.onSelection(if (haveSelection) ayahSelection.startSuraAyah() else null)
     if (haveSelection) {
       val startPosition = startPosition(ayahSelection)
       updateLocalTranslations(startPosition)
@@ -871,6 +902,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   private fun animateToolBar(visible: Boolean) {
     isActionBarHidden = !visible
+    ayahCards.state.barsVisible = visible
 
     // animate toolbar
     toolBarArea.animate()
@@ -981,6 +1013,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   public override fun onResume() {
     super.onResume()
+    // the text size or night brightness may have changed in the settings
+    if (ayahCards.isShowing) updateAyahCardsSettings()
 
     audioPresenter.bind(this)
     recentPagePresenter.bind(currentPageFlow)
@@ -1222,6 +1256,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     state.putInt(LAST_READ_PAGE, lastPage)
     state.putBoolean(LAST_READING_MODE_IS_TRANSLATION, showingTranslation)
     state.putBoolean(LAST_ACTIONBAR_STATE, isActionBarHidden)
+    state.putBoolean(LAST_SHOWING_AYAH_CARDS, ayahCards.isShowing)
     state.putBoolean(LAST_WAS_DUAL_PAGES, isDualPages)
     state.putBoolean(LAST_FOLDING_STATE, isFoldableDeviceOpenAndVertical)
     super.onSaveInstanceState(state)
@@ -1305,6 +1340,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       item.setIcon(if (isNightMode) R.drawable.ic_night_mode else R.drawable.ic_day_mode)
       item.isChecked = isNightMode
       refreshQuranPages()
+      updateAyahCardsSettings()
       return true
     } else if (itemId == R.id.rotate_screen) {
       // works even when the phone's auto-rotate is off
@@ -2057,11 +2093,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private enum class ReaderMode { MUSHAF, PERSIAN, TAJWEED }
 
   /**
-   * The Tasnim "mushaf / Persian translation and tafsir / tajweed" toggle. The Persian side opens
-   * the Persian tafsir panel at the selected ayah or the first ayah on the page. The mushaf and
-   * tajweed sides draw the reader's own text pages plain or in tajweed colors: both mushafs hold
-   * the same ayahs on every page, so the reader stays where it is. Tajweed needs the text pages,
-   * so it is not offered with page images.
+   * The Tasnim "mushaf / Persian translation and tafsir / tajweed" toggle. The Persian side shows
+   * the ayah cards (each ayah with its Persian text) at the selected ayah or the first ayah on the
+   * page. The mushaf and tajweed sides draw the reader's own text pages plain or in tajweed colors:
+   * both mushafs hold the same ayahs on every page, so the reader stays where it is. Tajweed needs
+   * the text pages, so it is not offered with page images.
    */
   private fun initReaderModeToggle() {
     readerModeMushaf = findViewById(R.id.reader_mode_mushaf)
@@ -2071,13 +2107,15 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       if (slidingPanel.isPaneVisible) {
         slidingPanel.collapsePane()
       }
+      hideAyahCards()
       setPagesMode(tajweed = false)
     }
-    readerModePersian.setOnClickListener { openPersianTafsir() }
+    readerModePersian.setOnClickListener { openAyahCards() }
     readerModeTajweed.setOnClickListener {
       if (slidingPanel.isPaneVisible) {
         slidingPanel.collapsePane()
       }
+      hideAyahCards()
       setPagesMode(tajweed = true)
     }
     readerModeTajweed.isVisible = hasTextPages()
@@ -2085,6 +2123,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   }
 
   private fun hasTextPages() = quranSettings.pageType == MadaniV2PageProvider.PAGE_TYPE
+
+  /** The side of the toggle for what is on screen: the cards, or the pages plain or in tajweed. */
+  private fun currentMode(): ReaderMode = if (ayahCards.isShowing) ReaderMode.PERSIAN else pagesMode()
 
   /** The side of the toggle that shows how the pages are drawn (plain or tajweed). */
   private fun pagesMode(): ReaderMode =
@@ -2110,16 +2151,83 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
   }
 
-  private fun openPersianTafsir() {
-    if (selectionStart == null) {
-      val bounds = quranInfo.getPageBounds(currentPage)
-      readingEventPresenterBridge.setSelection(bounds[0], bounds[1], false)
+  /** The ayah cards, at the selected ayah or the first ayah on the page, under the reader's bars. */
+  private fun openAyahCards() {
+    if (slidingPanel.isPaneVisible) {
+      slidingPanel.collapsePane()
+    }
+    val start = selectionStart ?: quranInfo.getPageBounds(currentPage).let { SuraAyah(it[0], it[1]) }
+    // the bars come up over the cards (the tabs and the audio bar are the cards' controls)
+    handler.removeMessages(MSG_HIDE_ACTIONBAR)
+    toggleActionBarVisibility(true)
+    ayahCards.state.barsVisible = !isActionBarHidden
+    updateAyahCardsSettings()
+    // the cards follow the pages' drawing (plain or tajweed); with page images, the plain mushaf
+    val repository = if (hasTextPages()) {
+      TextMushaf.repository(this)
+    } else {
+      TextMushaf.repository(this, MushafEdition.PLAIN_V2)
+    }
+    ayahCards.show(start, repository, toolBarArea.height, audioStatusBar.height + pageSliderArea.height)
+    onAyahCardsBackCallback.isEnabled = true
+    // the whole Quran's text, loaded once (not again while a load is still running)
+    if (ayahCards.state.persian == null && persianTextJob?.isActive != true) {
+      persianTextJob = lifecycleScope.launch {
+        ayahCards.state.persian = persianTafsirRepository.tafsir(SuraAyah(1, 1), SuraAyah(114, 6))
+          ?.associate { ayahKey(it.suraAyah.sura, it.suraAyah.ayah) to it.text }
+      }
     }
     setReaderMode(ReaderMode.PERSIAN)
-    val tafsirPage =
-      slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
-    // let the selection reach the panel fragments before the panel opens
-    handler.post { showSlider(tafsirPage) }
+  }
+
+  private fun hideAyahCards() {
+    ayahCards.hide()
+    onAyahCardsBackCallback.isEnabled = false
+  }
+
+  private fun updateAyahCardsSettings() {
+    ayahCards.updateSettings(
+      nightMode = quranSettings.isNightMode,
+      nightBrightness = quranSettings.nightModeTextBrightness,
+      textSize = quranSettings.translationTextSize,
+      columns = if (resources.configuration.screenWidthDp >= TWO_COLUMN_CARDS_DP) 2 else 1
+    )
+  }
+
+  /** What the ayah cards ask of the reader: the same actions as its pages and ayah toolbar. */
+  private inner class AyahCardsHandler : AyahCardsActions {
+    override fun onTap() = toggleActionBar()
+
+    override fun onPlay(sura: Int, ayah: Int) = playFromAyah(sura, ayah)
+
+    override fun onBookmark(sura: Int, ayah: Int) = showAyahBookmarkSheet(SuraAyah(sura, ayah))
+
+    override fun onLongPress(sura: Int, ayah: Int, bounds: androidx.compose.ui.geometry.Rect) {
+      // the ayah toolbar over the card, placed like a page's: relative to the pages' view
+      val location = IntArray(2)
+      viewPager.getLocationInWindow(location)
+      val card = SelectionRectangle(
+        bounds.left - location[0], bounds.top - location[1],
+        bounds.right - location[0], bounds.bottom - location[1]
+      )
+      viewPager.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+      readingEventPresenter.onAyahSelection(
+        AyahSelection.Ayah(SuraAyah(sura, ayah), SelectionIndicator.SelectedItemPosition(card, card))
+      )
+    }
+
+    // the pages follow the cards, so the title, slider, last page and the tabs agree with them
+    override fun onTopAyah(sura: Int, ayah: Int, byUser: Boolean) {
+      // a card's ayah toolbar closes as the reader scrolls the cards on; turning the hidden pages
+      // would move it as if it were on a page. The cards' own scrolls (opening at the selected
+      // ayah, following the recitation) keep it
+      if (byUser && selectionStart != null && !slidingPanel.isPaneVisible) {
+        readingEventPresenterBridge.clearSelectedAyah()
+      }
+      ensurePage(sura, ayah)
+    }
+
+    override fun onShowAllChanged(showAll: Boolean) = Unit
   }
 
   private fun showSlider(sliderPage: Int) {
@@ -2182,7 +2290,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
       slidingPanel.hidePane()
       readingEventPresenter.onPanelClosed()
-      setReaderMode(pagesMode())
+      setReaderMode(currentMode())
     }
 
     override fun onPanelExpanded(panel: View) {
@@ -2190,7 +2298,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       setReaderMode(
         if (slidingPager.currentItem ==
           slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
-        ) ReaderMode.PERSIAN else pagesMode()
+        ) ReaderMode.PERSIAN else currentMode()
       )
     }
 
@@ -2203,6 +2311,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     private const val LAST_READ_PAGE = "LAST_READ_PAGE"
     private const val LAST_READING_MODE_IS_TRANSLATION = "LAST_READING_MODE_IS_TRANSLATION"
     private const val LAST_ACTIONBAR_STATE = "LAST_ACTIONBAR_STATE"
+    private const val LAST_SHOWING_AYAH_CARDS = "LAST_SHOWING_AYAH_CARDS"
     private const val LAST_FOLDING_STATE = "LAST_FOLDING_STATE"
 
     const val EXTRA_JUMP_TO_TRANSLATION: String = "jumpToTranslation"
@@ -2211,6 +2320,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     const val LAST_WAS_DUAL_PAGES: String = "wasDualPages"
 
     private const val DEFAULT_HIDE_AFTER_TIME: Long = 2000
+
+    /** tablets this wide (10" in landscape and up) show the ayah cards in two columns */
+    private const val TWO_COLUMN_CARDS_DP = 840
 
     const val MSG_HIDE_ACTIONBAR: Int = 1
 
