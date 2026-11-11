@@ -22,15 +22,15 @@ class ConfiguredRadioStationRepository(
     val own = if (links == null) {
       LiveStreamSource.LocalAsset(ConfiguredLiveChannelRepository.SAMPLE_ASSET)
     } else {
-      links.ownRadio?.let(::remoteStreamOf)
+      links.ownRadio?.let(::directStreamOf)
     }
     return listOfNotNull(
       own?.let {
         val station = if (links == null) OWN_STATION else OWN_STATION.withInfo(links.ownRadioInfo)
         station.copy(source = it)
       },
-      links?.quranRadio?.let { QURAN_STATION.copy(source = remoteStreamOf(it)) },
-      links?.sunnahRadio?.let { SUNNAH_STATION.copy(source = remoteStreamOf(it)) }
+      links?.quranRadio?.let(::directStreamOf)?.let { QURAN_STATION.copy(source = it) },
+      links?.sunnahRadio?.let(::directStreamOf)?.let { SUNNAH_STATION.copy(source = it) }
     )
   }
 

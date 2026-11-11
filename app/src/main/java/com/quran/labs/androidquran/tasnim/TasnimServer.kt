@@ -15,6 +15,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
+import okhttp3.ResponseBody
 import retrofit2.Retrofit
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
@@ -94,8 +95,9 @@ data class Announcement(
 data class AnnouncementList(val items: List<Announcement> = emptyList())
 
 internal interface TasnimService {
+  /** Raw, so the saved copy also keeps sections this class does not model (e.g. `ads`). */
   @GET("api/v1/app/config")
-  suspend fun config(): AppConfig
+  suspend fun config(): ResponseBody
 
   @GET("api/v1/announcements")
   suspend fun announcements(
@@ -154,17 +156,21 @@ class TasnimConfigRepository internal constructor(
 
   /** The last settings received, or the defaults. Instant; safe on the main thread. */
   fun cached(): AppConfig =
-    prefs.getString(KEY_CONFIG, null)
+    cachedJson()
       ?.let { runCatching { configAdapter.fromJson(it) }.getOrNull() }
       ?: AppConfig()
+
+  /** The whole settings body last received (with sections other modules read, like `ads`). */
+  fun cachedJson(): String? = prefs.getString(KEY_CONFIG, null)
 
   /** Fresh settings from the server (saved for next time), or the cached ones on any failure. */
   suspend fun refreshConfig(): AppConfig {
     val api = service ?: return cached()
     return try {
-      val fresh = api.config()
+      val raw = withContext(Dispatchers.IO) { api.config().use { it.string() } }
+      val fresh = configAdapter.fromJson(raw) ?: return cached()
       withContext(Dispatchers.IO) {
-        prefs.edit { putString(KEY_CONFIG, configAdapter.toJson(fresh)) }
+        prefs.edit { putString(KEY_CONFIG, raw) }
       }
       fresh
     } catch (e: CancellationException) {

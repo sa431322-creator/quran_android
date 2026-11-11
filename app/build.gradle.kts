@@ -17,6 +17,8 @@ plugins {
 // whether or not to use Firebase - Firebase is enabled by default, and is only disabled for
 // providing apks for open source distribution stores.
 val useFirebase = !project.hasProperty("disableFirebase")
+// No ads at all (F-Droid builds and anyone who wants a build without them): ADR 0010.
+val noAds = project.hasProperty("noAds")
 val oauthProperties = Properties().apply {
   // Optional local sync config. Android OAuth uses PKCE, so client secrets are intentionally unsupported.
   val oauthPropertiesFile = rootProject.file("oauth.properties")
@@ -248,6 +250,14 @@ dependencies {
   implementation(project(":feature:downloadmanager"))
   implementation(project(":feature:library"))
   implementation(project(":feature:livetv"))
+  // Ads (ADR 0010): house ads from the Tasnim server, never on Quran pages. Builds made with
+  // -PnoAds (also set for F-Droid together with -PdisableFirebase) get ads-noop: no ad code runs.
+  implementation(project(":feature:ads-api"))
+  if (noAds) {
+    implementation(project(":feature:ads-noop"))
+  } else {
+    implementation(project(":feature:ads-house"))
+  }
   implementation(project(":feature:mushaf"))
   implementation(project(":feature:qarilist"))
   implementation(project(":feature:sync"))

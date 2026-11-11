@@ -1,10 +1,12 @@
 package com.quran.mobile.feature.livetv.ui
 
-import android.app.Activity
+import com.quran.mobile.feature.ads.AdBanner
+import com.quran.mobile.feature.ads.AdSlot
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.widget.Toast
 import androidx.activity.compose.BackHandler
+import androidx.activity.compose.LocalActivity
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -51,6 +53,7 @@ import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
 import com.quran.mobile.feature.livetv.data.LiveChannel
+import com.quran.mobile.feature.livetv.data.LiveStreamSource
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 import com.quran.mobile.feature.livetv.ui.common.LiveIcons
 import com.quran.mobile.feature.livetv.ui.common.ScheduleSection
@@ -105,23 +108,29 @@ fun LiveTvScreen(
           }
         }
 
+        val playerModifier = if (isFullscreen) {
+          Modifier.fillMaxSize()
+        } else {
+          Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+        }
+        val source = channel.source
         // kept at the same place in the tree so entering fullscreen keeps the same player
-        LiveVideoPlayer(
-          source = channel.source,
-          viewerCount = channel.viewerCount,
-          isFullscreen = isFullscreen,
-          onToggleFullscreen = { isFullscreen = !isFullscreen },
-          onSubtitlesUnavailable = {
-            Toast.makeText(context, R.string.livetv_subtitles_unavailable, Toast.LENGTH_SHORT).show()
-          },
-          modifier = if (isFullscreen) {
-            Modifier.fillMaxSize()
-          } else {
-            Modifier
-              .fillMaxWidth()
-              .aspectRatio(16f / 9f)
-          }
-        )
+        if (source is LiveStreamSource.YouTube) {
+          YouTubeLivePlayer(source = source, modifier = playerModifier)
+        } else {
+          LiveVideoPlayer(
+            source = source,
+            viewerCount = channel.viewerCount,
+            isFullscreen = isFullscreen,
+            onToggleFullscreen = { isFullscreen = !isFullscreen },
+            onSubtitlesUnavailable = {
+              Toast.makeText(context, R.string.livetv_subtitles_unavailable, Toast.LENGTH_SHORT).show()
+            },
+            modifier = playerModifier
+          )
+        }
 
         if (!isFullscreen) {
           Column(
@@ -131,6 +140,11 @@ fun LiveTvScreen(
               .verticalScroll(rememberScrollState())
               .padding(bottom = 16.dp)
           ) {
+            // ad slot: under the player, away from its controls; never shown in fullscreen
+            AdBanner(
+              slot = AdSlot.LIVE_TV,
+              modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 16.dp)
+            )
             if (channels.size > 1) {
               Box(
                 modifier = Modifier
@@ -145,7 +159,17 @@ fun LiveTvScreen(
                 )
               }
             }
-            ProgramInfo(title = programTitle, onShare = { shareProgram(context, channel, programTitle) })
+            ProgramInfo(
+              title = programTitle,
+              onShare = { shareProgram(context, channel, programTitle) },
+              // youtube's player cannot carry our control bar, so its fullscreen button is here;
+              // back leaves fullscreen
+              onFullscreen = if (source is LiveStreamSource.YouTube) {
+                { isFullscreen = true }
+              } else {
+                null
+              }
+            )
             // only our own channel has a schedule
             if (channel.schedule.isNotEmpty()) {
               ScheduleSection(channel.schedule, onAir)
@@ -160,7 +184,7 @@ fun LiveTvScreen(
 /** Landscape with hidden system bars while fullscreen; back to normal otherwise. */
 @Composable
 private fun FullscreenEffect(isFullscreen: Boolean) {
-  val activity = LocalContext.current as? Activity ?: return
+  val activity = LocalActivity.current ?: return
   DisposableEffect(activity, isFullscreen) {
     val window = activity.window
     val insetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -186,7 +210,7 @@ private fun shareProgram(context: android.content.Context, channel: LiveChannel,
 }
 
 @Composable
-private fun ProgramInfo(title: String, onShare: () -> Unit) {
+private fun ProgramInfo(title: String, onShare: () -> Unit, onFullscreen: (() -> Unit)?) {
   val palette = LocalTasnimPalette.current
   Row(
     modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 14.dp, bottom = 12.dp),
@@ -202,6 +226,20 @@ private fun ProgramInfo(title: String, onShare: () -> Unit) {
       lineHeight = 28.sp,
       modifier = Modifier.weight(1f)
     )
+    if (onFullscreen != null) {
+      OutlinedIconButton(
+        onClick = onFullscreen,
+        border = BorderStroke(1.dp, palette.outline),
+        modifier = Modifier.size(44.dp)
+      ) {
+        Icon(
+          imageVector = LiveIcons.Fullscreen,
+          contentDescription = stringResource(R.string.livetv_fullscreen),
+          tint = palette.ink,
+          modifier = Modifier.size(20.dp)
+        )
+      }
+    }
     OutlinedIconButton(
       onClick = onShare,
       border = BorderStroke(1.dp, palette.outline),

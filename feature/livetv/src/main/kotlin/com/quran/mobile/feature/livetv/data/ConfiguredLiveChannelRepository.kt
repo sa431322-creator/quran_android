@@ -22,12 +22,13 @@ class ConfiguredLiveChannelRepository(
     val own = if (links == null) {
       LiveStreamSource.LocalAsset(SAMPLE_ASSET)
     } else {
-      links.ownLive?.let(::remoteStreamOf)
+      links.ownLive?.let(::ownLiveStreamOf)
     }
     return listOfNotNull(
       own?.let { ownChannel(links).copy(source = it) },
-      links?.quranLive?.let { QURAN_CHANNEL.copy(source = remoteStreamOf(it)) },
-      links?.sunnahLive?.let { SUNNAH_CHANNEL.copy(source = remoteStreamOf(it)) }
+      // youtube is for our own channel only
+      links?.quranLive?.let(::directStreamOf)?.let { QURAN_CHANNEL.copy(source = it) },
+      links?.sunnahLive?.let(::directStreamOf)?.let { SUNNAH_CHANNEL.copy(source = it) }
     )
   }
 

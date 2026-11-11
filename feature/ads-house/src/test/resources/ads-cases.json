@@ -1,0 +1,308 @@
+{
+  "about": "Ads cases shared by the API (Vitest) and the Android app (Kotlin). links: adLinkProblem(input) is null exactly when ok is true. responses: what the app must accept; future* parts contain keys a newer server may send, which the app ignores (unknown slot = ignored, unknown mode = off).",
+  "links": [
+    {
+      "name": "https page",
+      "input": "https://example.org/offer?x=1",
+      "ok": true
+    },
+    {
+      "name": "https with path and fragment",
+      "input": "https://shop.example.ir/a/b#c",
+      "ok": true
+    },
+    {
+      "name": "mailto",
+      "input": "mailto:info@example.org",
+      "ok": true
+    },
+    {
+      "name": "Telegram resolve",
+      "input": "tg://resolve?domain=tasneem_app",
+      "ok": true
+    },
+    {
+      "name": "our own book",
+      "input": "tasneem://library/book/42",
+      "ok": true
+    },
+    {
+      "name": "http is refused",
+      "input": "http://example.org",
+      "ok": false
+    },
+    {
+      "name": "javascript is refused",
+      "input": "javascript:alert(1)",
+      "ok": false
+    },
+    {
+      "name": "intent is refused",
+      "input": "intent://scan/#Intent;scheme=zxing;end",
+      "ok": false
+    },
+    {
+      "name": "data is refused",
+      "input": "data:text/html,hi",
+      "ok": false
+    },
+    {
+      "name": "file is refused",
+      "input": "file:///sdcard/a.html",
+      "ok": false
+    },
+    {
+      "name": "user info is refused",
+      "input": "https://bank.example@evil.example/",
+      "ok": false
+    },
+    {
+      "name": "IPv4 host is refused",
+      "input": "https://192.168.1.10/",
+      "ok": false
+    },
+    {
+      "name": "IPv6 host is refused",
+      "input": "https://[::1]/",
+      "ok": false
+    },
+    {
+      "name": "host without a dot is refused",
+      "input": "https://localhost/",
+      "ok": false
+    },
+    {
+      "name": "spaces are refused",
+      "input": "https://example.org/a b",
+      "ok": false
+    },
+    {
+      "name": "other tg links are refused",
+      "input": "tg://msg?text=hi",
+      "ok": false
+    },
+    {
+      "name": "Telegram name too short",
+      "input": "tg://resolve?domain=abc",
+      "ok": false
+    },
+    {
+      "name": "book id zero is refused",
+      "input": "tasneem://library/book/0",
+      "ok": false
+    },
+    {
+      "name": "other tasneem paths are refused",
+      "input": "tasneem://settings",
+      "ok": false
+    },
+    {
+      "name": "mailto without address is refused",
+      "input": "mailto:",
+      "ok": false
+    },
+    {
+      "name": "mailto with a subject",
+      "input": "mailto:info@example.org?subject=hello",
+      "ok": true
+    },
+    {
+      "name": "IDN host (punycode form)",
+      "input": "https://xn--mgbh0fb.example/",
+      "ok": true
+    },
+    {
+      "name": "backslash before @",
+      "input": "https://example.org\\@evil.com/",
+      "ok": false
+    },
+    {
+      "name": "backslash in host",
+      "input": "https://evil.com\\.example.org/",
+      "ok": false
+    },
+    {
+      "name": "https without slashes",
+      "input": "https:example.org",
+      "ok": false
+    },
+    {
+      "name": "https with one slash",
+      "input": "https:/example.org",
+      "ok": false
+    },
+    {
+      "name": "trailing-dot localhost",
+      "input": "https://localhost./",
+      "ok": false
+    },
+    {
+      "name": "leading dot",
+      "input": "https://.example.org",
+      "ok": false
+    },
+    {
+      "name": "empty label",
+      "input": "https://a..b.org",
+      "ok": false
+    },
+    {
+      "name": "label starts with a hyphen",
+      "input": "https://-x.com",
+      "ok": false
+    },
+    {
+      "name": "one-letter TLD",
+      "input": "https://a.b",
+      "ok": false
+    },
+    {
+      "name": "soft hyphen in host",
+      "input": "https://exa­mple.org",
+      "ok": false
+    },
+    {
+      "name": "zero-width space",
+      "input": "https://exa​mple.org",
+      "ok": false
+    },
+    {
+      "name": "mailto with cc",
+      "input": "mailto:a@example.org?cc=x@y.org",
+      "ok": false
+    },
+    {
+      "name": "mailto with bcc after subject",
+      "input": "mailto:a@example.org?subject=x&bcc=z@y.org",
+      "ok": false
+    },
+    {
+      "name": "mailto with body",
+      "input": "mailto:a@example.org?body=hi",
+      "ok": false
+    },
+    {
+      "name": "upper-case TG",
+      "input": "TG://resolve?domain=tasneem_app",
+      "ok": false
+    },
+    {
+      "name": "upper-case TASNEEM",
+      "input": "TASNEEM://library/book/4",
+      "ok": false
+    },
+    {
+      "name": "short IPv4 form",
+      "input": "https://127.1/",
+      "ok": false
+    },
+    {
+      "name": "decimal IPv4",
+      "input": "https://2130706433/",
+      "ok": false
+    },
+    {
+      "name": "percent-encoded host",
+      "input": "https://%65vil.com/",
+      "ok": false
+    },
+    {
+      "name": "upper-case HTTPS",
+      "input": "HTTPS://Example.ORG/a",
+      "ok": true
+    },
+    {
+      "name": "too long",
+      "input": "https://example.org/LONG",
+      "ok": false,
+      "repeatToLength": 2049
+    }
+  ],
+  "response": {
+    "slots": {
+      "live_tv": [
+        {
+          "id": 12,
+          "imageUrl": "https://api.example.org/files/ads/12-ab12cd34.webp",
+          "width": 1280,
+          "height": 200,
+          "altText": "نمایشگاه کتاب قرآنی",
+          "actionUrl": "https://example.org/?utm_source=tasneem&utm_medium=app&utm_campaign=ad-12",
+          "actionText": null,
+          "weight": 10,
+          "startsAt": "2026-11-01T00:00:00.000Z",
+          "endsAt": "2026-11-30T00:00:00.000Z"
+        }
+      ],
+      "radio": [],
+      "library_list": [],
+      "library_details": []
+    },
+    "refreshAfterSeconds": 900
+  },
+  "futureResponse": {
+    "slots": {
+      "live_tv": [],
+      "radio": [],
+      "library_list": [],
+      "library_details": [],
+      "home_top": [
+        {
+          "id": 99,
+          "imageUrl": "https://api.example.org/files/ads/99-00000000.webp",
+          "width": 1280,
+          "height": 200,
+          "altText": "x",
+          "actionUrl": null,
+          "actionText": null,
+          "weight": 1,
+          "startsAt": "2026-11-01T00:00:00.000Z",
+          "endsAt": "2026-11-30T00:00:00.000Z",
+          "video": true
+        }
+      ]
+    },
+    "refreshAfterSeconds": 900,
+    "newField": {
+      "a": 1
+    }
+  },
+  "config": {
+    "enabled": true,
+    "slots": {
+      "live_tv": "house",
+      "radio": "off",
+      "library_list": "house",
+      "library_details": "off"
+    },
+    "libraryListEvery": 8,
+    "network": "none",
+    "blockedVersions": [3642]
+  },
+  "futureConfig": {
+    "enabled": true,
+    "slots": {
+      "live_tv": "house",
+      "radio": "sponsored_only",
+      "library_list": "house",
+      "library_details": "off",
+      "home_top": "house"
+    },
+    "libraryListEvery": 8,
+    "network": "some_new_network",
+    "blockedVersions": [],
+    "frequencyCap": 3
+  },
+  "futureConfigExpected": {
+    "enabled": true,
+    "slots": {
+      "live_tv": "house",
+      "radio": "off",
+      "library_list": "house",
+      "library_details": "off"
+    },
+    "libraryListEvery": 8,
+    "network": "none",
+    "blockedVersions": []
+  }
+}

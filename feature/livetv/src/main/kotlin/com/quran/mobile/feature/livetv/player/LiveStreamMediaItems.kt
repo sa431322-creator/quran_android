@@ -23,6 +23,8 @@ object LiveStreamMediaItems {
         .setUri(source.url)
         .setMimeType(mimeTypeFor(source.format))
         .build()
+    is LiveStreamSource.YouTube ->
+      throw IllegalArgumentException("a YouTube source plays in YouTubeLivePlayer, not ExoPlayer")
   }
 
   private fun assetItem(assetPath: String): MediaItem = MediaItem.fromUri("asset:///$assetPath")

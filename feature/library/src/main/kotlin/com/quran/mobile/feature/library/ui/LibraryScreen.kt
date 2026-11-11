@@ -1,5 +1,9 @@
 package com.quran.mobile.feature.library.ui
 
+import com.quran.mobile.feature.ads.AdBanner
+import com.quran.mobile.feature.ads.AdSlot
+import com.quran.mobile.feature.ads.AdState
+import com.quran.mobile.feature.ads.LocalAdProvider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -375,6 +379,10 @@ private fun Shelf(
       .maxByOrNull { shelf.progress.getValue(it.id).updatedAt }
   }
   val title = stringResource(state.selectedCategory?.titleRes ?: R.string.library_all_books)
+  val adProvider = LocalAdProvider.current
+  val adState by remember(adProvider) { adProvider.state(AdSlot.LIBRARY_LIST) }.collectAsState()
+  val adEvery = remember(adProvider) { adProvider.libraryListEvery() }
+  val showAd = adState is AdState.Ready && state.query.isBlank()
 
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 140.dp),
@@ -409,13 +417,29 @@ private fun Shelf(
         )
       }
     }
-    items(visible, key = { it.id }) { book ->
+    // one ad card after the first N books; never in search results
+    val adAt = if (showAd && visible.size >= adEvery) adEvery else -1
+    val beforeAd = if (adAt < 0) visible else visible.subList(0, adAt)
+    items(beforeAd, key = { it.id }) { book ->
       BookCard(
         book = book,
         progress = shelf.progress[book.id]?.withPageCount(book.pageCount),
         offline = remember(book.id, shelf) { isOffline(book) },
         onClick = { onOpenBook(book) }
       )
+    }
+    if (adAt >= 0) {
+      item(key = "ad", span = { GridItemSpan(maxLineSpan) }, contentType = "ad") {
+        AdBanner(slot = AdSlot.LIBRARY_LIST)
+      }
+      items(visible.subList(adAt, visible.size), key = { it.id }) { book ->
+        BookCard(
+          book = book,
+          progress = shelf.progress[book.id]?.withPageCount(book.pageCount),
+          offline = remember(book.id, shelf) { isOffline(book) },
+          onClick = { onOpenBook(book) }
+        )
+      }
     }
   }
 }
