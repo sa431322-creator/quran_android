@@ -41,6 +41,11 @@ object TasnimColorScheme {
         outline = Color(0xFF7D8A8E),
         inverseOnSurface = Color(0xFF0E1518),
         inverseSurface = Color(0xFFE8E0CC),
+        // the containers (sheets, dialogs, menus): Tasnim's night, not Material's default
+        surfaceContainerLowest = Color(0xFF0A1012),
+        surfaceContainerLow = Color(0xFF141D21),
+        surfaceContainer = Color(0xFF1A252A),
+        surfaceContainerHigh = Color(0xFF22303A),
         surfaceContainerHighest = Color(0xFF0E1518)
       )
     } else {
@@ -64,6 +69,11 @@ object TasnimColorScheme {
         outline = Color(0xFF8A8170),
         inverseOnSurface = Color(0xFFF7F0E1),
         inverseSurface = Color(0xFF2E2B25),
+        // the containers (sheets, dialogs, menus): Tasnim's cream, not Material's lavender
+        surfaceContainerLowest = Color(0xFFFFFBF3),
+        surfaceContainerLow = Color(0xFFFCF8EF),
+        surfaceContainer = Color(0xFFF7F0E1),
+        surfaceContainerHigh = Color(0xFFF1E9D6),
         surfaceContainerHighest = Color(0xFFF7F0E1)
       )
     }

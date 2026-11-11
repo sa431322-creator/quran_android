@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Persian for upstream's page theme sheet (feature/pagetheme), which has no Persian for these yet.
+  App resources override the module's, so upstream's own translation can land later without a
+  clash (docs/upstream-base/PLAN.md).
+-->
+<resources>
+  <string name="prefs_page_theme_title">رنگ صفحه</string>
+  <string name="prefs_old_background_title">پس‌زمینهٔ قدیمی</string>
+  <string name="page_theme_sepia">کاهی</string>
+  <string name="theme_light">روشن</string>
+  <string name="theme_dark">تیره</string>
+  <string name="page_theme_match_app">هماهنگ با رنگ برنامه</string>
+  <string name="page_theme_match_app_summary">وقتی برنامه تیره است، صفحه هم تیره می‌شود</string>
+  <string name="page_theme_close">بستن</string>
+</resources>

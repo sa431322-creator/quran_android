@@ -173,6 +173,9 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   for the live channels. One conflict (`app/build.gradle.kts`): ads modules kept, `feature:tajweed`
   dropped since it was renamed `feature:mushaf`. App, ads, livetv and library tests pass; the
   `-PnoAds` build compiles.
+- **Step 7 done (2026-11-11).** Checked on the emulator over the old Tasnim build (upgrade path),
+  phone and tablet: [report](reports/2026-11-11.md). Fixed: Persian labels for the page theme
+  sheet and Tasnim's container colors for sheets. Not covered: image pages, audio playback.
 - **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page
