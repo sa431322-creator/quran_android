@@ -150,7 +150,13 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   (the flavor overrides upstream's color values, incl. `accent_navy_gold`, so upstream's
   `colors.xml` and `themes.xml` are untouched). The theme sheet shows four cards in two rows.
   Open for step 3: line-by-line pages draw Tasnim's paper flat, not shaded.
-- **Found in step 1, to settle in step 3:** `MadaniV2PageProvider` and
+- **Step 3 done (2026-11-11).** Text pages draw on the page theme's paper (through
+  `QuranPageLayout`) and their night ink follows upstream's `pageTextBrightness`. The ayah cards
+  sit on the same paper (or the night background) and each card is a lighter sheet of it. The V2
+  page providers now say `MADANI_1405` explicitly, with the reason (Tasnim keeps its page
+  bookmarks under one label; quran.com sync is not used). Line-by-line pages are not a Tasnim page
+  type, so their flat paper needs no change.
+- **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page
   bookmarks in the canonical numbering) before page bookmarks go to any sync.

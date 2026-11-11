@@ -50,6 +50,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.layout.LayoutCoordinates
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -91,6 +92,8 @@ class AyahCardsState {
   var persian by mutableStateOf<Map<Int, String>?>(null)
   var nightMode by mutableStateOf(false)
   var nightBrightness by mutableIntStateOf(255)
+  /** the page theme's paper, or the night background (ARGB): behind the cards, as behind the pages */
+  var paper by mutableIntStateOf(0xFFF6EEDD.toInt())
   /** the app's text-size setting (sp), which the cards follow */
   var textSize by mutableIntStateOf(15)
   var columns by mutableIntStateOf(1)
@@ -162,7 +165,7 @@ private fun cardItems(data: MushafData): List<CardItem> {
 fun AyahCards(state: AyahCardsState, suraName: (Int) -> String, actions: AyahCardsActions) {
   val context = LocalContext.current
   val repository = state.repository ?: return
-  val colors = remember(state.nightMode) { CardColors.of(context, state.nightMode) }
+  val colors = remember(state.nightMode, state.paper) { CardColors.of(context, state.nightMode, Color(state.paper)) }
   val style = remember(state.nightMode, state.nightBrightness) {
     TextMushafStyle.pageStyle(context, state.nightMode, state.nightBrightness)
   }
@@ -480,11 +483,14 @@ private class CardColors(
   val selected: Color
 ) {
   companion object {
-    fun of(context: Context, night: Boolean): CardColors {
+    /** On [paper], the page theme's paper by day (or the night background). */
+    fun of(context: Context, night: Boolean, paper: Color): CardColors {
       fun color(day: Int, nightId: Int) = Color(ContextCompat.getColor(context, if (night) nightId else day))
       return CardColors(
-        background = color(R.color.mushaf_cards_background, R.color.mushaf_cards_background_night),
-        card = color(R.color.mushaf_card, R.color.mushaf_card_night),
+        background = paper,
+        // a card is a lighter sheet of the same paper: white on the Light theme by day, and a
+        // shade above the night background (which the reader may brighten) at night
+        card = lerp(paper, Color.White, if (night) 0.07f else 0.55f),
         border = color(R.color.mushaf_card_border, R.color.mushaf_card_border_night),
         text = color(R.color.mushaf_card_text, R.color.mushaf_card_text_night),
         secondary = color(R.color.mushaf_label, R.color.mushaf_label_night),

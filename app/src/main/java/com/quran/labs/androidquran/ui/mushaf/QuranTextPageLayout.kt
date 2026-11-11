@@ -65,7 +65,8 @@ class QuranTextPageLayout(
   override fun updateView(quranSettings: QuranSettings) {
     super.updateView(quranSettings)
     nightMode = quranSettings.isNightMode
-    nightBrightness = quranSettings.nightModeTextBrightness
+    // the night ink as upstream's pages draw it: text brightness lifted with the background's
+    nightBrightness = quranSettings.pageTextBrightness
   }
 
   @androidx.compose.runtime.Composable

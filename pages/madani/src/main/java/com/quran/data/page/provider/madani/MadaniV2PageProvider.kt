@@ -1,5 +1,6 @@
 package com.quran.data.page.provider.madani
 
+import com.quran.data.source.MushafType
 import com.quran.data.source.PageContentType
 import com.quran.data.source.PageProvider
 import com.quran.labs.androidquran.pages.data.madaniv2.MadaniV2DataSource
@@ -18,6 +19,14 @@ class MadaniV2PageProvider(
   override fun getPageContentType(): PageContentType = PageContentType.Text
 
   override fun pageType() = PAGE_TYPE
+
+  /**
+   * The mushaf mobile-sync files this page type's page reading bookmarks under. Kept the classic
+   * one on purpose: Tasnim stores and reads its page bookmarks under this one label, so they stay
+   * where they are. It only names the print to quran.com's sync, which Tasnim does not use; set
+   * the V2 print's own mushaf (and move the stored pages) before turning that sync on.
+   */
+  override fun mushafType() = MushafType.MADANI_1405
 
   override fun getPreviewTitle() = R.string.madani_v2_title
 

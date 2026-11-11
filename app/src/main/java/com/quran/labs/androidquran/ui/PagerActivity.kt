@@ -2228,7 +2228,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private fun updateAyahCardsSettings() {
     ayahCards.updateSettings(
       nightMode = quranSettings.isNightMode,
-      nightBrightness = quranSettings.nightModeTextBrightness,
+      nightBrightness = quranSettings.pageTextBrightness,
+      // the page theme's paper (or the night background), as behind the pages
+      paper = quranSettings.pageThemeBackgroundColor,
       textSize = quranSettings.translationTextSize,
       columns = if (resources.configuration.screenWidthDp >= TWO_COLUMN_CARDS_DP) 2 else 1
     )

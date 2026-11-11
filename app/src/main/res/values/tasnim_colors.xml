@@ -14,10 +14,6 @@
   <color name="mushaf_accent">#ff1f4e56</color>
   <color name="mushaf_label">#ff5a5347</color>
   <color name="mushaf_label_night">#ffa9a08c</color>
-  <color name="mushaf_cards_background">#fff7f0e1</color>
-  <color name="mushaf_cards_background_night">#ff0e1518</color>
-  <color name="mushaf_card">#fffffbf0</color>
-  <color name="mushaf_card_night">#ff141c20</color>
   <color name="mushaf_card_border">#ffe8dcbf</color>
   <color name="mushaf_card_border_night">#ff26332f</color>
   <color name="mushaf_card_text">#ff3a352c</color>
