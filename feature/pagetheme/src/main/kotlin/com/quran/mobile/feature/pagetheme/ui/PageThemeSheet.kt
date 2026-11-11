@@ -105,7 +105,9 @@ fun PageThemeSheet(state: PageThemeSheetState, onClose: () -> Unit) {
 private fun ThemeGrid(state: PageThemeSheetState) {
   val fontScale = LocalDensity.current.fontScale.coerceIn(1f, 1.5f)
   BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
-    val columns = (maxWidth / (104.dp * fontScale)).toInt().coerceIn(1, 3)
+    val fit = (maxWidth / (104.dp * fontScale)).toInt().coerceIn(1, 3)
+    // no card left alone on the last row (four cards: two rows of two, not three and one)
+    val columns = if (fit > 2 && state.cards.size % fit == 1) fit - 1 else fit
     Column(
       verticalArrangement = Arrangement.spacedBy(8.dp),
       modifier = Modifier.selectableGroup()
@@ -186,6 +188,7 @@ private fun ThemeCard(
 
 @StringRes
 private fun PageColor.nameRes(): Int = when (this) {
+  PageColor.Tasnim -> R.string.page_theme_tasnim
   PageColor.Light -> R.string.theme_light
   PageColor.Sepia -> R.string.page_theme_sepia
   PageColor.Dark -> R.string.theme_dark

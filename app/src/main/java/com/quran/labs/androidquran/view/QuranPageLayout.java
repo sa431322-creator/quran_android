@@ -50,6 +50,9 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
 
   private static PaintDrawable leftGradient;
   private static PaintDrawable rightGradient;
+  // Tasnim's page theme: its paper, shaded from the spine like the light page
+  private static PaintDrawable tasnimLeftGradient;
+  private static PaintDrawable tasnimRightGradient;
   private static int gradientForNumberOfPages;
   private static boolean areGradientsLandscape;
   private static BitmapDrawable leftPageBorder;
@@ -102,6 +105,8 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     if (areGradientsLandscape != isLandscape) {
       leftGradient = null;
       rightGradient = null;
+      tasnimLeftGradient = null;
+      tasnimRightGradient = null;
       areGradientsLandscape = isLandscape;
     }
 
@@ -228,8 +233,10 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
           ContextCompat.getColor(context, R.color.page_gradient_inner),
           ContextCompat.getColor(context, R.color.page_gradient_middle),
           ContextCompat.getColor(context, R.color.page_gradient_edge) };
-      leftGradient = QuranDisplayHelper.getPaintDrawable(width, 0, colors);
-      rightGradient = QuranDisplayHelper.getPaintDrawable(0, width, colors);
+      leftGradient = QuranDisplayHelper.getPaintDrawable(width, 0);
+      rightGradient = QuranDisplayHelper.getPaintDrawable(0, width);
+      tasnimLeftGradient = QuranDisplayHelper.getPaintDrawable(width, 0, colors);
+      tasnimRightGradient = QuranDisplayHelper.getPaintDrawable(0, width, colors);
       gradientForNumberOfPages = pagesVisible;
     }
   }
@@ -261,7 +268,9 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   }
 
   protected void updateBackground(boolean nightMode, QuranSettings quranSettings) {
-    if (!quranSettings.isLightPage()) {
+    if (quranSettings.isTasnimPage()) {
+      setBackgroundDrawable((pageNumber % 2 == 0 ? tasnimLeftGradient : tasnimRightGradient));
+    } else if (!quranSettings.isLightPage()) {
       setBackgroundColor(quranSettings.getPageThemeBackgroundColor());
     } else if (quranSettings.useOldBackground()) {
       setBackgroundColor(ContextCompat.getColor(context, com.quran.mobile.feature.pagetheme.R.color.page_background));

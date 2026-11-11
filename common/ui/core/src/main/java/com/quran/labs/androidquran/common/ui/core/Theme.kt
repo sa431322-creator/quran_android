@@ -118,7 +118,9 @@ fun QuranTheme(
   content: @Composable () -> Unit
 ) {
   val accent = QuranAccent.current
-  val colors = remember(accent, useDarkTheme) { accentedColors(accent, useDarkTheme) }
+  val colors = remember(accent, useDarkTheme) {
+    TasnimColorScheme.apply(accentedColors(accent, useDarkTheme), useDarkTheme)
+  }
 
   val quranColors = if (useDarkTheme) {
     darkQuranColors

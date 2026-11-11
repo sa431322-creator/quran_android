@@ -143,6 +143,13 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   `res/values*/tasnim_colors.xml`; the reader's day/night menu item dropped for upstream's page
   theme sheet (the ayah cards follow its changes). App builds; unit tests of app, bookmark, mushaf,
   pagetheme and linebyline pass. The app looks like upstream's until step 2.
+- **Step 2 done (2026-11-11).** `PageTheme.Tasnim` ("tasnim", paper `#F6EEDD`, shaded from
+  the spine with the `page_gradient_*` colors) is the default; Light is upstream's white again and
+  Sepia is unchanged. Tasnim's accent and surfaces: `TasnimColorScheme` (Compose, one hook in
+  `QuranTheme`, accent set in `QuranApplication`) and `app/src/madani/res/values*/tasnim_overrides.xml`
+  (the flavor overrides upstream's color values, incl. `accent_navy_gold`, so upstream's
+  `colors.xml` and `themes.xml` are untouched). The theme sheet shows four cards in two rows.
+  Open for step 3: line-by-line pages draw Tasnim's paper flat, not shaded.
 - **Found in step 1, to settle in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page

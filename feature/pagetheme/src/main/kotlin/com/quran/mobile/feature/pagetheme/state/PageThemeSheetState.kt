@@ -16,7 +16,7 @@ data class PageThemeSheetState(
   val eventSink: (PageThemeSheetEvent) -> Unit = {}
 )
 
-enum class PageColor { Light, Sepia, Dark }
+enum class PageColor { Tasnim, Light, Sepia, Dark }
 
 @Immutable
 data class PageThemeCard(

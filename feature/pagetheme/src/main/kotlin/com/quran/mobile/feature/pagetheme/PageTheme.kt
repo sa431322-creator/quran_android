@@ -11,7 +11,8 @@ enum class PageTheme(
   @ColorRes private val backgroundColorRes: Int
 ) {
   Light(PageThemeConstants.PAGE_THEME_LIGHT, R.string.theme_light, R.color.page_theme_light_bg),
-  Sepia(PageThemeConstants.PAGE_THEME_SEPIA, R.string.page_theme_sepia, R.color.page_theme_sepia_bg);
+  Sepia(PageThemeConstants.PAGE_THEME_SEPIA, R.string.page_theme_sepia, R.color.page_theme_sepia_bg),
+  Tasnim(PageThemeConstants.PAGE_THEME_TASNIM, R.string.page_theme_tasnim, R.color.page_theme_tasnim_bg);
 
   fun getDisplayName(context: Context): String = context.getString(nameRes)
 

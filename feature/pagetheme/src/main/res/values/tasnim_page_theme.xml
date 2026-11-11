@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasnim's page theme (docs/upstream-base/PLAN.md, section A), kept apart from upstream's files -->
+<resources>
+  <!-- the paper of Tasnim's mushaf pages (the middle of the page's gradient) -->
+  <color name="page_theme_tasnim_bg">#FFF6EEDD</color>
+  <string name="page_theme_tasnim">Tasnim</string>
+</resources>

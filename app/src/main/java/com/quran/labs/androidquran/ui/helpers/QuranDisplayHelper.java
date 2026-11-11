@@ -123,6 +123,11 @@ public class QuranDisplayHelper {
     return sb.toString();
   }
 
+  public static PaintDrawable getPaintDrawable(int startX, int endX) {
+    return getPaintDrawable(startX, endX, new int[]{0xFFDCDAD5, 0xFFFDFDF4, 0xFFFFFFFF, 0xFFFDFBEF});
+  }
+
+  /** The page's gradient in [colors] (spine, inner, middle, edge): Tasnim's paper uses its own. */
   public static PaintDrawable getPaintDrawable(int startX, int endX, int[] colors) {
     PaintDrawable drawable = new PaintDrawable();
     drawable.setShape(new RectShape());

@@ -314,8 +314,9 @@ public class QuranSettings implements PageThemeSettings {
 
   @Override
   public String getPageTheme() {
+    // Tasnim's paper is the page theme until another is picked
     return PageTheme.fromKey(prefs.getString(Constants.PREF_PAGE_THEME,
-        PageThemeConstants.PAGE_THEME_LIGHT)).getStorageKey();
+        PageThemeConstants.PAGE_THEME_TASNIM)).getStorageKey();
   }
 
   @Override
@@ -333,6 +334,11 @@ public class QuranSettings implements PageThemeSettings {
 
   public int getDayPageBackgroundColor() {
     return PageTheme.fromKey(getPageTheme()).backgroundColor(appContext);
+  }
+
+  /** A day page in Tasnim's page theme (its paper, shaded from the spine). */
+  public boolean isTasnimPage() {
+    return !isNightMode() && PageThemeConstants.PAGE_THEME_TASNIM.equals(getPageTheme());
   }
 
   public boolean isLightPage() {

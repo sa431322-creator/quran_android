@@ -139,7 +139,10 @@ class PageThemeSheetPresenterTest {
   @Test fun `cards show each page color`() = runTest {
     states().test {
       val cards = awaitItem().cards
-      assertThat(cards.map { it.color }).containsExactly(PageColor.Light, PageColor.Sepia, PageColor.Dark).inOrder()
+      assertThat(cards.map { it.color }).containsExactly(PageColor.Tasnim, PageColor.Light, PageColor.Sepia, PageColor.Dark).inOrder()
+      assertThat(cards.card(PageColor.Tasnim).background).isEqualTo(
+        PageThemeCardBackground.Solid(context.getColor(R.color.page_theme_tasnim_bg))
+      )
       assertThat(cards.card(PageColor.Light).background).isEqualTo(PageThemeCardBackground.Shaded)
       assertThat(cards.card(PageColor.Sepia).background).isEqualTo(
         PageThemeCardBackground.Solid(context.getColor(R.color.page_theme_sepia_bg))

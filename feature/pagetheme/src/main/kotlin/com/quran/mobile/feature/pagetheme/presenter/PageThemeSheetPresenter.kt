@@ -59,7 +59,11 @@ class PageThemeSheetPresenter(
               else PageThemeConstants.PAGE_APPEARANCE_DARK
             )
           } else {
-            val theme = if (event.color == PageColor.Sepia) PageTheme.Sepia else PageTheme.Light
+            val theme = when (event.color) {
+              PageColor.Sepia -> PageTheme.Sepia
+              PageColor.Tasnim -> PageTheme.Tasnim
+              else -> PageTheme.Light
+            }
             settings.pageTheme = theme.storageKey
             pageTheme = theme
             setAppearance(
@@ -122,6 +126,12 @@ class PageThemeSheetPresenter(
       PageThemeCardBackground.Shaded
     }
     return persistentListOf(
+      PageThemeCard(
+        color = PageColor.Tasnim,
+        isSelected = !isNightPage && pageTheme == PageTheme.Tasnim,
+        background = PageThemeCardBackground.Solid(PageTheme.Tasnim.backgroundColor(context)),
+        textColor = Color.BLACK
+      ),
       PageThemeCard(
         color = PageColor.Light,
         isSelected = !isNightPage && pageTheme == PageTheme.Light,

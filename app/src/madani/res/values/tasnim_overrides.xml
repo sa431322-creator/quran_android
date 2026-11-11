@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Tasnim's values for colors upstream defines in app/src/main/res/values/colors.xml. This flavor's
+  resources override main's, so upstream's file stays as it is (docs/upstream-base/PLAN.md, A).
+-->
+<resources>
+  <!-- the app's accent (?attr/quranAccent): Tasnim's teal; keep in sync with TasnimColorScheme.Accent -->
+  <color name="accent_navy_gold">#ff1f4e56</color>
+  <color name="toolbar_text">#ff1c1a16</color>
+  <color name="toolbar_icon_tint">#ff1c1a16</color>
+  <color name="toolbar_secondary_text">#ff5a5347</color>
+  <color name="surface">#fff7f0e1</color>
+  <color name="header_background">#ffefe5cf</color>
+  <color name="title_color">#ff1c1a16</color>
+  <color name="sura_number_color">#ff1c1a16</color>
+  <color name="sura_details_color">#ff5a5347</color>
+  <color name="translation_sura_header">#ffefe5cf</color>
+  <color name="translation_ayah_selected_color">#385fa9c1</color>
+  <color name="selection_highlight">#4d5fa9c1</color>
+  <color name="audio_highlight">#385fa9c1</color>
+  <color name="translation_highlight">#ff5fa9c1</color>
+  <color name="notification_color">#ff1f4e56</color>
+  <color name="download_button_background">#ffe7f0ef</color>
+  <color name="icon_tint">#ff1c1a16</color>
+  <color name="text_primary">#ff1c1a16</color>
+</resources>

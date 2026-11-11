@@ -87,6 +87,9 @@ class ReaderThemeTest {
   @Test fun `line by line pages are shaded only for Light by day`() = runTest {
     val settings = QuranSettings.getInstance(context)
     val lineByLineSettings = SettingsImpl(settings)
+    // Tasnim's page theme, the default, is its paper
+    assertThat(lineByLineSettings.dayPageBackgroundColor()).isEqualTo(0xfff6eedd.toInt())
+    settings.pageTheme = PageThemeConstants.PAGE_THEME_LIGHT
     assertThat(lineByLineSettings.dayPageBackgroundColor()).isNull()
     settings.pageTheme = PageThemeConstants.PAGE_THEME_SEPIA
     assertThat(lineByLineSettings.dayPageBackgroundColor()).isEqualTo(0xfff8ebd5.toInt())
@@ -144,12 +147,12 @@ class ReaderThemeTest {
     assertThat(settings.isNightMode).isFalse()
   }
 
-  @Test fun `fresh installs get a Light page that follows the app theme`() {
+  @Test fun `fresh installs get Tasnim's page that follows the app theme`() {
     val settings = QuranSettings.getInstance(context)
     settings.currentTheme()
     settings.upgradePreferences(noFlavorUpgrade)
     assertThat(settings.pageAppearance).isEqualTo(PageThemeConstants.PAGE_APPEARANCE_AUTOMATIC)
-    assertThat(settings.pageTheme).isEqualTo(PageThemeConstants.PAGE_THEME_LIGHT)
+    assertThat(settings.pageTheme).isEqualTo(PageThemeConstants.PAGE_THEME_TASNIM)
     assertThat(preferences.contains(Constants.PREF_USE_OLD_BACKGROUND)).isFalse()
   }
 
