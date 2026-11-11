@@ -6,5 +6,6 @@
   <string name="qarilist_gapless">مداوم</string>
   <string name="qarilist_gapped">غیر پیوسته</string>
   <string name="qarilist_selected">انتخاب</string>
-  <string name="qarilist_dismiss">اخراج</string>
+  <string name="qarilist_dismiss">رد کردن</string>
+  <string name="qarilist_search_hint">جستجو</string>
 </resources>

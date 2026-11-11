@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="autoquran_qaris_title">قاریان</string>
+  <string name="autoquran_recently_played_title">اخیراً پخش‌شده</string>
+  <string name="quran_sura_title">سوره %1$s</string>
+</resources>
