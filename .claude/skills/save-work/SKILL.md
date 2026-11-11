@@ -39,6 +39,7 @@ Run it in the background if it is slow. If it fails, fix the error before commit
 ## 4. Commit
 
 - If on `main` or `master`, create a branch first: `git switch -c <short-topic-name>`.
+- Our working branch is `tasnim/upstream-base` (it follows upstream; see `docs/upstream-base/PLAN.md`). Feature branches are cut from it. Keep Tasnim's changes in Tasnim-owned files where possible (see the `sync-upstream` skill, step 4), so the next upstream sync stays clean.
 - Use the Bash tool with a heredoc for the commit message (PowerShell here-strings piped to `git commit -F -` break).
 - Stage explicit paths (`git add <file> ...`), never `git add -A` blindly.
 - Commit message: one short imperative subject line (English), optional body describing *why*, then the attribution line required by the current session (e.g. `Co-Authored-By: ...`).

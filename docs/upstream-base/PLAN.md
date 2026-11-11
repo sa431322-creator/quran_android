@@ -3,7 +3,7 @@
 Branch: `tasnim/upstream-base`, cut from `upstream/main` (quran/quran_android, `c94ebe12d`,
 2026-11-10). Not `main`: our `main` is the unrelated "Baseline" commit.
 
-Status: **draft, waiting for the user's answers** (see "Decisions" at the end).
+Status: **done 2026-11-11.** Decisions taken with the recommended answers; `tasnim/upstream-base` is now the working branch.
 
 ---
 
@@ -176,6 +176,10 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
 - **Step 7 done (2026-11-11).** Checked on the emulator over the old Tasnim build (upgrade path),
   phone and tablet: [report](reports/2026-11-11.md). Fixed: Persian labels for the page theme
   sheet and Tasnim's container colors for sheets. Not covered: image pages, audio playback.
+- **Step 8 done (2026-11-11).** `tasnim/upstream-base` is the working branch; the `sync-upstream`
+  and `save-work` skills point to it and list where Tasnim's code lives. `tasnim/text-mushaf`,
+  `tasnim-rebrand-v2`, `tasnim/ads`, `tasnim/live-youtube` and the `backup/pre-sync-*` branches
+  stay until the user confirms the app works.
 - **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page

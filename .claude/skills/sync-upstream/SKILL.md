@@ -5,12 +5,18 @@ description: Pull new commits from the original open-source repo (github.com/qur
 
 # Sync upstream — مزامنة مستودعنا مع المستودع الأصلي
 
-Our app (تسنیم) is built on top of the open-source **quran/quran_android**. This skill brings their new commits (bug fixes, dependency bumps, features) into our branch **without losing anything we added** (rebrand, Persian UI, tafsir, library, live video/radio, theme, launcher icon …).
+Our app (تسنیم) is built on top of the open-source **quran/quran_android**. This skill brings their new commits (bug fixes, dependency bumps, features) into our branch **without losing anything we added** (rebrand, Persian UI, tafsir, library, live video/radio, ads, text mushaf and ayah cards, theme, launcher icon …).
+
+**Upstream is the backbone** (decided 2026-11-11, `docs/upstream-base/PLAN.md`). Our working branch is
+`tasnim/upstream-base`, which follows `upstream/main`. Tasnim's features sit on top of upstream's
+design, mostly in Tasnim-owned files, so a sync should be a plain merge with few conflicts. When
+upstream changes a design, adapt our feature to it; do not bend upstream's code back to our old
+design.
 
 - `origin`   = our repo → `https://github.com/sa431322-creator/quran_android.git`
 - `upstream` = the original → `https://github.com/quran/quran_android.git` (branch `main`)
 
-**Shell variables do not persist between Bash tool calls.** Wherever `$BR` (our branch, e.g. `tasnim-rebrand-v2`) or `$STAMP` appear below, substitute the literal values you got in steps 2–3, or redefine them at the top of each command.
+**Shell variables do not persist between Bash tool calls.** Wherever `$BR` (our branch, `tasnim/upstream-base`) or `$STAMP` appear below, substitute the literal values you got in steps 2–3, or redefine them at the top of each command.
 
 **Strategy: merge, never rebase.** Our branches are already pushed, so rebasing onto upstream would rewrite them and need a force push. A merge commit keeps our history intact and records exactly what came from upstream.
 
@@ -24,7 +30,8 @@ git branch --show-current
 ```
 
 - The working tree must have **no modified tracked files** (untracked files like `*.csv` are fine). If there are changes, run `save-work` first — do not stash and forget them.
-- Work on our feature branch (currently `tasnim-rebrand-v2`). Never merge upstream into `main` here: our `main` is a single unrelated "Baseline" commit and shares no history with upstream.
+- Work on `tasnim/upstream-base` (feature branches are cut from it and merged back). Never merge upstream into `main` here: our `main` is a single unrelated "Baseline" commit and shares no history with upstream.
+- If upstream brings a large redesign (like its 2026 theme overhaul), stop after step 2, tell the user what it changes, and agree a plan before merging.
 - Make sure repeated conflicts are remembered (once per clone):
 
 ```bash
@@ -64,7 +71,21 @@ If the merge stops with conflicts, resolve them using the rules in step 4, then 
 
 To abandon at any point: `git merge --abort` (during the merge) or `git switch "$BR"` and delete the sync branch. The backup branch is the last-resort restore point.
 
-## 4. Conflict rules — our code stays on top
+## 4. Conflict rules — upstream's structure, our features on top
+
+Where Tasnim lives (keep it there, so upstream's files stay as upstream wrote them):
+
+| Tasnim's | File |
+|---|---|
+| Own colors | `app/src/main/res/values*/tasnim_colors.xml` |
+| Values for colors upstream defines (incl. the accent `accent_navy_gold`) | `app/src/madani/res/values*/tasnim_overrides.xml` (the flavor overrides main) |
+| Persian for upstream modules that lack it | `app/src/madani/res/values-fa/tasnim_overrides_strings.xml` (app overrides modules) |
+| Compose accent and surfaces | `common/ui/core/.../TasnimColorScheme.kt` (one hook in `QuranTheme`, accent set in `QuranApplication`) |
+| Page theme | `PageTheme.Tasnim` + `feature/pagetheme/src/main/res/values*/tasnim_page_theme.xml` |
+| Strings | `tasnim_strings.xml` |
+
+If upstream adds a key we override, keep both files as they are: ours wins by design. If upstream
+adds a resource with the same name in the same module as one of ours, rename ours.
 
 For each conflicted file, read **both sides** (`git diff`, or `git show :2:<file>` = ours, `:3:<file>` = upstream) before deciding. Never resolve a whole file blindly with `--ours`/`--theirs` unless a rule below says so.
 
@@ -75,7 +96,8 @@ For each conflicted file, read **both sides** (`git diff`, or `git show :2:<file
 | Bug fixes / logic in files we also edited | **Combine both**: keep our feature code and apply upstream's fix inside it. |
 | Files only upstream changed | Taken automatically by git — nothing to do. |
 | Dependencies, Gradle wrapper, `libs.versions.toml`, `build.gradle.kts`, `minSdk`/`targetSdk` | **Take upstream's versions**, keep our own added dependencies, `applicationId`, flavors and signing config. |
-| Upstream feature announcements / "what's new" / new-icon announcements for quran.com branding | Keep the code, but make sure it does not show quran.com branding or override our icon; disable or re-word it for Tasnim if needed. |
+| Upstream feature announcements / "what's new" / new-icon announcements for quran.com branding | Keep the code, but make sure it does not show quran.com branding or override our icon; disable or re-word it for Tasnim if needed. Our launch never opens `AnnouncementActivity`. |
+| quran.com Account & Sync | Keep the code. It only switches on with a quran.com client ID in a local `oauth.properties`; never add one to Tasnim builds. |
 | Other languages' `strings.xml` | Take upstream; keep any keys we added. |
 | `AndroidManifest.xml` | Keep our activities/permissions/app label and icon; add upstream's new entries. |
 | Version code / name | If we set our own version, keep it. While we still use upstream's numbering (true as of 2026-10-16), take their bump so updates install over older builds. |
@@ -93,6 +115,12 @@ git grep -nE '^(<<<<<<<|>>>>>>>)( |$)' -- . ':!*.md' || echo "no markers"
    ```bash
    JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac -q --max-workers=2 -Dorg.gradle.jvmargs=-Xmx1536m -Pkotlin.compiler.execution.strategy=in-process
    ```
+   Then the unit tests, in **two separate Gradle runs**: library modules only have `testReleaseUnitTest`, and naming a `Release` task turns on the Firebase plugin, which breaks the app's debug tests in the same run:
+   ```bash
+   ./gradlew :common:bookmark:testReleaseUnitTest :feature:mushaf:testReleaseUnitTest :feature:pagetheme:testReleaseUnitTest --continue -q ...
+   ./gradlew :app:testMadaniDebugUnitTest --continue -q ...
+   ```
+   Upstream tests that check upstream defaults (e.g. the Light page theme) are expected to need Tasnim's values.
    Not `--offline` here: upstream may have bumped dependencies that must be downloaded. The low-memory flags matter on this PC: the default 4G heap fails with "paging file is too small". Expect errors where upstream renamed/removed functions our code calls — switch to the replacement that gives the same behavior. Run it in the background if slow. Fix any errors (usually API changes in code we touched) and commit the fixes on the sync branch.
 2. **Our features still present** — quick sanity check that the merge did not drop our work:
    ```bash
