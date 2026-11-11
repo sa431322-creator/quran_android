@@ -6,7 +6,6 @@
   <string name="to">تا</string>
   <string name="loading">بارگذاری…</string>
   <string name="canceling">در حال لغو</string>
-  <string name="default_collection">برگزیده‌ها</string>
   <plurals name="ayah_collections">
     <item quantity="one">%d مجموعه</item>
     <item quantity="other">%d مجموعه</item>

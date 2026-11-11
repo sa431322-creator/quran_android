@@ -10,6 +10,7 @@ import com.quran.mobile.bookmark.importdata.MobileSyncImportCollectionBookmark
 import com.quran.mobile.bookmark.importdata.MobileSyncImportData
 import com.quran.mobile.bookmark.importdata.MobileSyncImportReadingBookmark
 import com.quran.mobile.bookmark.importdata.MobileSyncImportReadingSession
+import com.quran.shared.persistence.model.Mushaf
 import com.quran.shared.persistence.model.ReadingBookmarkSlot
 import java.io.File
 
@@ -151,7 +152,9 @@ internal object PreviousMobileSyncDatabaseReader {
         MobileSyncImportReadingBookmark.Ayah(slot, getInt(3), getInt(4), timestamp, name)
       }
       "PAGE" -> if (isNull(5)) null else {
-        MobileSyncImportReadingBookmark.Page(slot, getInt(5), timestamp, name)
+        // the old quran.db kept page bookmarks in the canonical (Madani 1405) page numbering, which
+        // has no mushaf column; mobile-sync now records the mushaf with each page
+        MobileSyncImportReadingBookmark.Page(slot, getInt(5), Mushaf.MADANI_1405, timestamp, name)
       }
       else -> null
     }
