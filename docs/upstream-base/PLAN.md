@@ -136,6 +136,18 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
 
 ---
 
+## Progress
+
+- **Step 1 done (2026-11-11).** `tasnim/text-mushaf` merged onto upstream. Upstream's
+  `colors.xml` and `Color.kt` taken as they are; Tasnim's own colors moved to
+  `res/values*/tasnim_colors.xml`; the reader's day/night menu item dropped for upstream's page
+  theme sheet (the ayah cards follow its changes). App builds; unit tests of app, bookmark, mushaf,
+  pagetheme and linebyline pass. The app looks like upstream's until step 2.
+- **Found in step 1, to settle in step 3:** `MadaniV2PageProvider` and
+  `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
+  files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page
+  bookmarks in the canonical numbering) before page bookmarks go to any sync.
+
 ## Decisions (open)
 
 1. **Default page theme**: Tasnim's paper as a new page theme and the default (recommended), or
