@@ -4,6 +4,7 @@ import android.content.Context
 import android.view.GestureDetector
 import android.view.MotionEvent
 import android.view.View
+import androidx.core.content.ContextCompat
 import com.quran.labs.androidquran.ui.helpers.AyahSelectedListener
 import com.quran.labs.androidquran.ui.util.PageController
 import com.quran.labs.androidquran.util.QuranSettings
@@ -32,6 +33,14 @@ open class QuranImagePageLayout(context: Context) : QuranPageLayout(context) {
 
   override fun updateView(quranSettings: QuranSettings) {
     super.updateView(quranSettings)
+    // the day paper behind the image, as QuranPageLayout draws it
+    imageView.setPagePaperColor(
+      if (quranSettings.isLightPage && quranSettings.useOldBackground()) {
+        ContextCompat.getColor(context, com.quran.mobile.feature.pagetheme.R.color.page_background)
+      } else {
+        quranSettings.dayPageBackgroundColor
+      }
+    )
     imageView.setNightMode(
       quranSettings.isNightMode,
       quranSettings.pageTextBrightness,

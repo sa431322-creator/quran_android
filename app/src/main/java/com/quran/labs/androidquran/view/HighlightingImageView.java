@@ -69,6 +69,8 @@ public class HighlightingImageView extends AppCompatImageView {
   private final SortedMap<HighlightType, Set<AyahHighlight>> currentHighlights = new TreeMap<>();
 
   private boolean isNightMode;
+  // the page theme's day paper, for the Tasnim sura header pills
+  private int pagePaperColor = 0xFFF6EEDD;
   private boolean isColorFilterOn;
   private int nightModeTextBrightness = Constants.DEFAULT_NIGHT_MODE_TEXT_BRIGHTNESS;
   private int nightModeBackgroundBrightness = Constants.DEFAULT_NIGHT_MODE_BACKGROUND_BRIGHTNESS;
@@ -120,7 +122,7 @@ public class HighlightingImageView extends AppCompatImageView {
 
   // Draws the Tasnim sura header frames over the page image (day mode only)
   private final ImageDrawHelper suraHeaderDrawer =
-      new MushafSuraHeaderDrawer(getContext(), () -> isNightMode);
+      new MushafSuraHeaderDrawer(getContext(), () -> isNightMode, () -> pagePaperColor);
 
   // Draws the Tasnim page ornament around the page image when there is room (single page only)
   private final MushafPageOrnamentDrawer pageOrnamentDrawer =
@@ -225,6 +227,13 @@ public class HighlightingImageView extends AppCompatImageView {
     highlightCoordinates = new HashMap<>();
     for (Map.Entry<String, List<AyahBounds>> entry: ayahCoordinates.getAyahCoordinates().entrySet()) {
       highlightCoordinates.put(new SingleAyahHighlight(entry.getKey()), entry.getValue());
+    }
+  }
+
+  public void setPagePaperColor(int color) {
+    if (pagePaperColor != color) {
+      pagePaperColor = color;
+      invalidate();
     }
   }
 

@@ -156,6 +156,10 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   page providers now say `MADANI_1405` explicitly, with the reason (Tasnim keeps its page
   bookmarks under one label; quran.com sync is not used). Line-by-line pages are not a Tasnim page
   type, so their flat paper needs no change.
+- **Step 4 done (2026-11-11).** Image pages at night use upstream's `NightModeColorMatrix`
+  (came with step 1; glyphs unchanged, tajweed keeps its colors). Our sura header frames stay
+  day-only, and their name pill now takes the page theme's paper (or the old background) instead of
+  a fixed cream.
 - **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page

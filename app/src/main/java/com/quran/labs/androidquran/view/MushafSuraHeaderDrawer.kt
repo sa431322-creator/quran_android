@@ -18,7 +18,8 @@ import kotlin.math.abs
 import kotlin.math.roundToInt
 
 /**
- * Draws the Tasnim sura header frame (teal panel, gold border and diamonds, cream pill) over the
+ * Draws the Tasnim sura header frame (teal panel, gold border and diamonds, a pill of the page's
+ * paper) over the
  * sura header frame of the page image, in day mode only. The sura name of the image is left
  * showing through a window in the pill, so the original calligraphy is kept as is.
  *
@@ -27,7 +28,9 @@ import kotlin.math.roundToInt
  */
 class MushafSuraHeaderDrawer(
   context: Context,
-  private val isNightMode: () -> Boolean
+  private val isNightMode: () -> Boolean,
+  /** the page theme's day paper, which the pill is cut from */
+  private val paperColor: () -> Int
 ) : ImageDrawHelper {
   private val density = context.resources.displayMetrics.density
 
@@ -44,7 +47,7 @@ class MushafSuraHeaderDrawer(
   }
 
   private val pillPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-    color = ContextCompat.getColor(context, R.color.mushaf_sura_header_pill)
+    color = paperColor()
     style = Paint.Style.FILL
   }
 
@@ -61,6 +64,7 @@ class MushafSuraHeaderDrawer(
 
   override fun draw(pageCoordinates: PageCoordinates, canvas: Canvas, image: ImageView) {
     if (isNightMode() || pageCoordinates.suraHeaders.isEmpty()) return
+    pillPaint.color = paperColor()
     val drawable = image.drawable as? BitmapDrawable ?: return
     val bitmap = drawable.bitmap ?: return
     if (bitmap.isRecycled || drawable.intrinsicWidth <= 0) return
