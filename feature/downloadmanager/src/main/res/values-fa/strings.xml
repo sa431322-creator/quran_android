@@ -7,7 +7,7 @@
   <string name="audio_manager">مدیریت فایل‌های صوتی</string>
   <string name="audio_manager_remove_audio_title">حذف فایل صوتی؟</string>
   <string name="audio_manager_remove_audio_msg">آیا مطمئن هستید که می خواهید %1$s را حذف کنید؟</string>
-  <string name="audio_manager_remove_multiple_audio_msg">آیا مطمئن هستید که می خواهید را حذف کنید؟</string>
+  <string name="audio_manager_remove_multiple_audio_msg">آیا مطمئن هستید که می خواهید حذف کنید؟</string>
   <string name="audio_manager_surah_download">دانلود سوره</string>
   <string name="audio_manager_surah_delete">حذف سوره</string>
   <string name="audio_manager_download_all">دانلود همه</string>
@@ -17,4 +17,18 @@
   <string name="download_progress">بارگذاری %1$s / %2$s</string>
   <string name="download_sura_progress">بارگذاری %1$s / %2$s از سوره %3$d</string>
   <string name="download_sura_ayah_progress">بارگذاری سوره %1$d آیه %2$d</string>
+  <string name="audio_manager_database">پایگاه فایل های صوتی</string>
+  <string name="audio_manager_database_delete">حذف فایل ها</string>
+  <string name="audio_manager_database_download">دانلود فایل ها</string>
+  <plurals name="audio_manager_delete_surah_error">
+    <item quantity="one">هنگام حذف سوره خطایی رخ داد</item>
+    <item quantity="other">هنگام حذف %1$d سوره خطایی رخ داد</item>
+  </plurals>
+  <plurals name="audio_manager_delete_surah_success">
+    <item quantity="one">سوره با موفقیت حذف شد</item>
+    <item quantity="other">%1$d سوره با موفقیت حذف شد</item>
+  </plurals>
+  <string name="audio_manager_post_notifications_permission_description">فقط برای نمایش وضعیت دانلود یا هشدار هنگام به‌روزرسانی خودکار فایل‌های صوتی به کار می‌رود.</string>
+  <string name="audio_manager_post_notifications_permission_title">اجازهٔ ارسال اعلان داده شود؟</string>
+  <string name="download_amount_in_megabytes">%s مگابایت</string>
 </resources>

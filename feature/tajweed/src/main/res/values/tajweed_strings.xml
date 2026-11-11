@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Tajweed mushaf strings. Tasnim is built for Persian speakers, so these are Persian everywhere. -->
 <resources>
-  <string name="tajweed_loading" translatable="false">در حال دریافت قلم این صفحه…</string>
-  <string name="tajweed_error" translatable="false">دریافت قلم این صفحه ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
-  <string name="tajweed_data_error" translatable="false">بارگذاری صفحه‌های مصحف ممکن نشد.</string>
+  <string name="tajweed_loading" translatable="false">در حال دریافت فونت این صفحه…</string>
+  <string name="tajweed_error" translatable="false">دریافت فونت ممکن نیست. مشکل اینترنت!</string>
+  <string name="tajweed_data_error" translatable="false">صفحه‌های مصحف بارگذاری نشد.</string>
   <string name="tajweed_retry" translatable="false">تلاش دوباره</string>
 </resources>

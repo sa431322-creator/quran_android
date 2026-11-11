@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="downloadPrompt_title">فایل‌های موردنیاز بارگذاری شود؟</string>
-  <string name="downloadPrompt">برای عملکرد بهینه بایستی تعدادی فایل از اینترنت دریافت گردد. این کار قدری طول خواهد کشید. آیا آمادگی این کار را دارید؟</string>
+  <string name="downloadPrompt_title">آیا فایل‌های موردنیاز بارگذاری شود؟</string>
+  <string name="downloadPrompt">برای عملکرد بهینه بایستی تعدادی فایل دریافت گردد. این کار قدری طول خواهد کشید. در صورت عدم دانلود فایل ها شاید برنامه به خوبی عمل نکند! آیا آمادگی این کار را دارید؟</string>
   <string name="downloadPrompt_ok">بلی</string>
   <string name="downloadPrompt_no">خیر</string>
-  <string name="downloading_message">لطفاً برای بارگذاری فایل‌ها صبر نمایید. (از ازسرگیری پشتیبانی می‌شود.(</string>
+  <string name="downloading_message">لطفاً برای بارگذاری فایل‌ها صبر نمایید.</string>
   <string name="extracting_title">در حال پردازش…</string>
   <string name="menu_about">درباره ما</string>
   <string name="menu_settings">تنظیمات</string>
@@ -18,35 +18,31 @@
   <string name="menu_sort_location">محل در قرآن</string>
   <string name="menu_translation">مشاهده ترجمه</string>
   <string name="menu_rotate_screen">چرخش صفحه</string>
-  <string name="menu_back_to_page">مشاهده قرآن</string>
+  <string name="menu_back_to_page">مشاهده قرآن کریم</string>
   <string name="menu_help">راهنما</string>
   <string name="menu_search">جستجو</string>
   <string name="menu_get_translations">دریافت ترجمه‌ها</string>
-  <string name="menu_jump">پرش</string>
+  <string name="menu_jump">انتقال سریع</string>
   <string name="gotoPage">رفتن به صفحه</string>
 
   <!-- help -->
-  <string name="help_title">پرسش و پاسخ‌های متداول</string>
-  <string name="help"> 
-        &lt;b>چگونه فایل‌های صوتی را پخش کنم؟&lt;/b>
-        &lt;br/>برای فعال کردن صوت در این برنامه کافی است بر صفحه مورد نظر ضربه زده تا دکمه‌های پخش صدا را مشاهده نمایید.
-        &lt;br/>
-        &lt;br/>&lt;b>چگونه ترجمه را مشاهده نمایم؟&lt;/b>
-        &lt;br/>کافی است بر صفحه مورد نظر ضربه زده و سپس علامت جهان یا در برخی دستگاه‌ها علامت سه‌نقطه را بفشارید.
-        &lt;br/>اگر در دستگاه خود هیچ ترجمه‌ای نداشته باشید، باید به قسمت تنظیمات رفته و ترجمه‌هایی را بارگذاری نمایید.
-        &lt;br/>
-        &lt;br/>&lt;b>چگونه یک صفحه را نشانک‌گذاری کنم؟&lt;/b>
-        &lt;br/>صفحه مورد نظر خود را انتخاب نمایید، سپس بر صفحه ضربه زده و روبان بالای صحفه را لمس نمایید.
-        &lt;br/>
-        &lt;br/>&lt;b>چگونه اندازه قلم را بزرگتر کنم؟&lt;/b>
-        &lt;br/>برای متن عربی قرآن دستگاه خود را در حالت افقی نگه دارید و برای اندازه متن ترجمه به قسمت تنظیمات مراجعه نمایید.
-        &lt;br/>
-        &lt;br/>&lt;b>چگونه یک آیه را به اشتراک بگذارم؟&lt;/b>
-        &lt;br/>کافی است آیه مورد نظر خود را برای مدت زمان کوتاهی لمس نمایید تا دکمه اشتراک‌گذاری نمایان شود.
-        &lt;br/>
-        &lt;br/>&lt;b>در دیدن متن ترجمه مشکل دارم.&lt;/b>
-        &lt;br/>متأسفانه برخی قلم‌ها در آندرویدهای قدیمی‌تر از نسخه ۴ پیش‌بینی نشده است.
-    </string>
+  <string name="help_title">پرسش های متداول</string>
+  <string name="help">&lt;b>پخش صوت چگونه انجام می‌شود؟&lt;/b>
+&lt;br/>
+صفحهٔ قرآن را باز کنید، یک بار روی صفحه ضربه بزنید. در پایین صفحه، دکمهٔ پخش صوت و نام قاری مورد نظر برای دانلود را خواهید دید. برای انتخاب قاری، روی نام قاری فعلی ضربه بزنید تا ادامهٔ فهرست قاریان نمایش داده شود. و برای دانلود صوت، دکمهٔ پخش را فشار دهید تا صوت صفحه‌ای که در آن هستید دانلود و پخش شود یا کل سوره دانلود گردد.
+&lt;br/>
+&lt;br/>&lt;b>چگونه به ترجمه دسترسی پیدا کنم؟&lt;/b>
+&lt;br/>صفحه‌ای از قرآن را باز کنید، یک بار روی صفحه ضربه بزنید، نواری در بالا ظاهر می‌شود؛ در بالا آیکونی به شکل کرهٔ زمین خواهید دید (و ممکن است در برخی دستگاه‌ها آیکون ترجمه در نوار بالا زیر دکمهٔ منو به شکل سه نقطهٔ عمودی قرار گرفته باشد)، با زدن روی آن به صفحه‌ای هدایت می‌شوید که می‌توانید ترجمهٔ مورد نظر خود را انتخاب و دانلود کنید؛ و پس از دانلود، دوباره بازگردید و روی آیکون کرهٔ زمین ضربه بزنید تا ترجمهٔ دانلودشده را مشاهده کنید.
+&lt;br/>
+&lt;br/>&lt;b>چگونه یک صفحه به نشانک‌ها اضافه می‌شود؟&lt;/b>
+&lt;br/>روی صفحه‌ای که می‌خواهید به نشانک‌ها اضافه کنید ضربه بزنید، نواری در بالا ظاهر می‌شود و در سمت راستِ نوار، آیکونی به شکل ستاره خواهید دید که با زدن روی آن، شکل آن به یک ستارهٔ توپر تغییر می‌یابد و بدین‌ترتیب صفحه در نشانک‌ها ذخیره می‌شود. و برای حذف آن صفحه از نشانک‌ها، دوباره به همان صفحه بروید و یک بار دیگر روی ستاره ضربه بزنید تا از حالت نشانک خارج شود.
+&lt;br/>
+&lt;br/>&lt;b>چگونه می‌توانم اندازهٔ قلم را درشت‌تر کنم؟&lt;/b>
+&lt;br/>برای صفحات عربی می‌توانید دستگاه خود را در حالت افقی قرار دهید؛ از این طریق می‌توانید اندازهٔ بزرگ‌تری از قلم دریافت کنید. و برای ترجمه به تنظیمات بروید و اندازهٔ متن ترجمه را انتخاب کنید.
+&lt;br/>
+&lt;br/>&lt;b>چگونه می‌توانم آیه‌ای را ارسال کنم؟&lt;/b>
+&lt;br/>
+هنگام خواندن، روی آیه لمس طولانی کنید (انگشت خود را نگه دارید)؛ منویی با چند گزینه برایتان باز می‌شود، از جمله ارسال، ذخیرهٔ آیه در نشانک‌ها، کپی کردن آیه، و مشاهدهٔ تفسیر آیه.</string>
   <string name="search_hint">جستجو در قرآن</string>
   <string name="quranSearchType">آیات قرآن</string>
 
@@ -63,13 +59,13 @@
   <string name="found_in_sura">در آیه %3$d از سوره (%1$d) %2$s (صفحه %4$d)</string>
   <string name="no_results">جستجوی «%s» هیچ نتیجه‌ای دربرنداشت.</string>
   <string name="no_arabic_search_available">متن عربی قرآن هنوز بارگذاری نشده است. لطفاً ابتدا آن را دریافت نمایید.</string>
-  <string name="get_arabic_search_db">متن عربی قرآن را برای جستجو در متن دریافت کنید.</string>
+  <string name="get_arabic_search_db">بارگیری دیتابیس</string>
 
   <!-- Quran Preference Activity -->
   <string name="prefs_category_reading">تنظیمات خواندن</string>
   <string name="prefs_category_translation">تنظیمات ترجمه</string>
   <string name="prefs_category_display_settings">تنظیمات نمایش</string>
-  <string name="prefs_use_arabic_title">حالت عربی (الوضع العربي)</string>
+  <string name="prefs_use_arabic_title">حالت عربی (زبان عربی)</string>
   <string name="prefs_use_arabic_summary_on">تغییر زبان برنامه به عربی</string>
   <string name="prefs_lock_orientation_title">حفظ جهت نمایش</string>
   <string name="prefs_lock_orientation_summary_on">عدم تغییر خودکار جهت نمایش</string>
@@ -90,11 +86,11 @@
   <string name="prefs_translations_summary">بارگذاری و مدیریت ترجمه‌ها</string>
   <string name="prefs_ayah_before_translation_title">آیه پیش از ترجمه</string>
   <string name="prefs_ayah_before_translation_summary">نمایش متن عربی آیه پیش از ترجمه</string>
-  <string name="prefs_use_dyslexic_font_title">Dyslexia friendly font</string>
-  <string name="prefs_use_dyslexic_font_summary">Display translations in dyslexia friendly font</string>
+  <string name="prefs_use_dyslexic_font_title">فونت مناسب خوانش‌</string>
+  <string name="prefs_use_dyslexic_font_summary">نمایش ترجمه با قلم ویژهٔ خوانش</string>
   <string name="prefs_category_download">بارگذاری تنظیمات</string>
   <string name="prefs_streaming_title">پخش اینترنتی</string>
-  <string name="prefs_streaming_summary">پخش جویباری صوت از اینترنت</string>
+  <string name="prefs_streaming_summary">پخش صوت از اینترنت (فایل دانلود نمی شود)</string>
   <string name="prefs_download_amount_summary">میزان پیشنهادی برای بارگذاری فایل‌های صوتی</string>
   <string name="downloaded_translations">بارگذاری انجام گرفت</string>
   <string name="available_translations">آماده بارگذاری</string>
@@ -120,7 +116,7 @@
   <string name="sura_ayah_sharing_str">سوره %1$s: %2$d</string>
 
   <string name="page_description">صفحه %1$s، جزء %2$s</string>
-  <string name="highlighting_database">فایل‌های موردنیاز</string>
+  <string name="highlighting_database">دانلود فایل‌های موردنیاز</string>
   <string name="timing_database">فایل‌های موردنیاز</string>
 
   <!-- download statuses and errors -->
@@ -129,7 +125,7 @@
   <string name="download_error_general">خطا در بارگذاری</string>
   <string name="download_error_disk">فضای کافی برای بارگذاری وجود ندارد</string>
   <string name="download_error_network">خطای شبکه مانع بارگذاری است</string>
-  <string name="download_error_perms">خطا در دسترسی</string>
+  <string name="download_error_perms">عدم دسترسی کافی برای دانلود فایل‌ها (خطای مجوزها)</string>
   <string name="download_error_invalid_download">بارگذاری با خطا مواجه شد</string>
   <string name="download_error_invalid_download_retry">فایل خراب است. دوباره بارگذاری نمایید</string>
   <string name="download_error_network_retry">خطای شبکه، تلاش مجدد…</string>
@@ -146,7 +142,7 @@
   <string name="search_data">جستجو</string>
 
   <!-- help -->
-  <string name="email_us">اگر پاسخ پرسشتان در بالا یافت نشد، می‌توانید برای پشتیبانی با رایانامه quranandroid@gmail.com تماس بگیرید. توجه داشته باشید که حجم نامه‌های دریافتی بالاست و شاید پاسخ به نامه شما اندکی طول بکشد.</string>
+  <string name="email_us">اگر پاسخ پرسشتان را در بالا یافت نشد، می‌توانید برای پشتیبانی با ایمیل: info@tasnimquran.com تماس بگیرید. توجه داشته باشید که حجم نامه‌های دریافتی بالاست و شاید پاسخ به نامه شما اندکی طول بکشد.</string>
 
   <!-- sura metainfo -->
   <string name="makki">مکی</string>
@@ -172,31 +168,31 @@
 
   <!-- bookmark & tag list -->
   <string name="bookmarks_list_empty">نشانکی وجود ندارد</string>
-  <string name="about_data_sources">منبع داده‌ها</string>
-  <string name="about_description">این برنامه مجانی است. تهیه‌کنندگانش را از دعای خود محروم نسازید.</string>
+  <string name="about_data_sources">منابع</string>
+  <string name="about_description">این برنامه مجانی است.  التماس دعا.</string>
   <string name="about_images">تصاویر</string>
   <string name="about_madani_images">تصاویر صفحه‌های این قرآن متعلق به چاپخانه ملک فهد در مدینه منوره می‌باشد.</string>
   
   <string name="about_quranicaudio_summary">تلاوت‌های قرآنی (بی‌وقفه)</string>
   <string name="about_quran_ksu">پروژه مصحف الکترونیکی</string>
   <string name="about_quran_ksu_summary">پروژه مصحف الکترونیکی در دانشگاه ملک سعود منبع تفاسیر عربی و برخی ترجمه‌هاست.</string>
-  <string name="about_tanzil_summary">بسیاری از ترجمه‌ها</string>
+  <string name="about_tanzil_summary">ترجمه‌ها به زبانهای دیگر</string>
   <string name="about_noorhidayat_summary">قلم نور حرا و ترجمه مفتی تقی</string>
-  <string name="about_open_source">پروژه‌های متن‌باز</string>
+  <string name="about_open_source">پروژه‌های مفتوح</string>
   <string name="about_others">دیگران</string>
-  <string name="about_contributors">همکاران</string>
-  <string name="about_contributors_summary">فهرستی از افرادی که به توسعه این برنامه یاری رسانده‌اند.</string>
+  <string name="about_contributors">همکاران تسنیم</string>
+  <string name="about_contributors_summary">فهرستی از کسانیکه در تهیه این برنامه یاری رساندند.</string>
 
   <string name="downloadImportantPrompt">یک به‌روزرسانی کوچک اما مهم برای تصاویر قرآن وجود دارد. آیا مایل‌اید این وصله را بارگذاری نمایید؟</string>
-  <string name="download_extra_data">برای عملکرد مناسب امکانات اشتراک‌گذاری و ترجمه باید یکی دو فایل را بارگذاری نمایید. موافق‌اید؟</string>
-  <string name="export_data_error">خطا در برون‌بُرد داده‌ها</string>
-  <string name="exported_data">بُرون‌برد به %1$s انجام گرفت.</string>
-  <string name="get_translations">دریافت ترجمه‌ها</string>
-  <string name="import_data">درون‌بُرد داده‌ها</string>
-  <string name="import_data_and_merge">اگر این پرونده را درون‌ریزی کنید، %1$d نشانک و %2$d برچسب به داده‌های فعلی شما افزوده می‌شود. درون‌ریزی شود؟</string>
-  <string name="import_successful">درون‌بُرد موفقیت‌آمیز</string>
-  <string name="import_data_permissions_error">هنگام عملیات درون‌برد خطای دسترسی رخ داد.</string>
-  <string name="import_data_error">درون‌برد با خطا مواجه شد.  داده‌ها معتبر نیست.</string>
+  <string name="download_extra_data">برای عملکرد مناسب و اشتراک‌گذاری باید بعضی فایل ها را بارگذاری نمایید. موافق‌اید؟</string>
+  <string name="export_data_error">خطا در دریافت داده‌ها</string>
+  <string name="exported_data">دریافت به %1$s انجام گرفت.</string>
+  <string name="get_translations">دریافت ترجمه‌ها و تفاسیر</string>
+  <string name="import_data">دریافت داده‌ها</string>
+  <string name="import_data_and_merge">اگر این پرونده را دریافت کنید، %1$d نشانک و %2$d برچسب به داده‌های فعلی شما افزوده می‌شود. آیا دریافت شود؟</string>
+  <string name="import_successful">دریافت موفقیت‌آمیز</string>
+  <string name="import_data_permissions_error">هنگام خواندن نسخه احتیاطی خطای دسترسی رخ داد.</string>
+  <string name="import_data_error">فایل پشتیبان آسیب دیده است (خطا در خواندن فایل)</string>
   <string name="more_translations">ترجمه‌های دیگر</string>
   <string name="juz2_description">جزء %1$s</string>
   <string name="menu_other_apps">برنامه‌های دیگر</string>
@@ -244,15 +240,15 @@
   <string name="prefs_volume_key_navigation_title">ورق زدن با دکمه‌های صدا</string>
   <string name="quran_ayah_details">%1$s - آیه %2$s، جزء %3$s</string>
   <string name="sdcard_error">کارت حافظه یافت نشد. آن را دوباره در دستگاه قرار داده و بار دیگر امتحان نمایید.</string>
-  <string name="undo">واگرد</string>
+  <string name="undo">برگشت</string>
 
   <!-- bookmarks empty state -->
   <string name="bookmarks_empty_title">هنوز نشانکی وجود ندارد</string>
-  <string name="bookmarks_empty_subtitle">برای ذخیره صفحه روی نماد نشانک ضربه بزنید، یا برای نشانک‌گذاری یک آیه، روی آن فشار طولانی دهید.</string>
+  <string name="bookmarks_empty_subtitle">برای ذخیرهٔ صفحه، روی نماد نشانک ضربه بزنید یا برای نشانک‌گذاری یک آیه، انگشت خود را روی آن نگه دارید.</string>
   <string name="reading_bookmark_movable_education_title">این یک نشانک مطالعه قابل‌جابجایی است</string>
   <string name="reading_bookmark_movable_education_body">ذخیره نشانک مطالعه، نشانک قبلی را جایگزین می‌کند. برای ذخیره چند آیه، روی یک آیه فشار طولانی دهید و آن را به یک مجموعه اضافه کنید.</string>
   <string name="reading_bookmark_moved_from">جابجا شده از %1$s</string>
-  <string name="reading_bookmark_dismiss_education">رد کردن</string>
+  <string name="reading_bookmark_dismiss_education">بستن</string>
   <string name="reading_bookmark">نشانک مطالعه</string>
   <string name="reading_bookmarks">نشانک‌های مطالعه</string>
   <string name="reading_bookmark_moved_to_title">%1$s به %2$s منتقل شد</string>
@@ -265,7 +261,7 @@
   <string name="collection_empty">هنوز نشانکی در این مجموعه وجود ندارد.</string>
   <string name="expand_collection">گسترش</string>
   <string name="collapse_collection">جمع کردن</string>
-  <string name="open_collection">باز کردن مجموعه</string>
+  <string name="open_collection">باز کردن</string>
   <plurals name="removed_highlights">
     <item quantity="one">یک برجسته‌سازی حذف شد</item>
     <item quantity="other">%d برجسته‌سازی حذف شد</item>
@@ -293,29 +289,29 @@
     <item>بی‌پایان</item>
   </string-array>
     <string name="about_quran_enc" translatable="false">دایرة المعارف قرآن کریم</string>
-    <string name="downloadTabletPrompt">ما به تازگی اضافه شده تصاویر بهبود یافته برای قرص. آیا می خواهید این تصاویر را اکنون دانلود کنید؟</string>
+    <string name="downloadTabletPrompt">تصاویر باکیفیت ویژهٔ تبلت به‌روزرسانی شده است. آیا مایل به دانلود این تصاویر هستید؟</string>
   <string name="menu_show_date">تاریخ نمایش</string>
   <string name="please_wait">لطفاً منتظر بمانید...</string>
   <string name="about_naskh_images">تصاویر قرآنی برای برنامه ناسخ (با اجازه) از SHL Info Systems گرفته می شود</string>
-  <string name="about_qaloon_images">تصاویر قلون با اجازه Nous-Mêmes Éditions Et Diffusion (تونس) استفاده می شود</string>
+  <string name="about_qaloon_images">تصاویر قالون با اجازه Nous-Mêmes Éditions Et Diffusion (تونس) استفاده می شود</string>
   <string name="about_furqan_summary">متن عثمانی و تفسیر عربی</string>
   <string name="about_quran_enc_summary">ترجمه برای بسیاری از زبان ها</string>
   <string name="search_full_results">نتایج کامل</string>
   <string name="search_entire_mushaf">به کل قرآن نگاه کن.</string>
-  <string name="prefs_send_logs_title">ارسال سیاهههای مربوط</string>
-  <string name="prefs_send_logs_summary">ارسال سیاهههای مربوط به اشکال زدایی به توسعه دهنده</string>
+  <string name="prefs_send_logs_title">ارسال ملاحظات مربوط</string>
+  <string name="prefs_send_logs_summary">ارسال ملاحظات و اشکالات برنامه</string>
   <string name="prefs_page_type_title">نوع صفحه (تجربی)</string>
   <string name="prefs_page_type_summary">نوع صفحات خواندن را انتخاب کنید</string>
   <string name="prefs_sura_translated_name_summary">نمایش ترجمه نام سور</string>
-  <string name="prefs_sura_translated_name_title">نام ترجمه شده سوره</string>
+  <string name="prefs_sura_translated_name_title">ترجمه اسم سوره</string>
   <string name="prefs_preview">پیشنمایش</string>
   <string name="move_up">حرکت به بالا</string>
   <string name="move_down">حرکت به پایین</string>
   <string name="delete_translation">حذف ترجمه</string>
-  <string name="kitkat_external_message">با توجه به محدودیت های اندروید، اگر انتخاب کنید که داده های قرآن را روی کارت SD خارجی خود قرار داده و بعداً داده های قرآن اندروید را حذف یا روشن کنید، تمام صفحات قرآن اندروید و صوتی حذف می شوند و شما مجبور خواهید بود دوباره آنها را دانلود کنید. آیا مطمئن هستید که می خواهید از کارت SD خارجی استفاده کنید؟</string>
-  <string name="scoped_storage_message">با توجه به تغییرات آندروید برای افزایش حریم خصوصی کاربر، کپی کردن فایل های خارج از مدیران برنامه ممکن است قرآن برای اندروید را از دسترسی به داده های خود در نسخه های آینده اندروید باز دارد. مطمئني ميخواي از اين مسير استفاده کني؟</string>
+  <string name="kitkat_external_message">به‌دلیل محدودیت‌های اندروید، در صورت انتقال داده‌های قرآن به کارت حافظه (SD) و سپس حذف برنامه یا پاک‌کردن داده‌ها، کلیهٔ صفحات و صوت‌ها حذف شده و دانلود مجدد لازم خواهد بود. آیا مایل به استفاده از کارت حافظه هستید؟</string>
+  <string name="scoped_storage_message">به‌علت تغییرات امنیتی اندروید برای افزایش حریم خصوصی، ذخیرهٔ فایل‌ها خارج از پوشهٔ پیش‌فرض ممکن است دسترسی برنامه به اطلاعات را در نسخه‌های بعدی با مشکل مواجه کند. آیا از انتخاب این مسیر مطمئن هستید؟</string>
   <string name="please_grant_permissions">لطفاً اجازه در تنظیمات برنامه را اعطا کنید</string>
-  <string name="see_tafseer_of_verse">تفسیر آیه متعلق به آیه %d است (برای مشاهده کلیک کنید).</string>
+  <string name="see_tafseer_of_verse">تفسیر این آیه به همراه آیهٔ %d است (برای مشاهده لمس کنید).</string>
   <string name="playback_prompt_title">شروع از:</string>
   <string name="starting_page_label">آغاز صفحه</string>
   <string name="tag_blank_tag_error">نام برچسب نمی تواند خالی باشد!</string>
@@ -323,10 +319,17 @@
   <string name="tag_reserved_tag_error">این نام برچسب رزرو شده است!</string>
   <string name="tag_too_long_tag_error">نام برچسب بیش از حد طولانی است!</string>
   <string name="audio_updated_title">به روز رسانی فایل های صوتی قرآن</string>
-  <string name="audio_updated_text">چندین فایل صوتی قرآن به روز شده است. قرآن برای اندروید کپی شما از این فایل ها را حذف کرده است به طوری که جدیدترین نسخه ها را می توانید دانلود کنید دفعه بعد که آنها را پخش می کنید.</string>
+  <string name="audio_updated_text">برخی از فایل‌های صوتی قرآن به‌روزرسانی شده‌اند. برنامه نسخهٔ قبلی این فایل‌ها را حذف کرده است تا در نوبت بعدی پخش، جدیدترین نسخه را بارگیری فرمایید.</string>
   <string name="prefs_category_dual_screen">ترجیحات برای دو صفحه مجاور</string>
   <string name="prefs_split_page_and_translation_title">مشاهده یک صفحه از قرآن و دیگری از ترجمه</string>
   <string name="prefs_split_page_and_translation_summary">هنگامی که دو صفحه مجاور فعال می شوند، صفحه قرآن و ترجمه با هم نمایش داده می شوند</string>
   <string name="notification_channel_download">دانلود فایل های قرآن</string>
   <string name="notification_channel_audio">قرائت قرآن</string>
+  <string name="appearance">مظهر</string>
+  <string name="manzil_description">منزل %1$s</string>
+  <string name="post_notification_permission">اجازهٔ ارسال اعلان به برنامه داده شود؟ فقط برای نمایش وضعیت دانلود یا هشدار هنگام به‌روزرسانی خودکار فایل‌های صوتی به کار می‌رود.</string>
+  <string name="prefs_ayah_text_title">اندازهٔ متن آیه</string>
+  <string name="prefs_export_csv_summary">خروجی گرفتن از نشانک‌ها و برچسب‌ها با قالب CSV</string>
+  <string name="prefs_export_csv_title">خروجی CSV</string>
+  <string name="prefs_megabytes_int">%1$d مگابایت</string>
 </resources>
