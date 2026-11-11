@@ -14,6 +14,7 @@ import com.quran.mobile.bookmark.model.HighlightsDaoImpl
 import com.quran.mobile.bookmark.model.RepositoryBackedTestBookmarkCollectionsState
 import com.quran.mobile.bookmark.time.FakeMobileSyncTimestampProvider
 import com.quran.shared.persistence.model.AyahReadingBookmark
+import com.quran.shared.persistence.model.Mushaf
 import com.quran.shared.persistence.model.PageReadingBookmark
 import com.quran.shared.persistence.model.ReadingBookmarkSlot
 import com.quran.shared.persistence.repository.bookmark.repository.BookmarksRepositoryImpl
@@ -124,7 +125,7 @@ class PreviousMobileSyncDatabaseMigrationTest {
     assertThat(highlight.sura to highlight.ayah).isEqualTo(18 to 10)
     assertThat(highlight.color.name).isEqualTo(HighlightColor.PINK.name)
 
-    val readingBookmarks = ReadingBookmarksRepositoryImpl(mobileSyncDatabase.database.synced).getReadingBookmarks()
+    val readingBookmarks = ReadingBookmarksRepositoryImpl(mobileSyncDatabase.database.synced).getReadingBookmarks(Mushaf.MADANI_1405)
     assertThat((readingBookmarks.single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page).isEqualTo(42)
     val ayah = readingBookmarks.single { it.slot == ReadingBookmarkSlot.ORANGE } as AyahReadingBookmark
     assertThat(ayah.sura to ayah.ayah).isEqualTo(67 to 1)
@@ -180,14 +181,14 @@ class PreviousMobileSyncDatabaseMigrationTest {
 
     assertThat(migration.migrateIfNeeded()).isNotNull()
     val repository = ReadingBookmarksRepositoryImpl(mobileSyncDatabase.database.synced)
-    assertThat((repository.getReadingBookmarks().single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
+    assertThat((repository.getReadingBookmarks(Mushaf.MADANI_1405).single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
       .isEqualTo(42)
-    repository.setPageReadingBookmark(ReadingBookmarkSlot.TEAL, 100)
+    repository.setPageReadingBookmark(ReadingBookmarkSlot.TEAL, 100, Mushaf.MADANI_1405)
 
     blocker.deleteRecursively()
     assertThat(migration.migrateIfNeeded()).isNull()
 
-    assertThat((repository.getReadingBookmarks().single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
+    assertThat((repository.getReadingBookmarks(Mushaf.MADANI_1405).single { it.slot == ReadingBookmarkSlot.TEAL } as PageReadingBookmark).page)
       .isEqualTo(100)
     assertThat(previousDatabase.exists()).isFalse()
   }
