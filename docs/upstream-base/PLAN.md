@@ -160,6 +160,13 @@ modules, a code review, a commit, and a push of `tasnim/upstream-base`.
   (came with step 1; glyphs unchanged, tajweed keeps its colors). Our sura header frames stay
   day-only, and their name pill now takes the page theme's paper (or the old background) instead of
   a fixed cream.
+- **Step 5 done (2026-11-11), no code change needed.** The "new icon" reveal never shows:
+  Tasnim's launch (`QuranDataActivity`) does not open upstream's `AnnouncementActivity`, and fresh
+  installs mark it seen. quran.com's Account & Sync (settings row, bookmarks sign-in card,
+  foreground sync) only switches on when `QuranSyncManager.isConfigured`, i.e. when a local
+  `oauth.properties` gives `QURAN_OAUTH_CLIENT_ID`. Tasnim ships none, so it stays hidden while its
+  code keeps merging cleanly. Keep `oauth.properties` out of Tasnim builds. The icon-based accent
+  is replaced by Tasnim's (step 2).
 - **Found in step 1, settled in step 3:** `MadaniV2PageProvider` and
   `MadaniV2ImagesPageProvider` delegate `mushafType()` to the classic provider, so mobile-sync
   files V2 page bookmarks under `MADANI_1405`. Decide the right mushaf for V2 pages (or keep page
