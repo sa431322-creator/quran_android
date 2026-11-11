@@ -3,7 +3,7 @@
 <resources>
   <string name="library_title" translatable="false">کتابخانه</string>
   <string name="library_back" translatable="false">بازگشت</string>
-  <string name="library_categories" translatable="false">دسته‌ها</string>
+  <string name="library_categories" translatable="false">موضوعات</string>
   <string name="library_category_quran_sciences" translatable="false">علوم قرآن کریم</string>
   <string name="library_category_quran_translation" translatable="false">ترجمه قرآن کریم</string>
   <string name="library_category_tajweed" translatable="false">تجوید قرآن کریم</string>
@@ -11,7 +11,7 @@
   <string name="library_all" translatable="false">همه</string>
   <string name="library_all_books" translatable="false">همه کتاب‌ها</string>
   <string name="library_empty" translatable="false">کتابی در این دسته نیست</string>
-  <string name="library_error" translatable="false">بارگیری کتاب‌ها ممکن نشد</string>
+  <string name="library_error" translatable="false">بارگیری کتاب‌ها فعلا ممکن نیست</string>
   <string name="library_retry" translatable="false">تلاش دوباره</string>
   <string name="library_loading" translatable="false">در حال بارگیری</string>
   <string name="library_file_unavailable" translatable="false">فایل این کتاب هنوز در دسترس نیست</string>
@@ -79,7 +79,7 @@
   <string name="library_reader_night_on" translatable="false">حالت شب</string>
   <string name="library_reader_night_off" translatable="false">حالت روز</string>
   <string name="library_reader_go_to_page" translatable="false">رفتن به صفحه</string>
-  <string name="library_reader_go" translatable="false">برو</string>
+  <string name="library_reader_go" translatable="false">انتقال</string>
   <string name="library_reader_cancel" translatable="false">انصراف</string>
   <string name="library_reader_page_hint" translatable="false">از ۱ تا %1$s</string>
   <string name="library_reader_page_invalid" translatable="false">عددی بین ۱ و %1$s وارد کنید</string>

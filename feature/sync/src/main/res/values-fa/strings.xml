@@ -7,11 +7,11 @@
   <string name="quran_sync_signed_in">وارد شده‌اید</string>
   <string name="quran_sync_loading">در حال ورود</string>
   <string name="quran_sync_login">ورود</string>
-  <string name="quran_sync_action_error">در حال حاضر امکان به‌روزرسانی همگام‌سازی وجود ندارد.</string>
+  <string name="quran_sync_action_error">در حال حاضر امکان به‌روزرسانی وجود ندارد.</string>
   <string name="quran_sync_bookmarks_cta_title">نشانک‌های خود را در همه جا همگام‌سازی کنید</string>
   <string name="quran_sync_bookmarks_cta_subtitle">از هر دستگاهی، در هر زمانی به آن‌ها دسترسی داشته باشید</string>
-  <string name="quran_sync_bookmarks_cta_button">ورود با Quran.com</string>
-  <string name="quran_sync_bookmarks_cta_dismiss">نادیده گرفتن</string>
+  <string name="quran_sync_bookmarks_cta_button">ورود با tasnimquran.com</string>
+  <string name="quran_sync_bookmarks_cta_dismiss">بستن</string>
   <string name="quran_sync_account_title">حساب و همگام‌سازی</string>
   <string name="quran_sync_activity_title">فعالیت همگام‌سازی</string>
   <string name="quran_sync_activity_footer">%s همگام‌سازی اخیر در این دستگاه.</string>
@@ -123,4 +123,11 @@
   <string name="quran_sync_held_edit_accessibility">ویرایش، %1$s</string>
   <string name="quran_sync_rename">تغییر نام</string>
   <string name="quran_sync_bookmark_name">نام نشانک %1$s</string>
+  <string name="quran_sync_benefit_bookmarks">همگام‌سازی نشانک‌ها بین دستگاه‌ها</string>
+  <string name="quran_sync_benefit_collections">همگام‌سازی مجموعه‌های شخصی</string>
+  <string name="quran_sync_benefit_notes">همگام‌سازی یادداشت‌های آیات</string>
+  <string name="quran_sync_continue_caption">با tasnimquran.com ادامه می‌دهید</string>
+  <string name="quran_sync_headline">قرآن خود را همه‌جا همگام کنید</string>
+  <string name="quran_sync_sign_in_prompt_title">برای همگام‌سازی وارد شوید</string>
+  <string name="quran_sync_subtitle">وارد شوید تا پیشرفتتان پشتیبان‌گیری شود و در همهٔ دستگاه‌ها در دسترس باشد.</string>
 </resources>
