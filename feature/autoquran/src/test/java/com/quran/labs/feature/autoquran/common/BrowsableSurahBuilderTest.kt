@@ -9,6 +9,8 @@ import com.quran.data.source.PageSizeCalculator
 import com.quran.data.source.QuranDataSource
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import com.quran.labs.androidquran.common.audio.util.AudioExtensionDecider
+import com.quran.labs.androidquran.common.audio.util.QariUtil
+import com.quran.labs.androidquran.common.audio.util.ServerQariSource
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
@@ -41,7 +43,7 @@ class BrowsableSurahBuilderTest {
     )
     builder = BrowsableSurahBuilder(
       appContext = context,
-      pageProvider = object : PageProvider {
+      qariUtil = QariUtil(object : PageProvider {
         override fun getDataSource(): QuranDataSource = throw NotImplementedError()
         override fun getPageSizeCalculator(displaySize: DisplaySize): PageSizeCalculator =
           throw NotImplementedError()
@@ -61,7 +63,7 @@ class BrowsableSurahBuilderTest {
         override fun getPreviewDescription(): Int = throw NotImplementedError()
         override fun getQaris(): List<Qari> = qaris
         override fun getDefaultQariId(): Int = throw NotImplementedError()
-      },
+      }, ServerQariSource.None),
       audioExtensionDecider = object : AudioExtensionDecider {
         override fun audioExtensionForQari(qari: Qari): String = "mp3"
         override fun audioExtensionForQari(qariItem: QariItem): String = throw NotImplementedError()

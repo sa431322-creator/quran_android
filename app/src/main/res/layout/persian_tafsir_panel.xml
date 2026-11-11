@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+             android:layout_width="match_parent"
+             android:layout_height="match_parent"
+    >
+
+  <ScrollView
+      android:id="@+id/tafsir_scroll"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:fillViewport="true"
+      >
+    <LinearLayout
+        android:id="@+id/tafsir_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layoutDirection="rtl"
+        android:paddingBottom="@dimen/translation_footer_spacer"
+        />
+  </ScrollView>
+
+  <com.quran.labs.androidquran.view.LeftToRightLinearLayout
+      android:id="@+id/controls"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_gravity="bottom"
+      >
+    <ImageButton
+        android:id="@+id/next_ayah"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_translation_next"
+        android:contentDescription="@string/next"
+        android:padding="12dp"
+        />
+    <Space
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        />
+    <ImageButton
+        android:id="@+id/previous_ayah"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@drawable/ic_translation_previous"
+        android:contentDescription="@string/previous"
+        android:padding="12dp"
+        />
+  </com.quran.labs.androidquran.view.LeftToRightLinearLayout>
+
+  <TextView
+      android:id="@+id/empty_state"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="16dp"
+      android:padding="8dp"
+      android:gravity="center_horizontal"
+      android:text="@string/persian_tafsir_unavailable"
+      android:visibility="gone"
+      />
+
+  <ProgressBar
+      android:id="@+id/progress"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:visibility="gone"
+      />
+</FrameLayout>

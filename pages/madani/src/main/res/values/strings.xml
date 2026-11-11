@@ -2,4 +2,8 @@
 <resources>
   <string name="madani_title">Classic Madani Mushaf</string>
   <string name="madani_description">The classic Madani script.</string>
+  <string name="madani_v2_title">Madinah Mushaf (text)</string>
+  <string name="madani_v2_description">The King Fahd Madinah mushaf, drawn from its fonts: sharp on every screen.</string>
+  <string name="madani_v2_images_title">Madinah Mushaf (images)</string>
+  <string name="madani_v2_images_description">The same Madinah mushaf as page images, downloaded once.</string>
 </resources>

@@ -24,6 +24,8 @@ import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.AbstractComposeView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import app.cash.molecule.RecompositionMode
 import app.cash.molecule.launchMolecule
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
@@ -42,6 +44,12 @@ class AudioBarWrapper @JvmOverloads constructor(
 
   init {
     (context as? AudioBarInjector)?.inject(this)
+    // The presenter lives as long as the screen's component; stop it when the screen is destroyed.
+    (context as? LifecycleOwner)?.lifecycle?.addObserver(object : DefaultLifecycleObserver {
+      override fun onDestroy(owner: LifecycleOwner) {
+        if (::audioBarPresenter.isInitialized) audioBarPresenter.dispose()
+      }
+    })
   }
 
   @Composable

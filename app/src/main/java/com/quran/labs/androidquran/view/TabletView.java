@@ -75,7 +75,10 @@ public class TabletView extends QuranPageWrapperLayout {
     } else {
       if (pageViewFactory != null) {
         final View view = pageViewFactory.providePageView(context, page, PageMode.DualScreenMode.Arabic.INSTANCE);
-        if (view != null) {
+        if (view instanceof QuranPageLayout) {
+          // a page type's own page layout (the text mushaf's), used as it is
+          return (QuranPageLayout) view;
+        } else if (view != null) {
           return new QuranCustomImagePageLayout(context, view);
         }
       }

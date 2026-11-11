@@ -223,8 +223,13 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
       Display display = mgr.getDefaultDisplay();
       int width = QuranDisplayHelper.getWidthKitKat(display);
       width = width / pagesVisible;
-      leftGradient = QuranDisplayHelper.getPaintDrawable(width, 0);
-      rightGradient = QuranDisplayHelper.getPaintDrawable(0, width);
+      final int[] colors = new int[] {
+          ContextCompat.getColor(context, R.color.page_gradient_spine),
+          ContextCompat.getColor(context, R.color.page_gradient_inner),
+          ContextCompat.getColor(context, R.color.page_gradient_middle),
+          ContextCompat.getColor(context, R.color.page_gradient_edge) };
+      leftGradient = QuranDisplayHelper.getPaintDrawable(width, 0, colors);
+      rightGradient = QuranDisplayHelper.getPaintDrawable(0, width, colors);
       gradientForNumberOfPages = pagesVisible;
     }
   }

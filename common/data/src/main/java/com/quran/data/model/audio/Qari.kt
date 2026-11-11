@@ -10,6 +10,8 @@ data class Qari(
   val path: String,
   val hasGaplessAlternative: Boolean,
   val db: String? = null,
+  /** Name from the Tasnim server, already in the device language; null = use [nameResource]. */
+  val name: String? = null,
 ) {
   val databaseName = if (db.isNullOrEmpty()) null else db
   val isGapless: Boolean = databaseName != null

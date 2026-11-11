@@ -80,6 +80,8 @@ android {
 
   buildTypes {
     create("beta") {
+      // Blank until the server domain is chosen: the library keeps using its sample data.
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"\"")
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
@@ -89,12 +91,18 @@ android {
     }
 
     getByName("debug") {
+      // The emulator reaches the computer running `pnpm backend` at 10.0.2.2. For a real phone
+      // on the same Wi-Fi, set tasnimApiBaseUrl=http://<computer-ip>:3000/ in gradle.properties.
+      val tasnimApi = (project.findProperty("tasnimApiBaseUrl") as String?) ?: "http://10.0.2.2:3000/"
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"$tasnimApi\"")
       applicationIdSuffix = ".debug"
       versionNameSuffix = "-debug"
       matchingFallbacks += "release"
     }
 
     getByName("release") {
+      // Blank until the server domain is chosen: the library keeps using its sample data.
+      buildConfigField("String", "TASNIM_API_BASE_URL", "\"\"")
       isMinifyEnabled = true
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard.cfg")
@@ -223,6 +231,7 @@ dependencies {
   implementation(project(":common:download"))
   implementation(project(":common:networking"))
   implementation(project(":common:pages"))
+  implementation(project(":common:persiantafsir"))
   implementation(project(":common:preference"))
   implementation(project(":common:reading"))
   implementation(project(":common:recitation"))
@@ -237,6 +246,9 @@ dependencies {
   implementation(project(":feature:ayahbookmark"))
   implementation(project(":feature:pagetheme"))
   implementation(project(":feature:downloadmanager"))
+  implementation(project(":feature:library"))
+  implementation(project(":feature:livetv"))
+  implementation(project(":feature:mushaf"))
   implementation(project(":feature:qarilist"))
   implementation(project(":feature:sync"))
 
@@ -294,6 +306,14 @@ dependencies {
   implementation(libs.insetter)
   implementation(libs.timber)
   debugImplementation(libs.leakcanary.android)
+
+  // instrumented tests: the text mushaf on every screen size and font scale
+  androidTestImplementation(platform(libs.compose.bom))
+  androidTestImplementation(libs.compose.ui.test.junit4)
+  androidTestImplementation(libs.androidx.junit)
+  androidTestImplementation(libs.espresso.core)
+  androidTestImplementation(libs.truth)
+  debugImplementation(libs.compose.ui.test.manifest)
 
   testImplementation(project(":common:test-utils"))
   testImplementation(libs.junit)

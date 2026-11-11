@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Tasnim's own colors, kept apart from upstream's colors.xml (docs/upstream-base/PLAN.md) -->
+<resources>
+  <color name="translation_translator_color">#ff8ccadb</color>
+  <color name="indicator_color">@color/accent_color</color>
+  <color name="color_control_activated">@color/accent_color</color>
+  <color name="color_control_normal">#898ccadb</color>
+  <color name="tasnim_primary">#ff8ccadb</color>
+  <color name="tasnim_on_primary">#ff0e1518</color>
+  <color name="tasnim_ornament">#ff8f7440</color>
+  <color name="tasnim_card">#ff1a252a</color>
+  <color name="tasnim_border">#ff2a3a40</color>
+  <color name="tasnim_muted">#ffa9a08c</color>
+  <color name="tasnim_nav_indicator">#ff1f4e56</color>
+  <color name="tasnim_continue_card">#ff1a252a</color>
+  <color name="tasnim_continue_track">#ff2a3a40</color>
+</resources>

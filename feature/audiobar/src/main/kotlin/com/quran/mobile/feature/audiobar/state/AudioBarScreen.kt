@@ -18,7 +18,9 @@ internal sealed class AudioBarState {
 
   data class Stopped(
     val qariNameResource: Int,
-    val enableRecording: Boolean
+    val enableRecording: Boolean,
+    /** The server's name for the qari; when set it is shown instead of [qariNameResource]. */
+    val qariName: String? = null
   ) : AudioBarState()
 
   data class Downloading(

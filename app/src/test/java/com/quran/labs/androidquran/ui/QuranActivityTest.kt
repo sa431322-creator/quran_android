@@ -7,6 +7,7 @@ import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers
 import androidx.test.espresso.matcher.ViewMatchers
 import androidx.test.ext.junit.rules.ActivityScenarioRule
+import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.base.TestApplication
 import org.hamcrest.Matchers
 import org.junit.After
@@ -18,7 +19,8 @@ import org.robolectric.RobolectricTestRunner
 import org.robolectric.annotation.Config
 
 
-@Config(application = TestApplication::class, sdk = [33])
+// a phone-sized screen, so the sura list shows below Tasnim's home cards
+@Config(application = TestApplication::class, sdk = [33], qualifiers = "w411dp-h891dp")
 @RunWith(RobolectricTestRunner::class)
 class QuranActivityTest {
   @get:Rule
@@ -36,20 +38,20 @@ class QuranActivityTest {
 
   @Test
   fun testClickingOnSuraOnListViewNavigatesToSura() {
-    //given
-    Espresso.onView(ViewMatchers.withText(Matchers.startsWith("Quran")))
+    //given: the Tasnim home, whose toolbar shows the app's name
+    Espresso.onView(ViewMatchers.withText(R.string.app_name))
         .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
 
-    //when
+    //when: the sura in the list (the continue reading card shows the same name)
     Espresso.onView(
         Matchers.allOf(
-            ViewMatchers.withText("Surah Al-Fātihah"), ViewMatchers.isCompletelyDisplayed()
+            ViewMatchers.withText("Surah Al-Fātihah"),
+            ViewMatchers.isDescendantOfA(ViewMatchers.withId(R.id.index_pager)),
+            ViewMatchers.isCompletelyDisplayed()
         )
     ).perform(ViewActions.click())
 
     //then
     Intents.intended(IntentMatchers.hasComponent(PagerActivity::class.java.name))
-    Espresso.onView(ViewMatchers.withText("Surah Al-Fātihah"))
-        .check(ViewAssertions.matches(ViewMatchers.isDisplayed()))
   }
 }

@@ -18,7 +18,9 @@ fun SheikhDownloadToolbar(
   removeIcon: Boolean,
   downloadAction: (() -> Unit),
   eraseAction: (() -> Unit),
-  onBackAction: (() -> Unit)
+  onBackAction: (() -> Unit),
+  /** Shown instead of [titleResource] when set (a reciter name from the Tasnim server). */
+  title: String? = null
 ) {
   val actions: @Composable() (RowScope.() -> Unit) = {
     if (downloadIcon) {
@@ -42,7 +44,7 @@ fun SheikhDownloadToolbar(
   }
 
   DownloadManagerToolbar(
-    title = if (isContextual) "" else stringResource(titleResource),
+    title = if (isContextual) "" else title ?: stringResource(titleResource),
     onBackPressed = onBackAction,
     actions = actions
   )

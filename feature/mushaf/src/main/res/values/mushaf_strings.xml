@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Text mushaf strings (plain V2 and tajweed). Tasnim is built for Persian speakers, so these are Persian everywhere. -->
+<resources>
+  <string name="mushaf_loading" translatable="false">در حال دریافت قلم این صفحه…</string>
+  <string name="mushaf_error" translatable="false">دریافت قلم این صفحه ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
+  <string name="mushaf_data_error" translatable="false">بارگذاری صفحه‌های مصحف ممکن نشد.</string>
+  <string name="mushaf_retry" translatable="false">تلاش دوباره</string>
+</resources>

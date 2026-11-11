@@ -118,6 +118,16 @@ public class HighlightingImageView extends AppCompatImageView {
       HIGHLIGHT, BACKGROUND
   );
 
+  // Draws the Tasnim sura header frames over the page image (day mode only)
+  private final ImageDrawHelper suraHeaderDrawer =
+      new MushafSuraHeaderDrawer(getContext(), () -> isNightMode);
+
+  // Draws the Tasnim page ornament around the page image when there is room (single page only)
+  private final MushafPageOrnamentDrawer pageOrnamentDrawer =
+      new MushafPageOrnamentDrawer(getContext());
+  private final RectF imageRect = new RectF();
+  private boolean isSinglePortraitPage = true;
+
   private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS ?
       new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates) : null;
 
@@ -160,6 +170,7 @@ public class HighlightingImageView extends AppCompatImageView {
     int topBottom = scrollable ? scrollableHeaderFooterSize :
         landscape ? dualPageHeaderFooterSize : headerFooterSize;
     verticalOffsetForScrolling = topBottom;
+    isSinglePortraitPage = !scrollable && !landscape;
     setPadding(horizontalSafeOffset,
         topBottom + topSafeOffset,
         horizontalSafeOffset,
@@ -415,6 +426,8 @@ public class HighlightingImageView extends AppCompatImageView {
     String pageText = null;
     String rub3Text = null;
     String manzilText = null;
+    // juz', rub3 and manzil text together, as drawn by the page ornament
+    String infoText = null;
   }
 
   public void setOverlayText(String suraText, String juzText, String pageText, String rub3Text, String manzilText) {
@@ -429,6 +442,7 @@ public class HighlightingImageView extends AppCompatImageView {
     overlayParams.pageText = pageText;
     overlayParams.rub3Text = rub3Text;
     overlayParams.manzilText = manzilText;
+    overlayParams.infoText = juzText + rub3Text + manzilText;
     overlayParams.paint = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.DEV_KERN_TEXT_FLAG);
     overlayParams.paint.setTextSize(fontSize);
 //    if (juzText.contains("ج")) {
@@ -460,7 +474,17 @@ public class HighlightingImageView extends AppCompatImageView {
     FontMetrics fm = overlayParams.paint.getFontMetrics();
 
     final RectF mappedRect = new RectF();
-    matrix.mapRect(mappedRect, pageBounds);
+    if (pageBounds.isEmpty()) {
+      // no ayahinfo bounds for this page; fall back to the edges of the page image
+      final Drawable d = getDrawable();
+      if (d == null || d.getIntrinsicWidth() <= 0 || d.getIntrinsicHeight() <= 0) {
+        return false;
+      }
+      mappedRect.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+      matrix.mapRect(mappedRect);
+    } else {
+      matrix.mapRect(mappedRect, pageBounds);
+    }
 
     // Calculate where the text's baseline should be
     // (for top text and bottom text)
@@ -494,6 +518,11 @@ public class HighlightingImageView extends AppCompatImageView {
       return;
     }
 
+    if (drawPageOrnament(canvas, matrix)) {
+      didDraw = true;
+      return;
+    }
+
     overlayParams.paint.setTextAlign(Align.LEFT);
     canvas.drawText(overlayParams.suraText,
         overlayParams.offsetX + horizontalSafeOffset,
@@ -511,6 +540,24 @@ public class HighlightingImageView extends AppCompatImageView {
         overlayParams.topBaseline + topSafeOffset,
         overlayParams.paint);
     didDraw = true;
+  }
+
+  private boolean drawPageOrnament(Canvas canvas, Matrix matrix) {
+    final Drawable d = getDrawable();
+    if (!isSinglePortraitPage || d == null) {
+      return false;
+    }
+
+    imageRect.set(0, 0, d.getIntrinsicWidth(), d.getIntrinsicHeight());
+    matrix.mapRect(imageRect);
+    imageRect.offset(getPaddingLeft(), getPaddingTop());
+    return pageOrnamentDrawer.draw(canvas, getWidth(), imageRect,
+        topSafeOffset, getHeight() - bottomSafeOffset,
+        overlayParams.suraText,
+        overlayParams.infoText,
+        overlayParams.pageText,
+        isNightMode,
+        overlayParams.paint.getColor());
   }
 
   @Override
@@ -549,6 +596,11 @@ public class HighlightingImageView extends AppCompatImageView {
 
     // Restore the canvas to remove any clippings so the remaining highlights/drawers don't get clipped
     canvas.restore();
+
+    // Cover the sura headers of the image, before the highlights so they tint them too
+    if (pageCoordinates != null) {
+      suraHeaderDrawer.draw(pageCoordinates, canvas, this);
+    }
 
     // Draw remaining highlights (other than HIDE, COLOR)
     if (pageCoordinates != null) {

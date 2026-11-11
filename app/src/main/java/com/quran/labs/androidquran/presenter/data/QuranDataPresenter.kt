@@ -188,7 +188,8 @@ class QuranDataPresenter @Inject internal constructor(
       }
 
       val pageType = quranSettings.pageType
-      if (!quranSettings.didCheckPartialImages(pageType) && !pageType.endsWith("lines")) {
+      if (!quranSettings.didCheckPartialImages(pageType) && !pageType.endsWith("lines") &&
+          quranPageProvider.getPageContentType() != PageContentType.Text) {
         Timber.d("enqueuing work for $pageType...")
 
         // setup check pages task
@@ -219,6 +220,10 @@ class QuranDataPresenter @Inject internal constructor(
   private fun actuallyCheckPages(totalPages: Int): Single<QuranDataStatus> {
     return Single.fromCallable {
       val width = quranScreenInfo.widthParam
+      if (quranPageProvider.getPageContentType() == PageContentType.Text) {
+        // pages drawn from page fonts: no images to have
+        return@fromCallable QuranDataStatus(width, quranScreenInfo.tabletWidthParam, true, true, null, totalPages)
+      }
       val havePortrait = quranFileUtils.haveAllImages(width, totalPages, true)
 
       val tabletWidth = quranScreenInfo.tabletWidthParam
@@ -239,8 +244,8 @@ class QuranDataPresenter @Inject internal constructor(
 
   @WorkerThread
   private fun checkPatchStatus(quranDataStatus: QuranDataStatus): QuranDataStatus {
-    // only need patches if we have all the pages
-    if (quranDataStatus.havePages()) {
+    // only need patches if we have all the pages, and only for page images
+    if (quranDataStatus.havePages() && quranPageProvider.getPageContentType() != PageContentType.Text) {
       val latestImagesVersion = quranPageProvider.getImageVersion()
 
       val width = quranDataStatus.portraitWidth

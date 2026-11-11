@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="madani_v2_title">مصحف المدينة (نص)</string>
+  <string name="madani_v2_description">مصحف المدينة من مجمع الملك فهد مرسوماً بخطوطه: واضح على كل شاشة.</string>
+  <string name="madani_v2_images_title">مصحف المدينة (صور)</string>
+  <string name="madani_v2_images_description">مصحف المدينة نفسه بصور الصفحات، يُحمَّل مرة واحدة.</string>
+</resources>

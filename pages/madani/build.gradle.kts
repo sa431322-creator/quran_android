@@ -13,4 +13,5 @@ dependencies {
 
   implementation(project(":pages:common:madani"))
   api(project(":pages:data:madani"))
+  api(project(":pages:data:madaniv2"))
 }

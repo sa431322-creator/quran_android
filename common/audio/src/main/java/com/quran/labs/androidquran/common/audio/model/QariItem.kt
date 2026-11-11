@@ -36,7 +36,7 @@ data class QariItem(
     fun fromQari(context: Context, qari: Qari): QariItem {
       return QariItem(
         id = qari.id,
-        name = context.getString(qari.nameResource),
+        name = qari.displayName(context),
         url = qari.url,
         opusUrl = qari.opusUrl,
         path = qari.path,

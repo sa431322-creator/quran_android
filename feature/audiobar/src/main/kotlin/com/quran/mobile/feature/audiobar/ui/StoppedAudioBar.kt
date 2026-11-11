@@ -38,7 +38,7 @@ internal fun StoppedAudioBar(
       onClick = { eventSink(AudioBarUiEvent.StoppedPlaybackEvent.ChangeQari) }
     ) {
       Text(
-        text = stringResource(state.qariNameResource),
+        text = state.qariName ?: stringResource(state.qariNameResource),
         color = LocalQuranColors.current.defaultTextColor
       )
       Spacer(modifier = Modifier.weight(1f))

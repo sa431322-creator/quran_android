@@ -1,11 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <style name="ToolbarTitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
+    <item name="fontFamily">@font/tasnim_ui_medium</item>
+    <item name="android:fontFamily">@font/tasnim_ui_medium</item>
     <!-- 22sp in m3 -->
     <item name="android:textSize">18sp</item>
   </style>
 
   <style name="ToolbarSubtitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Subtitle">
+    <item name="fontFamily">@font/tasnim_ui</item>
+    <item name="android:fontFamily">@font/tasnim_ui</item>
     <!-- 16sp in m3 -->
     <item name="android:textSize">14sp</item>
   </style>

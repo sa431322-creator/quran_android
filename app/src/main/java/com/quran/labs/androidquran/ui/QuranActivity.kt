@@ -12,6 +12,8 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ProgressBar
+import android.widget.TextView
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AlertDialog
@@ -24,12 +26,17 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.isVisible
 import androidx.core.view.updateLayoutParams
+import androidx.core.view.updatePadding
+import androidx.core.widget.TextViewCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentPagerAdapter
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
+import com.quran.data.page.provider.madani.MadaniV2PageProvider
+import com.quran.data.core.QuranInfo
 import com.quran.data.dao.RecentPagesDao
 import com.quran.data.model.Page
 import com.quran.data.model.SuraAyah
@@ -41,6 +48,7 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.SearchActivity
 import com.quran.labs.androidquran.ShortcutsActivity
 import com.quran.labs.androidquran.data.Constants
+import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.feature.reading.model.LatestPageTracker
 import com.quran.labs.androidquran.presenter.data.QuranIndexEventLogger
 import com.quran.labs.androidquran.presenter.translation.TranslationManagerPresenter
@@ -56,11 +64,17 @@ import com.quran.labs.androidquran.ui.fragment.TagBookmarkDialog.OnBookmarkTagsU
 import com.quran.labs.androidquran.ui.helpers.JumpDestination
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
 import com.quran.labs.androidquran.ui.helpers.QuranRow
+import com.quran.labs.androidquran.ui.mushaf.TextMushaf
+import com.quran.labs.androidquran.ui.util.TypefaceManager
 import com.quran.labs.androidquran.util.AudioUtils
 import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.di.ExtraScreenProvider
+import com.quran.mobile.feature.library.LibraryActivity
+import com.quran.mobile.feature.livetv.LiveTvActivity
+import com.quran.mobile.feature.livetv.data.LiveChannelRepository
+import com.quran.mobile.feature.livetv.radio.RadioActivity
 import dev.zacsweers.metro.Inject
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers
 import io.reactivex.rxjava3.core.Completable
@@ -131,11 +145,17 @@ class QuranActivity : AppCompatActivity(),
   @Inject
   lateinit var latestPageTracker: LatestPageTracker
   @Inject
+  lateinit var liveChannelRepository: LiveChannelRepository
+  @Inject
   lateinit var translationManagerPresenter: TranslationManagerPresenter
   @Inject
   lateinit var quranIndexEventLogger: QuranIndexEventLogger
   @Inject
   lateinit var extraScreens: Set<@JvmSuppressWildcards ExtraScreenProvider>
+  @Inject
+  lateinit var quranInfo: QuranInfo
+  @Inject
+  lateinit var quranDisplayData: QuranDisplayData
 
   private var jumpToPageOnResume: Int? = null
 
@@ -164,6 +184,7 @@ class QuranActivity : AppCompatActivity(),
         leftMargin = insets.left
         rightMargin = insets.right
       }
+      findViewById<View>(R.id.bottom_nav).updatePadding(bottom = insets.bottom)
 
       // if we return WindowInsetsCompat.CONSUMED, the SnackBar won't
       // be properly positioned on Android 29 and below (will be under
@@ -175,6 +196,9 @@ class QuranActivity : AppCompatActivity(),
     setSupportActionBar(tb)
     val ab = supportActionBar
     ab?.setTitle(R.string.app_name)
+    // the toolbar shows the Tasnim logo and name instead of the plain title
+    ab?.setDisplayShowTitleEnabled(false)
+    setupTasnimHome()
 
     val pager = findViewById<ViewPager>(R.id.index_pager)
     pager.offscreenPageLimit = 3
@@ -214,6 +238,8 @@ class QuranActivity : AppCompatActivity(),
 
   public override fun onResume() {
     super.onResume()
+    // tajweed needs the text pages; the page type may have changed in the settings
+    findViewById<View>(R.id.tajweed_button)?.isVisible = settings.pageType == MadaniV2PageProvider.PAGE_TYPE
     val isRtl = isRtl()
     if (isRtl != this.isRtl) {
       val i = intent
@@ -414,11 +440,62 @@ class QuranActivity : AppCompatActivity(),
     super.onSaveInstanceState(outState)
   }
 
-  private fun jumpToLastPage() {
+  private fun setupTasnimHome() {
+    findViewById<View>(R.id.continue_card).setOnClickListener { jumpToLastPage() }
+    val openLiveTv = View.OnClickListener {
+      startActivity(Intent(this, LiveTvActivity::class.java))
+    }
+    findViewById<View>(R.id.live_card).setOnClickListener(openLiveTv)
+    findViewById<TextView>(R.id.live_card_subtitle).text =
+      getString(R.string.tasnim_live_now, liveChannelRepository.ownChannelName())
+    findViewById<View>(R.id.radio_button).setOnClickListener {
+      startActivity(Intent(this, RadioActivity::class.java))
+    }
+    // the tajweed mushaf is the reader's text pages in tajweed colors, at the last page read
+    findViewById<View>(R.id.tajweed_button).setOnClickListener {
+      TextMushaf.setTajweed(this, true)
+      // on the mushaf pages, even when the reader was last left on its translation
+      jumpToLastPage(showTranslation = false)
+    }
+    findViewById<View>(R.id.nav_live).setOnClickListener(openLiveTv)
+    findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
+    findViewById<View>(R.id.nav_library).setOnClickListener {
+      startActivity(Intent(this, LibraryActivity::class.java))
+    }
+    // the selected item's icon carries its own colors
+    TextViewCompat.setCompoundDrawableTintList(findViewById(R.id.nav_quran), null)
+
+    findViewById<TextView>(R.id.continue_sura).typeface = TypefaceManager.getTafseerTypeface(this)
+    lifecycleScope.launch {
+      latestPageFlow.collect { bindContinueReading(it) }
+    }
+  }
+
+  private fun bindContinueReading(latestPage: Int) {
+    val hasPage = latestPage != Constants.NO_PAGE
+    val page = if (hasPage) latestPage else 1
+    findViewById<TextView>(R.id.continue_label).setText(
+      if (hasPage) R.string.tasnim_continue_reading else R.string.tasnim_start_reading
+    )
+    findViewById<TextView>(R.id.continue_sura).text =
+      quranDisplayData.getSuraNameFromPage(this, page, wantTitle = true)
+    findViewById<TextView>(R.id.continue_details).text = getString(
+      R.string.tasnim_page_juz,
+      QuranUtils.getLocalizedNumber(page),
+      QuranUtils.getLocalizedNumber(quranInfo.getJuzForDisplayFromPage(page))
+    )
+    findViewById<ProgressBar>(R.id.continue_progress).apply {
+      max = quranInfo.numberOfPages
+      progress = if (hasPage) page else 0
+    }
+  }
+
+  private fun jumpToLastPage(showTranslation: Boolean = settings.wasShowingTranslation) {
     lifecycleScope.launch {
       val recentPage = latestPage()
-      jumpTo(
-        if (recentPage == Constants.NO_PAGE) 1 else recentPage
+      quranNavigator.jumpTo(
+        Page(if (recentPage == Constants.NO_PAGE) 1 else recentPage),
+        showTranslation = showTranslation
       )
     }
   }

@@ -11,6 +11,7 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.base.TestApplication
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import com.quran.labs.androidquran.common.audio.util.QariUtil
+import com.quran.labs.androidquran.common.audio.util.ServerQariSource
 import com.quran.labs.androidquran.fakes.FakePageProvider
 import com.quran.labs.androidquran.pages.data.madani.MadaniDataSource
 import org.junit.Assert
@@ -40,7 +41,7 @@ class AudioUtilsTest {
     )
     val quranScreenInfo = QuranScreenInfo(context, display, pageSizeCalculator)
     val quranFileUtils = QuranFileUtils(context, fakePageProvider, quranScreenInfo)
-    val qariUtil = QariUtil(fakePageProvider)
+    val qariUtil = QariUtil(fakePageProvider, ServerQariSource.None)
     return AudioUtils(
       QuranInfo(MadaniDataSource()),
       quranFileUtils,

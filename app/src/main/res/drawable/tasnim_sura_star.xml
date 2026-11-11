@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Generated from the Tasnim design canvas. Tint it from the layout. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="40dp"
+    android:height="40dp"
+    android:viewportWidth="40"
+    android:viewportHeight="40">
+  <path
+      android:strokeColor="@color/tasnim_ornament"
+      android:strokeWidth="1.4"
+      android:pathData="M8,8 H32 V32 H8 Z" />
+  <group
+      android:pivotX="20"
+      android:pivotY="20"
+      android:rotation="45">
+    <path
+        android:strokeColor="@color/tasnim_ornament"
+        android:strokeWidth="1.4"
+        android:pathData="M8,8 H32 V32 H8 Z" />
+  </group>
+</vector>

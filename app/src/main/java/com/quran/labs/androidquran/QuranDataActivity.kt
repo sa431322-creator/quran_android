@@ -11,10 +11,14 @@ import android.text.TextUtils
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityCompat
 import androidx.core.app.ActivityCompat.OnRequestPermissionsResultCallback
 import androidx.core.content.ContextCompat
+import androidx.core.content.edit
+import androidx.core.os.LocaleListCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.preference.PreferenceManager
 import androidx.work.WorkManager
 import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.model.Page
@@ -30,8 +34,8 @@ import com.quran.labs.androidquran.service.util.QuranDownloadNotifier.ProgressIn
 import com.quran.labs.androidquran.service.util.ServiceIntentHelper
 import com.quran.labs.androidquran.ui.PagerActivity
 import com.quran.labs.androidquran.ui.QuranActivity
+import com.quran.labs.androidquran.ui.TasnimLaunchActivity
 import com.quran.labs.androidquran.ui.helpers.QuranNavigator
-import com.quran.labs.androidquran.ui.whatsnew.AnnouncementActivity
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranScreenInfo
 import com.quran.labs.androidquran.util.QuranSettings
@@ -56,7 +60,6 @@ import java.util.concurrent.TimeUnit.MILLISECONDS
  *  * Check that we have permission to write to external storage (if we need this permission)
  * and if not, ask the user for permission
  *  * Verify that we have the necessary Quran data downloaded on the device
- *  * Show any unseen announcement on a normal launch, after data setup finishes
  *
  * The logic is split between [QuranDataActivity] and [QuranDataPresenter],
  * and [QuranDownloadService] is (mostly) used to perform the actual downloading of
@@ -102,6 +105,20 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
       AnnouncementActivity.markSeen(quranSettings)
     }
     quranSettings.upgradePreferences(preferencesUpgrade)
+    applyDefaultPersianLocale()
+  }
+
+  /**
+   * Tasnim is built for Persian speakers: on the first run, if no app language was chosen,
+   * use Persian (which also gives Persian digits). Runs once, so a later choice is kept.
+   */
+  private fun applyDefaultPersianLocale() {
+    val prefs = PreferenceManager.getDefaultSharedPreferences(this)
+    if (prefs.getBoolean(PREF_TASNIM_DEFAULT_LOCALE_APPLIED, false)) return
+    prefs.edit { putBoolean(PREF_TASNIM_DEFAULT_LOCALE_APPLIED, true) }
+    if (AppCompatDelegate.getApplicationLocales().isEmpty) {
+      AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("fa"))
+    }
   }
 
   override fun onResume() {
@@ -496,14 +513,9 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
       if (intent?.action == ACTION_OPEN_PAGE) {
         jumpToRequestedPage(intent)
       } else {
-        val isNormalLaunch = intent?.action == null || intent?.action == Intent.ACTION_MAIN
-        val destination = targetIntent()
-        val nextIntent = if (isNormalLaunch && AnnouncementActivity.shouldShow(quranSettings)) {
-          AnnouncementActivity.createIntent(this, destination)
-        } else {
-          destination
-        }
-        startActivity(nextIntent)
+        // Tasnim: upstream's AnnouncementActivity advertises the quran.com app icon,
+        // which doesn't apply to our branding, so go straight to the destination.
+        startActivity(targetIntent())
       }
       finish()
     }
@@ -545,7 +557,7 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
         Intent(this, ShowJumpFragmentActivity::class.java)
       }
       else -> {
-        Intent(this, QuranActivity::class.java).apply {
+        Intent(this, TasnimLaunchActivity::class.java).apply {
           putExtra(
             QuranActivity.EXTRA_SHOW_TRANSLATION_UPGRADE,
             quranSettings.haveUpdatedTranslations()
@@ -556,6 +568,7 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
   }
 
   companion object {
+    private const val PREF_TASNIM_DEFAULT_LOCALE_APPLIED = "tasnimDefaultLocaleApplied"
     const val ACTION_OPEN_PAGE = "com.quran.labs.androidquran.open_page"
     const val PAGES_DOWNLOAD_KEY = "PAGES_DOWNLOAD_KEY"
     private const val REQUEST_POST_NOTIFICATION_PERMISSIONS = 1

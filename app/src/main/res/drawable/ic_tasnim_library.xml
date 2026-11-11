@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Books on a shelf, in the style of the other launch icons. Tint it from the layout. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+  <path
+      android:strokeColor="#FFFFFFFF"
+      android:strokeWidth="1.7"
+      android:strokeLineCap="round"
+      android:strokeLineJoin="round"
+      android:pathData="M4,4 H8 V20 H4 Z M9,4 H13 V20 H9 Z M14.2,5.1 L17.8,4.2 L21.4,18.9 L17.8,19.8 Z M4,8 H8 M9,8 H13 M4,16 H8 M9,16 H13" />
+</vector>
