@@ -19,6 +19,8 @@ plugins {
 val useFirebase = !project.hasProperty("disableFirebase")
 // No ads at all (F-Droid builds and anyone who wants a build without them): ADR 0010.
 val noAds = project.hasProperty("noAds")
+// An ad network next to house ads (AdMob, Google Play release only): ads plan §9. Off by default.
+val networkAds = project.hasProperty("networkAds") && !noAds
 val oauthProperties = Properties().apply {
   // Optional local sync config. Android OAuth uses PKCE, so client secrets are intentionally unsupported.
   val oauthPropertiesFile = rootProject.file("oauth.properties")
@@ -257,6 +259,10 @@ dependencies {
     implementation(project(":feature:ads-noop"))
   } else {
     implementation(project(":feature:ads-house"))
+    // -PnetworkAds only: every other build has no ad network code at all.
+    if (networkAds) {
+      implementation(project(":feature:ads-network"))
+    }
   }
   implementation(project(":feature:mushaf"))
   implementation(project(":feature:qarilist"))

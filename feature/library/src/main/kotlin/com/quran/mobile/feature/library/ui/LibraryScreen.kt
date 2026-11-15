@@ -382,7 +382,8 @@ private fun Shelf(
   val adProvider = LocalAdProvider.current
   val adState by remember(adProvider) { adProvider.state(AdSlot.LIBRARY_LIST) }.collectAsState()
   val adEvery = remember(adProvider) { adProvider.libraryListEvery() }
-  val showAd = adState is AdState.Ready && state.query.isBlank()
+  // a house ad or a loaded network ad
+  val showAd = adState != AdState.Hidden && state.query.isBlank()
 
   LazyVerticalGrid(
     columns = GridCells.Adaptive(minSize = 140.dp),

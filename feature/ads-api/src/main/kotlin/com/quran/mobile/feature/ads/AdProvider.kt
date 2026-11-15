@@ -28,14 +28,23 @@ sealed interface AdState {
   /** Nothing to show: the slot takes no space at all. */
   data object Hidden : AdState
   data class Ready(val ad: AdContent) : AdState
+  /** A network ad (see [NetworkAds]) has loaded for [slot]; the network draws its own view. */
+  data class Network(val slot: AdSlot) : AdState
 }
 
-/** Bound by the app: ads-house in builds with ads, ads-noop otherwise. */
+/**
+ * Bound by the app: ads-house in builds with ads (it also routes to a [NetworkAds] when the
+ * build has one), ads-noop otherwise.
+ */
 interface AdProvider {
   fun state(slot: AdSlot): StateFlow<AdState>
 
   @Composable
   fun Render(content: AdContent, modifier: Modifier)
+
+  /** Draws the loaded network ad of [slot]. Only providers that can emit [AdState.Network]. */
+  @Composable
+  fun RenderNetwork(slot: AdSlot, modifier: Modifier) = Unit
 
   /** The library list shows its ad card after this many books (server setting, 3–30). */
   fun libraryListEvery(): Int = AdsConfig.DEFAULT_LIBRARY_LIST_EVERY
@@ -54,14 +63,18 @@ object NoAdProvider : AdProvider {
 val LocalAdProvider = staticCompositionLocalOf<AdProvider> { NoAdProvider }
 
 /**
- * The ad of [slot], or nothing. Emits no layout at all until an ad is [AdState.Ready], so the
- * screen never jumps while an ad loads.
+ * The ad of [slot], or nothing. Emits no layout at all until an ad is ready (a house ad with
+ * its picture on disk, or a network ad that has loaded), so the screen never jumps while an ad
+ * loads.
  */
 @Composable
 fun AdBanner(slot: AdSlot, modifier: Modifier = Modifier) {
   val provider = LocalAdProvider.current
   val flow = remember(provider, slot) { provider.state(slot) }
   val state by flow.collectAsState()
-  val ready = state as? AdState.Ready ?: return
-  provider.Render(ready.ad, modifier)
+  when (val current = state) {
+    AdState.Hidden -> Unit
+    is AdState.Ready -> provider.Render(current.ad, modifier)
+    is AdState.Network -> provider.RenderNetwork(current.slot, modifier)
+  }
 }

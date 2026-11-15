@@ -11,7 +11,7 @@ data class AdsConfig(
   val enabled: Boolean = false,
   val slots: Map<AdSlot, AdMode> = emptyMap(),
   val libraryListEvery: Int = DEFAULT_LIBRARY_LIST_EVERY,
-  /** A hint only: `none`, `admob`, … ; unknown values read as `none`. */
+  /** Which ad network may be asked: `none`, `admob`, … ; unknown values read as `none`. */
   val network: String = "none",
   val blockedVersions: Set<Int> = emptySet(),
 ) {
@@ -20,6 +20,14 @@ data class AdsConfig(
   /** Whether this app version shows house ads in [slot] at all. */
   fun showsHouseAds(slot: AdSlot, versionCode: Int): Boolean =
     enabled && versionCode !in blockedVersions && mode(slot).showsHouseAds
+
+  /**
+   * Whether this app version may ask the ad network [networkId] for an ad in [slot]. The same
+   * kill switch as house ads, and the server must name that network in `ads.network`.
+   */
+  fun showsNetworkAds(slot: AdSlot, versionCode: Int, networkId: String): Boolean =
+    enabled && versionCode !in blockedVersions && network == networkId &&
+      mode(slot).showsNetworkAds
 
   companion object {
     const val DEFAULT_LIBRARY_LIST_EVERY = 8

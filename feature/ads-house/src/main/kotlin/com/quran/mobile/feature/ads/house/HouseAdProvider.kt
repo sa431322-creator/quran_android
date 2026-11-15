@@ -14,6 +14,7 @@ import com.quran.mobile.feature.ads.AdProvider
 import com.quran.mobile.feature.ads.AdSlot
 import com.quran.mobile.feature.ads.AdState
 import com.quran.mobile.feature.ads.AdsServer
+import com.quran.mobile.feature.ads.NetworkAds
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.SingleIn
@@ -32,6 +33,9 @@ import kotlin.random.Random
  * House ads from the Tasnim server. Nothing runs at app start: the first screen with a slot
  * starts it. With ads off on the server (or all slots off, or a blocked version, or no server)
  * it makes no `/ads` call, downloads nothing and schedules no work.
+ *
+ * In a build with an ad network (`-PnetworkAds`) it also routes each slot between the house ad
+ * and the network ([NetworkRouter]); the same server switch stops both.
  */
 @SingleIn(AppScope::class)
 @ContributesBinding(AppScope::class)
@@ -46,6 +50,7 @@ class HouseAdProvider internal constructor(
   private val random: Random = Random.Default,
   private val now: () -> Long = System::currentTimeMillis,
   private val dataSaver: () -> Boolean = { false },
+  network: NetworkAds? = null,
   private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate),
 ) : AdProvider {
 
@@ -54,6 +59,7 @@ class HouseAdProvider internal constructor(
     @ApplicationContext context: Context,
     server: AdsServer,
     okHttpClient: OkHttpClient,
+    networks: Set<NetworkAds>,
   ) : this(
     context = context,
     server = server,
@@ -70,9 +76,11 @@ class HouseAdProvider internal constructor(
     versionCode = versionCodeOf(context),
     debuggable = context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE != 0,
     dataSaver = { backgroundDataRestricted(context) },
+    network = networks.firstOrNull(),
   )
 
   private val states = AdSlot.entries.associateWith { MutableStateFlow<AdState>(AdState.Hidden) }
+  private val router = NetworkRouter(network, states, scope)
   private var job: Job? = null
   private var lastRefreshMs = Long.MIN_VALUE / 2
   private var refreshEveryMs = MIN_REFRESH_MS
@@ -94,13 +102,22 @@ class HouseAdProvider internal constructor(
   private var previewIds = emptySet<Int>()
 
   override fun state(slot: AdSlot): StateFlow<AdState> {
+    router.visit(slot)
     maybeRefresh()
+    // no refresh running: the last settings still stand; else the refresh asks when it ends
+    if (job?.isActive != true) router.loadAsked()
     return states.getValue(slot)
   }
 
   @Composable
   override fun Render(content: AdContent, modifier: Modifier) {
     HouseAdView(content, this, modifier)
+  }
+
+  @Composable
+  override fun RenderNetwork(slot: AdSlot, modifier: Modifier) {
+    val network = router.network ?: return
+    NetworkAdFrame(modifier) { network.Render(slot, Modifier) }
   }
 
   override fun libraryListEvery(): Int = server.cachedConfig().libraryListEvery
@@ -122,13 +139,18 @@ class HouseAdProvider internal constructor(
     val config = server.refreshConfig()
     val preview = prefs.previewToken?.takeIf { debuggable && it.isNotBlank() }
     val houseSlots = AdSlot.entries.filter { config.showsHouseAds(it, versionCode) }.toSet()
+    val saver = dataSaver()
+    // Never with a preview token (it shows our own drafts) and never on Data Saver.
+    val networkId = router.network?.id?.takeIf { repo != null && preview == null && !saver }
+    val networkSlots = AdSlot.entries
+      .filter { networkId != null && config.showsNetworkAds(it, versionCode, networkId) }
+      .toSet()
     if (repo == null || (houseSlots.isEmpty() && preview == null)) {
-      states.values.forEach { it.value = AdState.Hidden }
+      router.settle(emptyMap(), networkSlots)
       if (!counts.hasData()) AdCountsWorker.cancel(context)
       return
     }
     prefs.baseUrl = server.baseUrl
-    val saver = dataSaver()
     val served = when {
       preview != null -> repo.preview(preview)
       saver -> repo.cached()
@@ -137,6 +159,7 @@ class HouseAdProvider internal constructor(
     refreshEveryMs = (served.refreshAfterSeconds * 1000L).coerceAtLeast(MIN_REFRESH_MS)
     previewIds = if (preview != null) served.ads.map { it.id }.toSet() else emptySet()
     val t = now()
+    val house = mutableMapOf<AdSlot, AdState>()
     for (slot in AdSlot.entries) {
       val candidates = when {
         preview != null -> served.ads.filter { it.slot == slot }
@@ -145,7 +168,7 @@ class HouseAdProvider internal constructor(
       }
       val ad = pickWeighted(candidates, random) { it.weight }
       val file = ad?.let { repo.image(it, mayDownload = !saver) }
-      states.getValue(slot).value = if (ad != null && file != null) {
+      house[slot] = if (ad != null && file != null) {
         AdState.Ready(
           AdContent(
             id = ad.id,
@@ -162,6 +185,7 @@ class HouseAdProvider internal constructor(
         AdState.Hidden
       }
     }
+    router.settle(house, networkSlots)
     if (preview == null) {
       repo.keepOnly(served.ads)
       if (prefs.sendCounts) AdCountsWorker.schedulePeriodic(context)

@@ -25,6 +25,9 @@ enum class AdMode(val id: String) {
 
   val showsHouseAds: Boolean get() = this == HOUSE || this == HOUSE_THEN_NETWORK
 
+  /** [HOUSE_THEN_NETWORK] asks the network only when no house ad is live. */
+  val showsNetworkAds: Boolean get() = this == NETWORK || this == HOUSE_THEN_NETWORK
+
   companion object {
     fun fromId(id: String?): AdMode = entries.firstOrNull { it.id == id } ?: OFF
   }
