@@ -56,8 +56,8 @@ import com.quran.mobile.feature.ads.adLinkProblem
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-private const val LABEL = "تبلیغ"
-private const val REPORT = "گزارش تبلیغ"
+private const val LABEL = "تبلیغات"
+private const val REPORT = "گزارش تبلیغات"
 private val BOOK_LINK = Regex("""^tasneem://library/book/([1-9][0-9]{0,9})$""")
 
 /**

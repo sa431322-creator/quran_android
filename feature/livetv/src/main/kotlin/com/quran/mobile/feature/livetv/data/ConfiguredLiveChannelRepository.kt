@@ -51,7 +51,7 @@ class ConfiguredLiveChannelRepository(
         ScheduleEntry(6 * 60, "تلاوت صبحگاهی"),
         ScheduleEntry(8 * 60 + 30, "[نام برنامه]"),
         ScheduleEntry(12 * 60 + 15, "نماز جماعت ظهر"),
-        ScheduleEntry(15 * 60, "تفسیر قرآن به فارسی"),
+        ScheduleEntry(15 * 60, "تفسیر قرآن کریم به فارسی"),
         ScheduleEntry(18 * 60 + 45, "[نام برنامه]"),
         ScheduleEntry(21 * 60, "دعا و مناجات")
       )

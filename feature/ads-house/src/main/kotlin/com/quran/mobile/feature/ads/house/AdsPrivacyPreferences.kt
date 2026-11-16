@@ -45,9 +45,9 @@ class AdsPrivacyPreferences(
         key = ABOUT_KEY
         isSelectable = false
         isIconSpaceReserved = false
-        summary = "تبلیغ‌ها فقط در پخش زنده، رادیو، فهرست کتاب‌ها و صفحهٔ کتاب نمایش داده " +
-          "می‌شوند؛ هرگز در صفحه‌های قرآن. برنامه فقط شمار نمایش و لمس هر تبلیغ در هر روز " +
-          "را می‌فرستد؛ بدون شناسهٔ دستگاه یا اطلاعات شخصی."
+        summary = "تبلیغات فقط در پخش زنده، رادیو و کتابخانه نمایش داده می‌شوند؛ نه در صفحه‌های " +
+          "قرآن کریم. برنامه فقط شمار نمایش و لمس هر تبلیغ در هر روز را می‌فرستد؛ بدون " +
+          "شناسهٔ دستگاه یا اطلاعات شخصی شما."
       }
     )
     category.addPreference(
@@ -56,7 +56,7 @@ class AdsPrivacyPreferences(
         isPersistent = false
         isIconSpaceReserved = false
         title = "ارسال آمار تبلیغ‌ها"
-        summary = "شمار نمایش و لمس، برای گزارش به تبلیغ‌دهنده"
+        summary = "شمار نمایش و لمس، برای گزارش به مالک تبلیغات"
         isChecked = AdsPrefs(appContext).sendCounts
         setOnPreferenceChangeListener { _, value ->
           val on = value as Boolean
@@ -78,7 +78,7 @@ class AdsPrivacyPreferences(
           key = PREVIEW_KEY
           isPersistent = false
           isIconSpaceReserved = false
-          title = "معاینهٔ تبلیغ (نسخهٔ آزمایشی)"
+          title = "معاینهٔ تبلیغات (نسخهٔ آزمایشی)"
           val prefs = AdsPrefs(appContext)
           text = prefs.previewToken.orEmpty()
           summary = if (prefs.previewToken.isNullOrBlank()) "رمز معاینه از پنل مدیریت" else "فعال"
