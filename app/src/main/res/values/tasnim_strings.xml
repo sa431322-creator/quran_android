@@ -17,6 +17,14 @@
   <string name="tasnim_cards_ayah" translatable="false">آیهٔ %s</string>
   <string name="tasnim_cards_actions" translatable="false">گزینه‌های آیه</string>
   <string name="tasnim_cards_source" translatable="false">ترجمه: جامع البیان – ترجمهٔ تفسیری قرآن کریم، عبدالقدوس دهقان</string>
+  <!-- auto-scroll -->
+  <string name="tasnim_auto_scroll" translatable="false">پیمایش خودکار</string>
+  <string name="tasnim_auto_scroll_per_page" translatable="false">هر صفحه %s</string>
+  <string name="tasnim_auto_scroll_slower" translatable="false">کندتر</string>
+  <string name="tasnim_auto_scroll_faster" translatable="false">تندتر</string>
+  <string name="tasnim_auto_scroll_play" translatable="false">ادامه</string>
+  <string name="tasnim_auto_scroll_pause" translatable="false">توقف</string>
+  <string name="tasnim_auto_scroll_close" translatable="false">بستن پیمایش خودکار</string>
   <string name="tasnim_section_radio" translatable="false">رادیو قرآن</string>
   <string name="tasnim_section_library" translatable="false">کتابخانه</string>
   <string name="tasnim_sections_description" translatable="false">بخش‌های اصلی</string>

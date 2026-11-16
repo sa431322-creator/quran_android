@@ -17,6 +17,10 @@
           android:icon="@drawable/ic_rotate_screen"
           android:title="@string/menu_rotate_screen"
           app:showAsAction="always" />
+    <item android:id="@+id/auto_scroll"
+          android:icon="@drawable/ic_auto_scroll"
+          android:title="@string/tasnim_auto_scroll"
+          app:showAsAction="ifRoom" />
     <item android:id="@+id/search"
           android:icon="@drawable/ic_ab_search"
           android:title="@string/menu_search"

@@ -239,7 +239,7 @@ fun MushafPageView(
       )
       .fillMaxSize()
       .background(style.paper)
-      .padding(horizontal = 14.dp, vertical = 4.dp)
+      .padding(horizontal = PAGE_PADDING_HORIZONTAL, vertical = PAGE_PADDING_VERTICAL)
   ) {
     // Everything on the page is sized from the page, never from the system font size, so the
     // layout (15 lines, the same words on each) only scales: from the width, and in portrait no
@@ -251,22 +251,14 @@ fun MushafPageView(
       val window = LocalWindowInfo.current.containerSize
       val widthPx = sane(with(density) { maxWidth.toPx() }, window.width)
       val heightPx = sane(with(density) { maxHeight.toPx() }, window.height)
-      val widthFontPx = widthPx / LINE_EM
-      val labelFontPx = widthFontPx * LABEL_EM
-      val labelRowPx = labelFontPx * LABEL_ROW_EM
-      val textHeightPx = (heightPx - 2 * labelRowPx).coerceAtLeast(1f)
-      val portrait = heightPx >= widthPx
-      val fontPx = if (portrait) {
-        minOf(widthFontPx, textHeightPx / (MUSHAF_LINES_PER_PAGE * PRINT_ROW_EM))
-      } else {
-        widthFontPx
-      }
-      val fitRow = textHeightPx / MUSHAF_LINES_PER_PAGE
-      // landscape and short screens scroll instead of squeezing the lines together
-      val scrolls = fitRow < fontPx * MIN_ROW_EM
-      val rowPx = if (scrolls) fontPx * SCROLL_ROW_EM else fitRow
+      val sizing = PageSizing(widthPx, heightPx)
+      val labelFontPx = sizing.labelFont
+      val labelRowPx = sizing.labelRow
+      val fontPx = sizing.font
+      val scrolls = sizing.scrolls
+      val rowPx = sizing.row
       val rowHeight = with(density) { rowPx.toDp() }
-      val columnWidthPx = minOf(widthPx, fontPx * LINE_EM)
+      val columnWidthPx = sizing.columnWidth
       val textStyle = TextStyle(
         fontFamily = pageFont,
         fontSize = with(density) { fontPx.toSp() },
@@ -335,6 +327,45 @@ fun MushafPageView(
       }
     }
   }
+}
+
+private val PAGE_PADDING_HORIZONTAL = 14.dp
+private val PAGE_PADDING_VERTICAL = 4.dp
+
+/**
+ * How a page is sized in a text area of [width] by [height] (any one unit): from the width, and in
+ * portrait no larger than lets the 15 rows fit at the print's line spacing.
+ */
+private class PageSizing(width: Float, height: Float) {
+  private val widthFont = width / LINE_EM
+  val labelFont = widthFont * LABEL_EM
+  val labelRow = labelFont * LABEL_ROW_EM
+  private val textHeight = (height - 2 * labelRow).coerceAtLeast(1f)
+  val font = if (height >= width) {
+    minOf(widthFont, textHeight / (MUSHAF_LINES_PER_PAGE * PRINT_ROW_EM))
+  } else {
+    widthFont
+  }
+  private val fitRow = textHeight / MUSHAF_LINES_PER_PAGE
+  /** landscape and short screens scroll instead of squeezing the lines together */
+  val scrolls = fitRow < font * MIN_ROW_EM
+  val row = if (scrolls) font * SCROLL_ROW_EM else fitRow
+  val columnWidth = minOf(width, font * LINE_EM)
+  /** the text area's height that shows the whole page without scrolling */
+  val fullHeight = if (scrolls) 2 * labelRow + MUSHAF_LINES_PER_PAGE * row else height
+}
+
+/**
+ * The height at which a [MushafPageView] [width] wide shows its whole page without scrolling
+ * inside: [height] where the page fits it (portrait), more where it would scroll (landscape). For
+ * a host that lays pages out one under the other.
+ */
+fun mushafPageFullHeight(width: Dp, height: Dp): Dp {
+  val sizing = PageSizing(
+    (width - PAGE_PADDING_HORIZONTAL * 2).value,
+    (height - PAGE_PADDING_VERTICAL * 2).value
+  )
+  return sizing.fullHeight.dp + PAGE_PADDING_VERTICAL * 2
 }
 
 private fun Modifier.tapToToggle(onTap: () -> Unit, handledAbove: Boolean) =
