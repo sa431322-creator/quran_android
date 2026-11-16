@@ -4,7 +4,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.gestures.scrollBy
+import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Row
@@ -39,6 +41,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
@@ -49,6 +52,7 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.common.ui.core.QuranIcons
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.mobile.feature.mushaf.data.MushafPage
+import com.quran.mobile.feature.mushaf.ui.MushafAyahBounds
 import com.quran.mobile.feature.mushaf.ui.MushafFontPage
 import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
 import com.quran.mobile.feature.mushaf.ui.mushafPageFullHeight
@@ -61,19 +65,42 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.filterNotNull
 import kotlin.math.floor
 
-/** What the reader's auto-scroll shows and how fast; the reader sets it, the pages follow. */
-class AutoScrollState {
-  /** raised on every start, so the pages open again at [startPage] */
+/** What the reader's scrolling pages show and how they move; the reader sets it, the pages follow. */
+class ScrollPagesState {
+  /** raised on every show, so the pages open again at [startPage] */
   var session by mutableIntStateOf(0)
   var startPage by mutableIntStateOf(1)
   /** the page at the middle of the screen */
   var currentPage by mutableIntStateOf(1)
+  /** a page to bring to the top (the reader went there by other means); cleared once done */
+  var jumpTo by mutableStateOf<Int?>(null)
+  /** auto-scroll: the pages move on their own and show its controls; otherwise read by hand */
+  var auto by mutableStateOf(false)
+  /** in auto-scroll, whether the text is moving */
   var playing by mutableStateOf(false)
   /** an index into [AUTO_SCROLL_SECONDS_PER_PAGE] */
   var speed by mutableIntStateOf(AUTO_SCROLL_DEFAULT_SPEED)
+  /** the [com.quran.mobile.feature.mushaf.data.ayahKey] selected, and the one being recited */
+  var selectedAyah by mutableStateOf<Int?>(null)
+  var recitedAyah by mutableStateOf<Int?>(null)
   var nightMode by mutableStateOf(false)
   var nightBrightness by mutableIntStateOf(255)
   var paper by mutableIntStateOf(0)
+}
+
+/** What the scrolling pages hand to the reader. */
+interface ScrollPagesActions {
+  /** the page at the middle of the screen changed, and stayed */
+  fun onPage(page: Int)
+  /** a tap on the text; in auto-scroll it has already stopped or resumed the text */
+  fun onTap()
+  /** a long press on an ayah: the reader's ayah toolbar at [bounds] (window coordinates) */
+  fun onAyahLongPress(key: Int, bounds: MushafAyahBounds)
+  /** the reader's finger started moving the text */
+  fun onDrag()
+  fun onSpeedChanged(speed: Int)
+  /** auto-scroll's close button */
+  fun onCloseAuto()
 }
 
 /** The speeds on offer, slowest first: how long one page takes to pass, in seconds. */
@@ -86,21 +113,17 @@ private const val CONTROLS_TIMEOUT_MS = 3000L
 private const val PAGE_SETTLE_MS = 300L
 
 /**
- * The mushaf's pages one under the other, moving up on their own like a teleprompter: each page
- * drawn whole, exactly as the reader's text page (plain or tajweed, following the reader). A tap
- * stops or resumes; dragging moves the text by hand and the scrolling carries on from there.
+ * The mushaf's pages one under the other, each drawn whole, exactly as the reader's text page
+ * (plain or tajweed, following the reader). Read by hand, a tap and a long press are the reader's
+ * as on its pages. In auto-scroll the pages move up on their own like a teleprompter: a tap stops
+ * or resumes, and dragging moves the text by hand and the scrolling carries on from there.
  */
 @Composable
-internal fun AutoScrollPages(
-  state: AutoScrollState,
+internal fun ScrollPages(
+  state: ScrollPagesState,
   labels: (Int) -> MushafPageLabels,
   suraName: (Int) -> String,
-  /** the page at the middle of the screen changed, and stayed */
-  onPage: (Int) -> Unit,
-  /** a tap on the text, after it stopped or resumed */
-  onTouch: () -> Unit,
-  onSpeedChanged: (Int) -> Unit,
-  onClose: () -> Unit
+  actions: ScrollPagesActions
 ) {
   val context = LocalContext.current
   // plain or tajweed: reading the shared setting here redraws the pages when it changes
@@ -111,18 +134,32 @@ internal fun AutoScrollPages(
   val paper = Color(state.paper)
   val style = TextMushafStyle.pageStyle(context, state.nightMode, state.nightBrightness, paper)
   val basmalaFont = TextMushafStyle.basmalaFont(context)
-  val currentOnPage by rememberUpdatedState(onPage)
+  val currentActions by rememberUpdatedState(actions)
 
-  BoxWithConstraints(Modifier.fillMaxSize().background(paper)) {
+  // a touch on the controls or the page: keeps the controls up a little longer
+  var touches by remember { mutableIntStateOf(0) }
+  val tap = {
+    if (state.auto) {
+      state.playing = !state.playing
+      touches++
+    }
+    currentActions.onTap()
+  }
+  BoxWithConstraints(
+    Modifier
+      .fillMaxSize()
+      .background(paper)
+      // the paper around the lines (an opening page's margins, a page still loading) takes taps
+      // too; a line's own tap is consumed by the line and does not come here as well
+      .pointerInput(Unit) { detectTapGestures { tap() } }
+  ) {
     val all = pages ?: return@BoxWithConstraints
     val pageHeight = mushafPageFullHeight(maxWidth, maxHeight)
     val pageHeightPx = with(LocalDensity.current) { pageHeight.toPx() }
     val seconds = AUTO_SCROLL_SECONDS_PER_PAGE[state.speed.coerceIn(AUTO_SCROLL_SECONDS_PER_PAGE.indices)]
     val pxPerSecond = pageHeightPx / seconds
-    // a touch on the controls or the page: keeps the controls up a little longer
-    var touches by remember { mutableIntStateOf(0) }
     var controlsVisible by remember { mutableStateOf(true) }
-    LaunchedEffect(state.playing, touches) {
+    LaunchedEffect(state.auto, state.playing, touches) {
       controlsVisible = true
       if (state.playing) {
         delay(CONTROLS_TIMEOUT_MS)
@@ -141,11 +178,22 @@ internal fun AutoScrollPages(
           .collectLatest { page ->
             state.currentPage = page
             delay(PAGE_SETTLE_MS)
-            currentOnPage(page)
+            currentActions.onPage(page)
           }
       }
-      LaunchedEffect(list, state.playing, pxPerSecond) {
-        if (state.playing) autoScroll(list, pxPerSecond) { state.playing = false }
+      val jumpTo = state.jumpTo
+      LaunchedEffect(list, jumpTo) {
+        if (jumpTo != null) {
+          list.scrollToItem((jumpTo - 1).coerceIn(0, all.lastIndex))
+          state.jumpTo = null
+        }
+      }
+      val dragged by list.interactionSource.collectIsDraggedAsState()
+      LaunchedEffect(dragged) {
+        if (dragged) currentActions.onDrag()
+      }
+      LaunchedEffect(list, state.auto, state.playing, pxPerSecond) {
+        if (state.auto && state.playing) autoScroll(list, pxPerSecond) { state.playing = false }
       }
 
       LazyColumn(Modifier.fillMaxSize(), state = list) {
@@ -159,13 +207,14 @@ internal fun AutoScrollPages(
               style = style,
               labels = labels(page.page),
               suraHeaderName = suraName,
-              selectedAyah = null,
-              recitedAyah = null,
+              selectedAyah = state.selectedAyah,
+              recitedAyah = state.recitedAyah,
               highlights = emptyMap(),
-              onTap = {
-                state.playing = !state.playing
-                touches++
-                onTouch()
+              onTap = tap,
+              onAyahLongPress = { key, bounds ->
+                // the text waits under the ayah's toolbar
+                state.playing = false
+                currentActions.onAyahLongPress(key, bounds)
               }
             )
           }
@@ -174,7 +223,7 @@ internal fun AutoScrollPages(
     }
 
     AnimatedVisibility(
-      visible = controlsVisible,
+      visible = state.auto && controlsVisible,
       enter = fadeIn(),
       exit = fadeOut(),
       modifier = Modifier.align(Alignment.BottomCenter)
@@ -189,10 +238,10 @@ internal fun AutoScrollPages(
           touches++
         },
         onSpeed = { change ->
-          onSpeedChanged((state.speed + change).coerceIn(AUTO_SCROLL_SECONDS_PER_PAGE.indices))
+          currentActions.onSpeedChanged((state.speed + change).coerceIn(AUTO_SCROLL_SECONDS_PER_PAGE.indices))
           touches++
         },
-        onClose = onClose
+        onClose = { currentActions.onCloseAuto() }
       )
     }
   }

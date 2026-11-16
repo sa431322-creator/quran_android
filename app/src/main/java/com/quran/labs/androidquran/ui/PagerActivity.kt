@@ -117,7 +117,8 @@ import com.quran.labs.androidquran.ui.helpers.SlidingPagerAdapter
 import com.quran.labs.androidquran.ui.listener.AudioBarListener
 import com.quran.labs.androidquran.ui.cards.AyahCardsActions
 import com.quran.labs.androidquran.ui.cards.ReaderAyahCards
-import com.quran.labs.androidquran.ui.mushaf.ReaderAutoScroll
+import com.quran.labs.androidquran.ui.mushaf.ReaderScrollPages
+import com.quran.labs.androidquran.ui.mushaf.ScrollPagesActions
 import com.quran.labs.androidquran.ui.mushaf.TextMushaf
 import com.quran.labs.androidquran.ui.readingbookmark.createReadingBookmarkToastView
 import com.quran.labs.androidquran.ui.util.ToastCompat.makeText
@@ -135,6 +136,9 @@ import com.quran.labs.androidquran.view.SlidingUpPanelLayout
 import com.quran.mobile.common.download.DownloadInfoStreams
 import com.quran.mobile.feature.mushaf.data.MushafEdition
 import com.quran.mobile.feature.mushaf.data.ayahKey
+import com.quran.mobile.feature.mushaf.data.ayahKeyAyah
+import com.quran.mobile.feature.mushaf.data.ayahKeySura
+import com.quran.mobile.feature.mushaf.ui.MushafAyahBounds
 import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
 import com.quran.mobile.persiantafsir.data.PersianTafsirRepository
 import com.quran.mobile.di.AyahActionFragmentProvider
@@ -224,7 +228,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     if (key in PAGE_COLOR_PREFERENCES) {
       refreshQuranPages()
       if (ayahCards.isShowing) updateAyahCardsSettings()
-      if (autoScroll.isShowing) updateAutoScrollSettings()
+      if (scrollPages.isShowing) updateScrollPagesSettings()
     }
   }
   private lateinit var pagerAdapter: QuranPageAdapter
@@ -244,9 +248,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     ReaderAyahCards({ viewPager }, { sura -> quranDisplayData.getSuraName(this, sura, true) }, AyahCardsHandler())
   }
 
-  // the mushaf moving up on its own, over the text pages
-  private val autoScroll by lazy {
-    ReaderAutoScroll(
+  // the text pages one under the other: read scrolling, or moving on their own (auto-scroll)
+  private val scrollPages by lazy {
+    ReaderScrollPages(
       pages = { viewPager },
       labels = { page ->
         MushafPageLabels(
@@ -256,10 +260,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         )
       },
       suraName = { sura -> quranDisplayData.getSuraName(this, sura, true) },
-      onPage = ::showPageBehindAutoScroll,
-      // the reader's bars may have come back with the system's: the text has the screen again
-      onTouch = { if (!isActionBarHidden) toggleActionBarVisibility(false) },
-      onClose = ::stopAutoScroll
+      actions = ScrollPagesHandler()
     )
   }
 
@@ -643,6 +644,14 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
             endAyahMode()
           }
         }
+
+        // the reader went to another page by other means (a jump, the recitation): the
+        // scrolling pages follow. Their own page is already this one when they brought it here
+        if (scrollPages.isShowing &&
+          quranInfo.getPositionFromPage(scrollPages.state.currentPage, isDualPageVisible) != position
+        ) {
+          scrollPages.showPage(page)
+        }
       }
     }
     viewPager.addOnPageChangeListener(onPageChangeListener)
@@ -831,6 +840,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   private fun onAudioPlaybackAyahChanged(suraAyah: SuraAyah?) {
     ayahCards.onPlaybackAyah(suraAyah)
+    scrollPages.onPlaybackAyah(suraAyah)
     if (suraAyah != null) {
       // continue to snap back to the page when the playback ayah changes
       ensurePage(suraAyah.sura, suraAyah.ayah)
@@ -845,6 +855,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
 
     ayahCards.onSelection(if (haveSelection) ayahSelection.startSuraAyah() else null)
+    scrollPages.onSelection(if (haveSelection) ayahSelection.startSuraAyah() else null)
     if (haveSelection) {
       val startPosition = startPosition(ayahSelection)
       updateLocalTranslations(startPosition)
@@ -1060,7 +1071,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     refreshQuranPages()
     // the text size or page colors may have changed in the settings
     if (ayahCards.isShowing) updateAyahCardsSettings()
-    if (autoScroll.isShowing) updateAutoScrollSettings()
+    if (scrollPages.isShowing) updateScrollPagesSettings()
+    // the reading layout or the page type may have changed, or the translations were not there
+    syncScrollReading()
 
     audioPresenter.bind(this)
     recentPagePresenter.bind(currentPageFlow)
@@ -1278,7 +1291,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     recentPagePresenter.unbind()
     readingBookmarkPresenter.unbind(this)
     quranSettings.wasShowingTranslation = pagerAdapter.isShowingTranslation
-    if (autoScroll.isShowing) autoScroll.pause()
+    if (scrollPages.isShowing) scrollPages.pause()
 
     super.onPause()
   }
@@ -1315,7 +1328,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     state.putBoolean(LAST_READING_MODE_IS_TRANSLATION, showingTranslation)
     state.putBoolean(LAST_ACTIONBAR_STATE, isActionBarHidden)
     state.putBoolean(LAST_SHOWING_AYAH_CARDS, ayahCards.isShowing)
-    state.putBoolean(LAST_AUTO_SCROLLING, autoScroll.isShowing)
+    state.putBoolean(LAST_AUTO_SCROLLING, scrollPages.isAutoScrolling)
     state.putBoolean(LAST_WAS_DUAL_PAGES, isDualPages)
     state.putBoolean(LAST_FOLDING_STATE, isFoldableDeviceOpenAndVertical)
     super.onSaveInstanceState(state)
@@ -1362,8 +1375,20 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
     }
 
-    // the text pages moving on their own; page images are not laid out one under the other
-    menu.findItem(R.id.auto_scroll)?.isVisible = hasTextPages() && !showingTranslation
+    // the text pages one under the other; page images are not laid out that way
+    val canScrollPages = hasTextPages() && !showingTranslation
+    menu.findItem(R.id.auto_scroll)?.isVisible = canScrollPages
+    menu.findItem(R.id.reading_layout)?.let { item ->
+      item.isVisible = canScrollPages
+      // named for the layout it switches to
+      item.setTitle(
+        if (ReaderScrollPages.isScrollReading(this)) {
+          R.string.tasnim_reading_layout_pages
+        } else {
+          R.string.tasnim_reading_layout_scroll
+        }
+      )
+    }
 
     // hidden only when the system ignores app orientation requests
     menu.findItem(R.id.rotate_screen)?.isVisible =
@@ -1390,6 +1415,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       return true
     } else if (itemId == R.id.auto_scroll) {
       startAutoScroll()
+      return true
+    } else if (itemId == R.id.reading_layout) {
+      ReaderScrollPages.setScrollReading(this, !ReaderScrollPages.isScrollReading(this))
+      syncScrollReading()
+      supportInvalidateOptionsMenu()
       return true
     } else if (itemId == R.id.rotate_screen) {
       // works even when the phone's auto-rotate is off
@@ -1454,13 +1484,14 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
     supportInvalidateOptionsMenu()
     updateActionBarTitle(page)
+    syncScrollReading()
   }
 
   private fun switchToTranslation() {
     if (selectionStart != null) {
       endAyahMode()
     }
-    stopAutoScroll()
+    hideScrollPages()
 
     if (translations!!.isEmpty()) {
       startTranslationManager()
@@ -2240,7 +2271,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     if (slidingPanel.isPaneVisible) {
       slidingPanel.collapsePane()
     }
-    stopAutoScroll()
+    hideScrollPages()
     val start = selectionStart ?: quranInfo.getPageBounds(currentPage).let { SuraAyah(it[0], it[1]) }
     // the bars come up over the cards (the tabs and the audio bar are the cards' controls)
     handler.removeMessages(MSG_HIDE_ACTIONBAR)
@@ -2265,8 +2296,38 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     setReaderMode(ReaderMode.PERSIAN)
   }
 
+  /** Whether the scrolling pages can stand in for the reader's pages now. */
+  private fun canScrollPages() = hasTextPages() && !showingTranslation && !ayahCards.isShowing
+
   /**
-   * The text pages one under the other, moving up on their own from the page on screen, plain or
+   * Shows or hides the scrolling pages for how the mushaf is set to be read (scrolling or turning
+   * pages); auto-scroll keeps them up until it is closed.
+   */
+  private fun syncScrollReading() {
+    val wanted = canScrollPages() && ReaderScrollPages.isScrollReading(this)
+    if (wanted && !scrollPages.isShowing) {
+      showScrollPages()
+    } else if (!wanted && scrollPages.isShowing && !scrollPages.isAutoScrolling) {
+      hideScrollPages()
+    }
+  }
+
+  private fun showScrollPages() {
+    updateScrollPagesSettings()
+    scrollPages.onSelection(selectionStart)
+    scrollPages.show(currentPage)
+  }
+
+  /** Back to the reader's pages, on the page the text had reached. */
+  private fun hideScrollPages() {
+    if (!scrollPages.isShowing) return
+    showPageBehindScrollPages(scrollPages.state.currentPage)
+    scrollPages.hide()
+    onAutoScrollBackCallback.isEnabled = false
+  }
+
+  /**
+   * The text pages one under the other, moving up on their own from where the reader is, plain or
    * in tajweed colors as the reader's pages are; the reader's bars step aside for the text.
    */
   private fun startAutoScroll() {
@@ -2283,28 +2344,28 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
     handler.removeMessages(MSG_HIDE_ACTIONBAR)
     toggleActionBarVisibility(false)
-    updateAutoScrollSettings()
-    autoScroll.show(currentPage)
+    if (!scrollPages.isShowing) showScrollPages()
+    scrollPages.startAuto()
     onAutoScrollBackCallback.isEnabled = true
   }
 
-  /** Back to the reader's pages, on the page the text had reached. */
+  /** Auto-scroll ends: on to reading by hand where the text is, scrolling or on the reader's pages. */
   private fun stopAutoScroll() {
-    if (!autoScroll.isShowing) return
-    showPageBehindAutoScroll(autoScroll.state.currentPage)
-    autoScroll.hide()
+    if (!scrollPages.isAutoScrolling) return
+    scrollPages.stopAuto()
     onAutoScrollBackCallback.isEnabled = false
+    syncScrollReading()
   }
 
-  private fun showPageBehindAutoScroll(page: Int) {
+  private fun showPageBehindScrollPages(page: Int) {
     val position = quranInfo.getPositionFromPage(page, isDualPageVisible)
     if (position != viewPager.currentItem) {
       viewPager.setCurrentItem(position, false)
     }
   }
 
-  private fun updateAutoScrollSettings() {
-    autoScroll.updateSettings(
+  private fun updateScrollPagesSettings() {
+    scrollPages.updateSettings(
       nightMode = quranSettings.isNightMode,
       nightBrightness = quranSettings.pageTextBrightness,
       // the page theme's paper (or the night background), as behind the pages
@@ -2312,9 +2373,53 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     )
   }
 
+  /** What the scrolling pages ask of the reader: the same as a touch on one of its pages. */
+  private inner class ScrollPagesHandler : ScrollPagesActions {
+    override fun onPage(page: Int) = showPageBehindScrollPages(page)
+
+    override fun onTap() {
+      if (scrollPages.state.auto) {
+        // the reader's bars may have come back with the system's: the text has the screen again
+        if (!isActionBarHidden) toggleActionBarVisibility(false)
+      } else if (selectionStart != null) {
+        endAyahMode()
+      } else {
+        toggleActionBar()
+      }
+    }
+
+    override fun onAyahLongPress(key: Int, bounds: MushafAyahBounds) {
+      // the ayah toolbar over the ayah, placed like a page's: relative to the pages' view
+      val location = IntArray(2)
+      viewPager.getLocationInWindow(location)
+      fun androidx.compose.ui.geometry.Rect.relative() = SelectionRectangle(
+        left - location[0], top - location[1], right - location[0], bottom - location[1]
+      )
+      viewPager.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS)
+      readingEventPresenter.onAyahSelection(
+        AyahSelection.Ayah(
+          SuraAyah(ayahKeySura(key), ayahKeyAyah(key)),
+          SelectionIndicator.SelectedItemPosition(bounds.first.relative(), bounds.last.relative())
+        )
+      )
+    }
+
+    // the ayah's toolbar would stay where the ayah was: it closes as the text moves on
+    override fun onDrag() {
+      if (selectionStart != null && !slidingPanel.isPaneVisible) {
+        readingEventPresenterBridge.clearSelectedAyah()
+      }
+    }
+
+    override fun onSpeedChanged(speed: Int) = Unit
+
+    override fun onCloseAuto() = stopAutoScroll()
+  }
+
   private fun hideAyahCards() {
     ayahCards.hide()
     onAyahCardsBackCallback.isEnabled = false
+    syncScrollReading()
   }
 
   private fun updateAyahCardsSettings() {

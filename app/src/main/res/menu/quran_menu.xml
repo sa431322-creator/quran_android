@@ -21,6 +21,9 @@
           android:icon="@drawable/ic_auto_scroll"
           android:title="@string/tasnim_auto_scroll"
           app:showAsAction="ifRoom" />
+    <item android:id="@+id/reading_layout"
+          android:title="@string/tasnim_reading_layout_scroll"
+          app:showAsAction="never" />
     <item android:id="@+id/search"
           android:icon="@drawable/ic_ab_search"
           android:title="@string/menu_search"

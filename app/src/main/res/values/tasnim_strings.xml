@@ -7,7 +7,7 @@
 
   <string name="tasnim_section_mushaf" translatable="false">مصحف</string>
   <string name="tasnim_section_live" translatable="false">تلویزیون قرآن</string>
-  <string name="tasnim_tajweed_mushaf" translatable="false">مصحف تجوید (آزمایشی)</string>
+  <string name="tasnim_tajweed_mushaf" translatable="false">مصحف تجوید</string>
   <!-- ayah cards -->
   <string name="tasnim_cards_show_text" translatable="false">نمایش ترجمهٔ تفسیری</string>
   <string name="tasnim_cards_open_text" translatable="false">ترجمهٔ تفسیری</string>
@@ -16,7 +16,10 @@
   <string name="tasnim_cards_bookmark" translatable="false">نشانک آیهٔ %s</string>
   <string name="tasnim_cards_ayah" translatable="false">آیهٔ %s</string>
   <string name="tasnim_cards_actions" translatable="false">گزینه‌های آیه</string>
-  <string name="tasnim_cards_source" translatable="false">ترجمه: جامع البیان – ترجمهٔ تفسیری قرآن کریم، عبدالقدوس دهقان</string>
+  <string name="tasnim_cards_source" translatable="false">ترجمه: جامع البیان – ترجمهٔ تفسیری قرآن کریم، مولانا عبدالقدوس دهقان</string>
+  <!-- how the mushaf is read: scrolling down, or turning pages; each names the layout it switches to -->
+  <string name="tasnim_reading_layout_scroll" translatable="false">خواندن پیمایشی (عمودی)</string>
+  <string name="tasnim_reading_layout_pages" translatable="false">خواندن ورق‌زدنی</string>
   <!-- auto-scroll -->
   <string name="tasnim_auto_scroll" translatable="false">پیمایش خودکار</string>
   <string name="tasnim_auto_scroll_per_page" translatable="false">هر صفحه %s</string>
