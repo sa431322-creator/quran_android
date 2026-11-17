@@ -56,16 +56,7 @@ class ShareUtil @Inject internal constructor(
       }
     }
 
-    val numberFormat = NumberFormat.getIntegerInstance(activity.resources.configuration.locales[0])
-    val previewTitle = buildString {
-      append(quranDisplayData.getSuraName(activity, start.sura, true))
-      append(": ")
-      append(numberFormat.format(start.ayah))
-      if (endAyah != start.ayah) {
-        append("-")
-        append(numberFormat.format(endAyah))
-      }
-    }
+    val previewTitle = rangeLabel(activity, start, SuraAyah(start.sura, endAyah))
 
     shareViaIntent(
       activity, url, com.quran.labs.androidquran.common.toolbar.R.string.share_ayah,
@@ -100,6 +91,7 @@ class ShareUtil @Inject internal constructor(
         append("\n")
         append("[")
         append(quranDisplayData.getSuraAyahString(context, ayahInfo.sura, ayahInfo.ayah, R.string.sura_ayah_sharing_str))
+        append(pageLabel(context, SuraAyah(ayahInfo.sura, ayahInfo.ayah), null))
         append("]")
       }
 
@@ -127,8 +119,45 @@ class ShareUtil @Inject internal constructor(
         append("\n")
         append("-")
         append(quranDisplayData.getSuraAyahString(context, ayahInfo.sura, ayahInfo.ayah, R.string.sura_ayah_notification_str))
+        append(pageLabel(context, SuraAyah(ayahInfo.sura, ayahInfo.ayah), null))
       }
     }
+  }
+
+  /** "سوره بقره: ۲۵۵" or "سوره بقره: ۲۵۵-۲۵۷", or "سوره بقره: ۲۸۶ - سوره آل عمران: ۳" across suras. */
+  fun rangeLabel(context: Context, start: SuraAyah, end: SuraAyah): String {
+    val numberFormat = NumberFormat.getIntegerInstance(context.resources.configuration.locales[0])
+    return buildString {
+      append(quranDisplayData.getSuraName(context, start.sura, true))
+      append(": ")
+      append(numberFormat.format(start.ayah))
+      if (end != start) {
+        if (end.sura != start.sura) {
+          append(" - ")
+          append(quranDisplayData.getSuraName(context, end.sura, true))
+          append(": ")
+        } else {
+          append("-")
+        }
+        append(numberFormat.format(end.ayah))
+      }
+    }
+  }
+
+  /**
+   * Tasnim: the page (or pages) of the mushaf the shared ayahs are on, as " — صفحه ۴۲" or
+   * " — صفحه ۴۲-۴۳", appended inside the sura label.
+   */
+  internal fun pageLabel(context: Context, start: SuraAyah, end: SuraAyah?): String {
+    val numberFormat = NumberFormat.getIntegerInstance(context.resources.configuration.locales[0])
+    val startPage = quranInfo.getPageFromSuraAyah(start.sura, start.ayah)
+    val endPage = end?.let { quranInfo.getPageFromSuraAyah(it.sura, it.ayah) } ?: startPage
+    val pages = if (endPage > startPage) {
+      numberFormat.format(startPage) + "-" + numberFormat.format(endPage)
+    } else {
+      numberFormat.format(startPage)
+    }
+    return " — " + context.getString(R.string.tasnim_share_page, pages)
   }
 
   private fun getShareText(activity: Activity, verses: List<QuranText>): String {
@@ -170,6 +199,7 @@ class ShareUtil @Inject internal constructor(
         }
         append(numberFormat.format(ayah1))
       }
+      append(pageLabel(activity, SuraAyah(sura, ayah), verses[size - 1].let { SuraAyah(it.sura, it.ayah) }))
       // close sura label and append two new lines
       append("]")
     }

@@ -78,4 +78,11 @@
   <string name="tasnim_update_later">بعداً</string>
   <string name="tasnim_maintenance_default">بخشی از خدمات تسنیم موقتاً در دسترس نیست.</string>
   <string name="tasnim_announcement_close">بستن اعلان</string>
+  <!-- Ayah share sheet -->
+  <string name="tasnim_share_page">صفحه %1$s</string>
+  <string name="tasnim_share_sheet_title">اشتراک‌گذاری</string>
+  <string name="tasnim_share_text">اشتراک متن</string>
+  <string name="tasnim_share_text_hint">متن آیه با نام سوره، شماره آیه و صفحه</string>
+  <string name="tasnim_share_copy">کپی متن</string>
+  <string name="tasnim_share_link">پیوند آیه</string>
 </resources>
