@@ -3,7 +3,8 @@
 Base branch: `tasnim/upstream-base`. Each phase is its own branch and PR, cut from it.
 
 Status: **plan, 2026-11-17.** Order agreed with the user: live video first, then radio,
-then the library, then the mushaf.
+then the library, then the mushaf. Phase 1 done on `tasnim/tv-phase1`; phase 2 done on
+`tasnim/tv-phase2` (stacked on phase 1). Both tried on the Google TV emulator (API 34, 1080p).
 
 ---
 

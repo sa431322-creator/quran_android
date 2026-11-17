@@ -307,7 +307,7 @@ private fun OurVideo(controller: LivePlayerController, state: LivePlayerState, i
       pulsing = isPlaying,
       modifier = Modifier
         .align(Alignment.TopStart)
-        .padding(start = SAFE_SIDE, top = SAFE_TOP)
+        .padding(start = TvSafeSide, top = TvSafeTop)
     )
     // the watermark sits on the left of the rtl screen, as on the phone
     Image(
@@ -316,7 +316,7 @@ private fun OurVideo(controller: LivePlayerController, state: LivePlayerState, i
       contentScale = ContentScale.Crop,
       modifier = Modifier
         .align(Alignment.TopEnd)
-        .padding(end = SAFE_SIDE, top = SAFE_TOP)
+        .padding(end = TvSafeSide, top = TvSafeTop)
         .size(56.dp)
         .clip(CircleShape)
         .alpha(0.85f)
@@ -348,7 +348,7 @@ private fun ControlPanel(
     modifier = Modifier
       .fillMaxWidth()
       .background(palette.videoBackground)
-      .padding(start = SAFE_SIDE, end = SAFE_SIDE, top = 20.dp, bottom = SAFE_TOP),
+      .padding(start = TvSafeSide, end = TvSafeSide, top = 20.dp, bottom = TvSafeTop),
     horizontalArrangement = Arrangement.spacedBy(40.dp)
   ) {
     Column(Modifier.weight(1f)) {
@@ -450,7 +450,7 @@ private fun ControlPanel(
 
 /** The program on air and the next few, from today's schedule. */
 @Composable
-private fun UpNext(entries: List<ScheduleEntry>, onAir: Int) {
+internal fun UpNext(entries: List<ScheduleEntry>, onAir: Int) {
   val palette = LocalTasnimPalette.current
   val from = onAir.coerceAtLeast(0)
   Column(
@@ -491,95 +491,8 @@ private fun UpNext(entries: List<ScheduleEntry>, onAir: Int) {
   }
 }
 
-/** A round remote-friendly button with its name under it (TVs have no hover or long-press hints). */
-@Composable
-private fun TvControl(
-  icon: ImageVector,
-  label: String,
-  onClick: () -> Unit,
-  modifier: Modifier = Modifier,
-  dimmed: Boolean = false
-) {
-  val palette = LocalTasnimPalette.current
-  val interaction = remember { MutableInteractionSource() }
-  val focused by interaction.collectIsFocusedAsState()
-  Column(
-    horizontalAlignment = Alignment.CenterHorizontally,
-    modifier = Modifier.width(88.dp)
-  ) {
-    Box(
-      modifier = modifier
-        .size(64.dp)
-        .tvFocusFrame(focused, CircleShape)
-        .background(if (focused) palette.onVideo else palette.onVideo.copy(alpha = 0.14f), CircleShape)
-        .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
-        .clearAndSetSemantics { contentDescription = label },
-      contentAlignment = Alignment.Center
-    ) {
-      Icon(
-        imageVector = icon,
-        contentDescription = null,
-        tint = if (focused) {
-          palette.videoBackground
-        } else {
-          palette.onVideo.copy(alpha = if (dimmed) 0.55f else 1f)
-        },
-        modifier = Modifier.size(30.dp)
-      )
-    }
-    Text(
-      text = label,
-      color = palette.onVideo.copy(alpha = if (focused) 1f else 0.7f),
-      fontFamily = Vazirmatn,
-      fontSize = 13.sp,
-      maxLines = 1,
-      overflow = TextOverflow.Ellipsis,
-      modifier = Modifier.padding(top = 8.dp)
-    )
-  }
-}
-
-/** A channel (or the radio) to switch to; the playing one is filled. */
-@Composable
-private fun TvChip(text: String, selected: Boolean, onClick: () -> Unit) {
-  val palette = LocalTasnimPalette.current
-  val interaction = remember { MutableInteractionSource() }
-  val focused by interaction.collectIsFocusedAsState()
-  val shape = RoundedCornerShape(32.dp)
-  Box(
-    modifier = Modifier
-      .height(64.dp)
-      .tvFocusFrame(focused, shape)
-      .background(
-        when {
-          focused -> palette.onVideo
-          selected -> palette.primary
-          else -> palette.onVideo.copy(alpha = 0.14f)
-        },
-        shape
-      )
-      .clickable(interactionSource = interaction, indication = null, role = Role.Tab, onClick = onClick)
-      .semantics { this.selected = selected }
-      .padding(horizontal = 28.dp),
-    contentAlignment = Alignment.Center
-  ) {
-    Text(
-      text = text,
-      color = if (focused) palette.videoBackground else palette.onVideo,
-      fontFamily = Vazirmatn,
-      fontSize = 18.sp,
-      fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
-      maxLines = 1,
-      softWrap = false
-    )
-  }
-}
-
 private val neverFalse = MutableStateFlow(false)
 
 private const val PANEL_TIMEOUT_MILLIS = 6_000L
 private const val UP_NEXT_COUNT = 4
 
-// the TV safe area: overscan can hide the outer 5% of the picture
-private val SAFE_SIDE = 48.dp
-private val SAFE_TOP = 27.dp

@@ -56,7 +56,7 @@ class LiveTvActivity : AppCompatActivity() {
 
     val openAudio = {
       // the switch swaps screens rather than stacking them
-      startActivity(Intent(this, RadioActivity::class.java))
+      startActivity(Intent(this, RadioActivity::class.java).putExtra(RadioActivity.EXTRA_PLAY, true))
       finish()
     }
     setContent {

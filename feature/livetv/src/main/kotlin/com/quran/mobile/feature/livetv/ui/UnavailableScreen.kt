@@ -43,11 +43,34 @@ import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.mobile.feature.livetv.R
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalWindowInfo
+import com.quran.labs.androidquran.common.ui.core.isTv
 import com.quran.mobile.feature.livetv.ui.common.LiveHeader
 
 /** Shown in place of the video or radio screen while that broadcast is switched off. */
 @Composable
 fun UnavailableScreen(message: String, onBack: () -> Unit) {
+  // on a TV the back button takes the remote's first focus, and shows it with a gold ring
+  val tv = isTv()
+  val backFocus = remember { FocusRequester() }
+  val backInteraction = remember { MutableInteractionSource() }
+  val backFocused by backInteraction.collectIsFocusedAsState()
+  val windowFocused = LocalWindowInfo.current.isWindowFocused
+  if (tv) {
+    LaunchedEffect(windowFocused) {
+      if (!windowFocused) return@LaunchedEffect
+      withFrameNanos { }
+      runCatching { backFocus.requestFocus() }
+    }
+  }
   // the screen's copy is Persian, so lay it out right to left regardless of device locale
   CompositionLocalProvider(LocalLayoutDirection provides LayoutDirection.Rtl) {
     TasnimPaletteProvider {
@@ -99,7 +122,13 @@ fun UnavailableScreen(message: String, onBack: () -> Unit) {
           Spacer(Modifier.height(28.dp))
           OutlinedButton(
             onClick = onBack,
-            border = BorderStroke(1.dp, palette.outline),
+            interactionSource = backInteraction,
+            modifier = Modifier.focusRequester(backFocus),
+            border = if (tv && backFocused) {
+              BorderStroke(3.dp, palette.gold)
+            } else {
+              BorderStroke(1.dp, palette.outline)
+            },
             colors = ButtonDefaults.outlinedButtonColors(contentColor = palette.ink)
           ) {
             Text(

@@ -70,7 +70,7 @@ import com.quran.mobile.feature.livetv.ui.common.rememberOnAirIndex
 
 /** The «پخش زنده» radio screen from the design canvas (Radio.dc.html). */
 @Composable
-fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
+fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit, playOnOpen: Boolean = false) {
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
   val connection = remember { RadioConnection(context) }
@@ -79,11 +79,17 @@ fun RadioScreen(stations: List<RadioStation>, onBack: () -> Unit) {
   val station = stations.firstOrNull { it.id == playback.stationId } ?: stations.first()
   val defaultStationId = stations.first().id
 
+  // asked for once: a later start (back from home) keeps the viewer's pause
+  val resumeOnce = remember { booleanArrayOf(playOnOpen) }
+
   // connected only while visible; playback itself continues in LiveRadioService
   DisposableEffect(lifecycleOwner, connection) {
     val observer = LifecycleEventObserver { _, event ->
       when (event) {
-        Lifecycle.Event.ON_START -> connection.connect(defaultStationId)
+        Lifecycle.Event.ON_START -> {
+          connection.connect(defaultStationId, resume = resumeOnce[0])
+          resumeOnce[0] = false
+        }
         Lifecycle.Event.ON_STOP -> connection.disconnect()
         else -> Unit
       }
@@ -236,7 +242,7 @@ private fun PlayButton(playback: RadioPlaybackState, onClick: () -> Unit) {
 
 /** The round logo between gold sound-wave arcs, which dim while paused. */
 @Composable
-private fun WavingLogo(isPlaying: Boolean) {
+internal fun WavingLogo(isPlaying: Boolean) {
   val palette = LocalTasnimPalette.current
   val inner by animateFloatAsState(if (isPlaying) 1f else 0.25f, label = "innerWave")
   val outer by animateFloatAsState(if (isPlaying) 0.55f else 0.15f, label = "outerWave")

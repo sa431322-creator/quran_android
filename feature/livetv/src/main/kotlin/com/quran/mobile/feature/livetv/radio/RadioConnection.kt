@@ -37,8 +37,11 @@ class RadioConnection(context: Context) {
     override fun onEvents(player: Player, events: Player.Events) = updateState(player)
   }
 
-  /** Connects, and starts [defaultStationId] if nothing has been played yet. */
-  fun connect(defaultStationId: String) {
+  /**
+   * Connects, and starts [defaultStationId] if nothing has been played yet. With [resume], a
+   * paused station plays again (the viewer switched over from the live video to listen).
+   */
+  fun connect(defaultStationId: String, resume: Boolean = false) {
     if (future != null) return
     val token = SessionToken(appContext, ComponentName(appContext, LiveRadioService::class.java))
     val pending = MediaController.Builder(appContext, token).buildAsync()
@@ -50,7 +53,12 @@ class RadioConnection(context: Context) {
         val connected = runCatching { pending.get() }.getOrNull() ?: return@addListener
         controller = connected
         connected.addListener(listener)
-        if (connected.mediaItemCount == 0) play(defaultStationId) else updateState(connected)
+        val current = connected.currentMediaItem?.mediaId
+        when {
+          current == null -> play(defaultStationId)
+          resume -> play(current)
+          else -> updateState(connected)
+        }
       },
       ContextCompat.getMainExecutor(appContext)
     )
