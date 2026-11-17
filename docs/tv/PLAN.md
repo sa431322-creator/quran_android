@@ -28,7 +28,7 @@ Missing:
   before anything else; a TV viewer who only wants live video must answer it first.
 
 Not in scope: Samsung Tizen and LG webOS (not Android, would need separate apps).
-Fire TV runs the same APK; publishing to the Amazon store is a later decision.
+Fire TV runs the same APK; publishing to the Amazon store comes later.
 
 ---
 
@@ -53,8 +53,8 @@ Fire TV runs the same APK; publishing to the Amazon store is a later decision.
    the script or page rendering.
 7. **Remote keys** handled everywhere they make sense: center/enter, back, play/pause,
    media play/pause/stop, channel up/down, and the number keys where useful.
-8. **No ads on TV for now** (recommended): `AdBanner` returns nothing when `isTv`. TV ad
-   formats and Play's TV ad rules are a separate decision.
+8. **No ads on TV** (decided 2026-11-17): `AdBanner` returns nothing when `isTv`. TV ad
+   formats are not planned for now.
 9. **No share buttons on TV** (no share sheet there).
 
 New dependency (recommended): `androidx.tv:tv-material` for TV-only composables
@@ -172,21 +172,34 @@ script quality.
 
 ---
 
-## Release (after phase 2, again after phase 4)
+## Release
 
-- Play Console: opt into Android TV, add TV screenshots and the banner, pass the
+Decided 2026-11-17: **Google Play only, the same app and the same store listing** — no
+separate TV app or listing. A separate one is made only if Google Play's policy requires it
+(today it does not: TV is a form factor of the same listing).
+
+What Google Play still asks for TV, inside the same listing:
+
+- Play Console → *Advanced settings → Form factors*: opt the app into **Android TV**.
+  Without this opt-in, Play does not offer the app to TVs, even with the leanback manifest
+  entries.
+- TV screenshots (1920×1080) and the TV banner (already there) in the store listing.
+- A separate TV review against the
   [TV app quality checklist](https://developer.android.com/docs/quality-guidelines/tv-app-quality).
-  Google reviews TV apps separately; the first review may take longer.
-- Recommended: release TV after phase 2 (live video + radio), since that is the main TV
-  use, and let the library and mushaf follow in updates. Until phase 4 lands, the start
-  screen on TV can hide the mushaf and library tiles (or show them as phone-style
-  screens), decided at release time.
+  If TV is refused, phone/tablet releases are not blocked; the app just isn't offered on TV
+  until the issues are fixed.
+
+Timing: opt into TV after phase 2 (live video + radio, the main TV use); library and mushaf
+follow in normal updates. Until phase 4 lands, the start screen on TV hides the mushaf and
+library tiles, or shows them as they are — decided before the opt-in.
+
+Fire TV / Amazon Appstore: later, not in this plan.
 
 ---
 
-## Open decisions (recommended answers first)
+## Decisions
 
-1. Ads on TV: **off for now** / TV ad formats later.
-2. `androidx.tv:tv-material` for TV screens: **yes** / plain Compose only.
-3. First TV release: **after phase 2** / after phase 4.
-4. Fire TV (Amazon store): **later** / together with the first TV release.
+1. Ads on TV: **off** (decided 2026-11-17).
+2. Store: **same Google Play listing**, TV opt-in after phase 2 (decided 2026-11-17).
+3. Fire TV / Amazon: **later** (decided 2026-11-17).
+4. `androidx.tv:tv-material` for the TV screens: **yes** (recommended; confirm at phase 1).
