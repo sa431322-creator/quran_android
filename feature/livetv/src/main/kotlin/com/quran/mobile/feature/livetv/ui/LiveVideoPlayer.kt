@@ -1,5 +1,6 @@
 package com.quran.mobile.feature.livetv.ui
 
+import android.view.ViewGroup
 import androidx.annotation.OptIn
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -61,11 +62,8 @@ import com.quran.mobile.feature.livetv.ui.common.LiveIcons
  * and a control bar (play/pause, mute, Persian subtitles, fullscreen). Live TV has no
  * seek bar; the thin line above the controls only marks the live edge.
  *
- * The player exists only while the screen is started: it is built on ON_START and
- * released on ON_STOP (backgrounding) and when this composable leaves (navigating away).
- * The screen is kept awake only while video is actually playing.
+ * The player exists only while the screen is started (see [LivePlayerSurface]).
  */
-@OptIn(UnstableApi::class)
 @Composable
 fun LiveVideoPlayer(
   source: LiveStreamSource,
@@ -76,47 +74,15 @@ fun LiveVideoPlayer(
   modifier: Modifier = Modifier
 ) {
   val context = LocalContext.current
-  val lifecycleOwner = LocalLifecycleOwner.current
   val palette = LocalTasnimPalette.current
   val controller = remember(source) { LivePlayerController(context, source) }
-  val playerView = remember {
-    PlayerView(context).apply {
-      // live tv has no seek bar, fast-forward or rewind; the controls are drawn in compose
-      useController = false
-      resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
-      setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
-    }
-  }
   val state by controller.state.collectAsState()
   val isMuted by controller.isMuted.collectAsState()
   val subtitlesEnabled by controller.subtitlesEnabled.collectAsState()
   val hasSubtitles by controller.hasSubtitles.collectAsState()
 
-  DisposableEffect(lifecycleOwner, controller) {
-    val observer = LifecycleEventObserver { _, event ->
-      when (event) {
-        Lifecycle.Event.ON_START -> playerView.player = controller.initialize()
-        Lifecycle.Event.ON_STOP -> {
-          playerView.player = null
-          controller.release()
-        }
-        else -> Unit
-      }
-    }
-    lifecycleOwner.lifecycle.addObserver(observer)
-    onDispose {
-      lifecycleOwner.lifecycle.removeObserver(observer)
-      playerView.player = null
-      controller.release()
-    }
-  }
-
   Box(modifier = modifier.background(palette.videoBackground)) {
-    AndroidView(
-      factory = { playerView },
-      update = { it.keepScreenOn = state == LivePlayerState.Playing },
-      modifier = Modifier.fillMaxSize()
-    )
+    LivePlayerSurface(controller = controller, modifier = Modifier.fillMaxSize())
 
     when (state) {
       LivePlayerState.Buffering -> CircularProgressIndicator(
@@ -227,6 +193,55 @@ fun LiveVideoPlayer(
       }
     }
   }
+}
+
+/**
+ * Only the video picture of [controller]'s player, shared by the phone and TV screens.
+ * The player is built on ON_START and released on ON_STOP and when this leaves the screen;
+ * the screen is kept awake only while video is actually playing. The picture never takes
+ * focus, so a TV remote stays on the screen's own controls.
+ */
+@OptIn(UnstableApi::class)
+@Composable
+internal fun LivePlayerSurface(controller: LivePlayerController, modifier: Modifier = Modifier) {
+  val context = LocalContext.current
+  val lifecycleOwner = LocalLifecycleOwner.current
+  val playerView = remember {
+    PlayerView(context).apply {
+      // live tv has no seek bar, fast-forward or rewind; the controls are drawn in compose
+      useController = false
+      resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+      setShowBuffering(PlayerView.SHOW_BUFFERING_NEVER)
+      isFocusable = false
+      descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+    }
+  }
+  val state by controller.state.collectAsState()
+
+  DisposableEffect(lifecycleOwner, controller) {
+    val observer = LifecycleEventObserver { _, event ->
+      when (event) {
+        Lifecycle.Event.ON_START -> playerView.player = controller.initialize()
+        Lifecycle.Event.ON_STOP -> {
+          playerView.player = null
+          controller.release()
+        }
+        else -> Unit
+      }
+    }
+    lifecycleOwner.lifecycle.addObserver(observer)
+    onDispose {
+      lifecycleOwner.lifecycle.removeObserver(observer)
+      playerView.player = null
+      controller.release()
+    }
+  }
+
+  AndroidView(
+    factory = { playerView },
+    update = { it.keepScreenOn = state == LivePlayerState.Playing },
+    modifier = modifier
+  )
 }
 
 @Composable

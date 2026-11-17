@@ -1,11 +1,13 @@
 package com.quran.mobile.feature.ads
 
+import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
@@ -54,12 +56,23 @@ object NoAdProvider : AdProvider {
 val LocalAdProvider = staticCompositionLocalOf<AdProvider> { NoAdProvider }
 
 /**
+ * The provider every ad slot reads: [LocalAdProvider], except on a TV, which shows no ads
+ * (docs/tv/PLAN.md). The TV test is the `-television` resource qualifier's, as in the app's
+ * `isTv()` (common/ui/core), which this interface-only module does not depend on.
+ */
+@Composable
+fun currentAdProvider(): AdProvider {
+  val uiModeType = LocalConfiguration.current.uiMode and Configuration.UI_MODE_TYPE_MASK
+  return if (uiModeType == Configuration.UI_MODE_TYPE_TELEVISION) NoAdProvider else LocalAdProvider.current
+}
+
+/**
  * The ad of [slot], or nothing. Emits no layout at all until an ad is [AdState.Ready], so the
  * screen never jumps while an ad loads.
  */
 @Composable
 fun AdBanner(slot: AdSlot, modifier: Modifier = Modifier) {
-  val provider = LocalAdProvider.current
+  val provider = currentAdProvider()
   val flow = remember(provider, slot) { provider.state(slot) }
   val state by flow.collectAsState()
   val ready = state as? AdState.Ready ?: return

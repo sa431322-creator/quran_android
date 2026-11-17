@@ -24,6 +24,7 @@ import com.quran.common.upgrade.PreferencesUpgrade
 import com.quran.data.model.Page
 import com.quran.data.model.QuranDataStatus
 import com.quran.data.model.SuraAyah
+import com.quran.labs.androidquran.common.ui.core.isTv
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.presenter.data.QuranDataPresenter
 import com.quran.labs.androidquran.service.QuranDownloadService
@@ -461,6 +462,14 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
 
   private fun promptForDownload() {
     val dataStatus = quranDataStatus ?: return
+    // Tasnim on TV: the start screen (live video, radio) comes first, without asking for the
+    // mushaf pages; they are fetched when the mushaf is opened (docs/tv/PLAN.md, phase 1).
+    // The page type is left as it is (no image fallback: nobody chose it), and a patch for
+    // pages already there is still offered.
+    if (isTv() && dataStatus.patchParam.isNullOrEmpty()) {
+      runListView()
+      return
+    }
     val message = if (dataStatus.needPortrait()) {
       R.string.downloadPrompt
     } else if (quranScreenInfo.isDualPageMode && dataStatus.needLandscape()) {

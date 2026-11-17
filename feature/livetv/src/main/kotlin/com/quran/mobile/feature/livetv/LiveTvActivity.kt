@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.common.ui.core.isTv
+import com.quran.mobile.feature.livetv.ui.tv.LiveTvTvScreen
 import com.quran.mobile.di.QuranApplicationComponentProvider
 import com.quran.mobile.feature.livetv.data.LiveAvailability
 import com.quran.mobile.feature.livetv.data.LiveChannelRepository
@@ -52,18 +54,24 @@ class LiveTvActivity : AppCompatActivity() {
       return
     }
 
+    val openAudio = {
+      // the switch swaps screens rather than stacking them
+      startActivity(Intent(this, RadioActivity::class.java))
+      finish()
+    }
     setContent {
       QuranTheme {
-        CompositionLocalProvider(LocalAdProvider provides adProvider) {
-          LiveTvScreen(
-            channels = channels,
-            onBack = onBackPressedDispatcher::onBackPressed,
-            onOpenAudio = {
-              // the switch swaps screens rather than stacking them
-              startActivity(Intent(this, RadioActivity::class.java))
-              finish()
-            }
-          )
+        if (isTv()) {
+          // full screen and driven by the remote (docs/tv/PLAN.md, phase 1); no ads on TV
+          LiveTvTvScreen(channels = channels, onOpenAudio = openAudio)
+        } else {
+          CompositionLocalProvider(LocalAdProvider provides adProvider) {
+            LiveTvScreen(
+              channels = channels,
+              onBack = onBackPressedDispatcher::onBackPressed,
+              onOpenAudio = openAudio
+            )
+          }
         }
       }
     }

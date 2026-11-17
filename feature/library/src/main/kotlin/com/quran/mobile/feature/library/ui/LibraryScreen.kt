@@ -3,7 +3,7 @@ package com.quran.mobile.feature.library.ui
 import com.quran.mobile.feature.ads.AdBanner
 import com.quran.mobile.feature.ads.AdSlot
 import com.quran.mobile.feature.ads.AdState
-import com.quran.mobile.feature.ads.LocalAdProvider
+import com.quran.mobile.feature.ads.currentAdProvider
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -379,7 +379,7 @@ private fun Shelf(
       .maxByOrNull { shelf.progress.getValue(it.id).updatedAt }
   }
   val title = stringResource(state.selectedCategory?.titleRes ?: R.string.library_all_books)
-  val adProvider = LocalAdProvider.current
+  val adProvider = currentAdProvider()
   val adState by remember(adProvider) { adProvider.state(AdSlot.LIBRARY_LIST) }.collectAsState()
   val adEvery = remember(adProvider) { adProvider.libraryListEvery() }
   val showAd = adState is AdState.Ready && state.query.isBlank()

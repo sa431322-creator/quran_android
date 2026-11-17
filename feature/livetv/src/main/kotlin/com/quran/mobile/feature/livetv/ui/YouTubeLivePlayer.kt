@@ -17,6 +17,7 @@ import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -46,14 +47,40 @@ import kotlinx.coroutines.flow.MutableStateFlow
  * composable leaves. The screen is kept awake only while YouTube reports it is playing.
  */
 @Composable
-fun YouTubeLivePlayer(source: LiveStreamSource.YouTube, modifier: Modifier = Modifier) {
+fun YouTubeLivePlayer(
+  source: LiveStreamSource.YouTube,
+  modifier: Modifier = Modifier,
+  /** Given on TV: the remote drives the player through it, and the player never takes focus. */
+  remote: YouTubeRemote? = null
+) {
   val context = LocalContext.current
   val lifecycleOwner = LocalLifecycleOwner.current
   val palette = LocalTasnimPalette.current
   val bridge = remember(source) { YouTubeBridge() }
-  val webView = remember(source) { youTubeWebView(context, source, bridge) }
+  val webView = remember(source) {
+    youTubeWebView(context, source, bridge).apply {
+      if (remote != null) {
+        // a focused web page would swallow the remote's keys
+        isFocusable = false
+        isFocusableInTouchMode = false
+        descendantFocusability = ViewGroup.FOCUS_BLOCK_DESCENDANTS
+      }
+    }
+  }
   val isPlaying by bridge.isPlaying.collectAsState()
+  val isPaused by bridge.isPaused.collectAsState()
   val failed by bridge.failed.collectAsState()
+
+  if (remote != null) {
+    DisposableEffect(remote, webView) {
+      remote.attach(webView)
+      onDispose { remote.detach(webView) }
+    }
+    LaunchedEffect(remote, isPlaying, isPaused) {
+      remote.isPlaying.value = isPlaying
+      remote.isPaused.value = isPaused
+    }
+  }
 
   DisposableEffect(lifecycleOwner, webView) {
     val observer = LifecycleEventObserver { _, event ->
@@ -113,14 +140,55 @@ fun YouTubeLivePlayer(source: LiveStreamSource.YouTube, modifier: Modifier = Mod
   }
 }
 
+/**
+ * The TV remote's way into [YouTubeLivePlayer]: play/pause and mute through YouTube's IFrame
+ * API, since nothing of ours may be drawn over YouTube's player.
+ */
+class YouTubeRemote {
+  private var webView: WebView? = null
+  val isPlaying = MutableStateFlow(false)
+
+  /** Paused by the viewer; while the stream still loads it is neither playing nor paused. */
+  val isPaused = MutableStateFlow(false)
+  val isMuted = MutableStateFlow(false)
+
+  internal fun attach(view: WebView) {
+    webView = view
+    // a new player starts with sound
+    isMuted.value = false
+  }
+
+  internal fun detach(view: WebView) {
+    if (webView === view) webView = null
+    isPlaying.value = false
+    isPaused.value = false
+  }
+
+  fun togglePlayPause() {
+    run(if (isPaused.value) "playVideo" else "pauseVideo")
+  }
+
+  fun toggleMute() {
+    val mute = !isMuted.value
+    isMuted.value = mute
+    run(if (mute) "mute" else "unMute")
+  }
+
+  private fun run(method: String) {
+    webView?.evaluateJavascript("player && player.$method && player.$method()", null)
+  }
+}
+
 /** Receives the IFrame player's events; WebView calls these on a background thread. */
 private class YouTubeBridge {
   val isPlaying = MutableStateFlow(false)
+  val isPaused = MutableStateFlow(false)
   val failed = MutableStateFlow(false)
 
   @JavascriptInterface
   fun onState(state: Int) {
     isPlaying.value = state == PLAYING
+    isPaused.value = state == PAUSED
   }
 
   @JavascriptInterface
@@ -137,6 +205,9 @@ private class YouTubeBridge {
 
     // YT.PlayerState.PLAYING
     const val PLAYING = 1
+
+    // YT.PlayerState.PAUSED
+    const val PAUSED = 2
   }
 }
 
