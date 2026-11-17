@@ -101,6 +101,8 @@ import com.quran.labs.androidquran.service.util.PermissionUtil.canRequestPostNot
 import com.quran.labs.androidquran.service.util.PermissionUtil.havePostNotificationPermission
 import com.quran.labs.androidquran.service.util.ServiceIntentHelper.getDownloadIntent
 import com.quran.labs.androidquran.ui.fragment.AddTagDialog
+import com.quran.labs.androidquran.ui.fragment.AyahShareSheet
+import com.quran.labs.androidquran.feature.share.ShareComposerActivity
 import com.quran.labs.androidquran.ui.fragment.JumpFragment
 import com.quran.labs.androidquran.ui.fragment.SuraJumpSheet
 import com.quran.labs.androidquran.ui.fragment.TabletFragment
@@ -202,7 +204,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   QuranReadingPageComponentProvider, AyahToolBarInjector, QariListWrapperInjector,
   AudioBarInjector, AyahBookmarkWrapperInjector, ReadingBookmarkSheetWrapperInjector,
   ActivityCompat.OnRequestPermissionsResultCallback, AudioPresenterScreen,
-  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host {
+  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host, AyahShareSheet.Host {
   private var lastPopupTime: Long = 0
   private var isActionBarHidden = true
   private var shouldReconnect = false
@@ -2126,12 +2128,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_recite_from_here) {
         onEndSessionBackCallback.isEnabled = true
         pagerActivityRecitationPresenter.onRecitationPressed()
-      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_share_ayah_link) {
-        shareAyahLink(startSuraAyah, endSuraAyah)
-      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_share_ayah_text) {
-        shareAyah(startSuraAyah, endSuraAyah, false)
-      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_copy_ayah) {
-        shareAyah(startSuraAyah, endSuraAyah, true)
+      } else if (itemId == com.quran.labs.androidquran.common.toolbar.R.id.cab_share_ayah) {
+        showAyahShareSheet(startSuraAyah, endSuraAyah)
       } else {
         return false
       }
@@ -2203,6 +2201,38 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   fun shareAyahLink(start: SuraAyah, end: SuraAyah) {
     shareUtil.shareAyahLink(this, start, end)
+  }
+
+  private fun showAyahShareSheet(start: SuraAyah, end: SuraAyah) {
+    if (supportFragmentManager.findFragmentByTag(AyahShareSheet.TAG) == null) {
+      AyahShareSheet.newInstance(start, end).show(supportFragmentManager, AyahShareSheet.TAG)
+    }
+  }
+
+  override fun ayahShareTitle(start: SuraAyah, end: SuraAyah): String =
+    shareUtil.rangeLabel(this, start, end)
+
+  /** The composer needs the Arabic text database, like sharing the text does. */
+  private fun openShareComposer(start: SuraAyah, end: SuraAyah, audio: Boolean) {
+    scope.launch {
+      val hasArabicDatabase = withContext(Dispatchers.IO) { quranFileUtils.hasArabicSearchDatabase() }
+      if (!canShowUi()) return@launch
+      if (hasArabicDatabase) {
+        startActivity(ShareComposerActivity.intent(this@PagerActivity, start, end, audio))
+      } else {
+        showGetRequiredFilesDialog()
+      }
+    }
+  }
+
+  override fun onAyahShareOption(option: AyahShareSheet.Option, start: SuraAyah, end: SuraAyah) {
+    when (option) {
+      AyahShareSheet.Option.TEXT -> shareAyah(start, end, false)
+      AyahShareSheet.Option.IMAGE -> openShareComposer(start, end, audio = false)
+      AyahShareSheet.Option.AUDIO -> openShareComposer(start, end, audio = true)
+      AyahShareSheet.Option.COPY -> shareAyah(start, end, true)
+      AyahShareSheet.Option.LINK -> shareAyahLink(start, end)
+    }
   }
 
   private enum class ReaderMode { MUSHAF, PERSIAN, TAJWEED }
