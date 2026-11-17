@@ -14,12 +14,12 @@ import com.quran.labs.androidquran.R
 
 /**
  * Tasnim: the ayah share sheet, opened from the share button of the ayah toolbar. Offers the ayah
- * text (with its sura, ayah and page), copying it, or a link. Later phases add sharing as a framed
- * image and with the recitation (`docs/share-feature-plan.md`).
+ * text (with its sura, ayah and page), a framed image, the ayah with its recitation (video or
+ * audio), copying the text, or a link (`docs/share-feature-plan.md`).
  */
 class AyahShareSheet : BottomSheetDialogFragment() {
 
-  enum class Option { TEXT, COPY, LINK }
+  enum class Option { TEXT, IMAGE, AUDIO, COPY, LINK }
 
   /** The reading screen, which builds and sends what the reader picked. */
   interface Host {
@@ -51,6 +51,8 @@ class AyahShareSheet : BottomSheetDialogFragment() {
       }
     }
     bind(R.id.share_sheet_text, Option.TEXT)
+    bind(R.id.share_sheet_image, Option.IMAGE)
+    bind(R.id.share_sheet_audio, Option.AUDIO)
     bind(R.id.share_sheet_copy, Option.COPY)
     bind(R.id.share_sheet_link, Option.LINK)
   }

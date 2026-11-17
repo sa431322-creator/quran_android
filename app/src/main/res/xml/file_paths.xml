@@ -3,4 +3,8 @@
   <external-files-path
       name="backups"
       path="backups/" />
+  <!-- Tasnim: ayah share images, videos and audio -->
+  <cache-path
+      name="share"
+      path="share/" />
 </paths>

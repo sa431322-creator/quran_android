@@ -102,6 +102,7 @@ import com.quran.labs.androidquran.service.util.PermissionUtil.havePostNotificat
 import com.quran.labs.androidquran.service.util.ServiceIntentHelper.getDownloadIntent
 import com.quran.labs.androidquran.ui.fragment.AddTagDialog
 import com.quran.labs.androidquran.ui.fragment.AyahShareSheet
+import com.quran.labs.androidquran.feature.share.ShareComposerActivity
 import com.quran.labs.androidquran.ui.fragment.JumpFragment
 import com.quran.labs.androidquran.ui.fragment.SuraJumpSheet
 import com.quran.labs.androidquran.ui.fragment.TabletFragment
@@ -2211,9 +2212,24 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   override fun ayahShareTitle(start: SuraAyah, end: SuraAyah): String =
     shareUtil.rangeLabel(this, start, end)
 
+  /** The composer needs the Arabic text database, like sharing the text does. */
+  private fun openShareComposer(start: SuraAyah, end: SuraAyah, audio: Boolean) {
+    scope.launch {
+      val hasArabicDatabase = withContext(Dispatchers.IO) { quranFileUtils.hasArabicSearchDatabase() }
+      if (!canShowUi()) return@launch
+      if (hasArabicDatabase) {
+        startActivity(ShareComposerActivity.intent(this@PagerActivity, start, end, audio))
+      } else {
+        showGetRequiredFilesDialog()
+      }
+    }
+  }
+
   override fun onAyahShareOption(option: AyahShareSheet.Option, start: SuraAyah, end: SuraAyah) {
     when (option) {
       AyahShareSheet.Option.TEXT -> shareAyah(start, end, false)
+      AyahShareSheet.Option.IMAGE -> openShareComposer(start, end, audio = false)
+      AyahShareSheet.Option.AUDIO -> openShareComposer(start, end, audio = true)
       AyahShareSheet.Option.COPY -> shareAyah(start, end, true)
       AyahShareSheet.Option.LINK -> shareAyahLink(start, end)
     }
