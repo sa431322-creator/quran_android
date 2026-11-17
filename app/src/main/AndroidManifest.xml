@@ -104,6 +104,7 @@
     <activity
         android:name=".feature.share.ShareComposerActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"
+        android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden"
         android:exported="false"/>
     <activity
         android:name=".ui.TranslationManagerActivity"

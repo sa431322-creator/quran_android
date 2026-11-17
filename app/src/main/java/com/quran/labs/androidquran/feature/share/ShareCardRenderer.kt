@@ -8,12 +8,16 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.text.Layout
+import android.text.SpannableStringBuilder
+import android.text.Spanned
+import android.text.style.ForegroundColorSpan
 import android.text.StaticLayout
 import android.text.TextDirectionHeuristics
 import android.text.TextPaint
 import android.text.TextUtils
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
+import com.quran.data.model.SuraAyah
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.ui.util.TypefaceManager
 
@@ -37,14 +41,22 @@ class ShareCardRenderer(context: Context) {
     BitmapFactory.decodeResource(appContext.resources, R.drawable.tasnim_logo)
   }
 
-  /** Renders at the card's full size, or scaled down by [scale] for previews. */
-  fun render(content: ShareCardContent, options: ShareCardOptions, scale: Float = 1f): Bitmap {
+  /**
+   * Renders at the card's full size, or scaled down by [scale] for previews. With [highlight],
+   * that ayah is drawn in full color and the others dimmed (a video frame of a whole passage).
+   */
+  fun render(
+    content: ShareCardContent,
+    options: ShareCardOptions,
+    scale: Float = 1f,
+    highlight: SuraAyah? = null
+  ): Bitmap {
     val width = (options.aspect.width * scale).toInt()
     val height = (options.aspect.height * scale).toInt()
     val bitmap = createBitmap(width, height)
     val canvas = Canvas(bitmap)
     canvas.scale(scale, scale)
-    draw(canvas, content, options)
+    draw(canvas, content, options, highlight)
     return bitmap
   }
 
@@ -66,7 +78,7 @@ class ShareCardRenderer(context: Context) {
     return bitmap
   }
 
-  private fun draw(canvas: Canvas, content: ShareCardContent, options: ShareCardOptions) {
+  private fun draw(canvas: Canvas, content: ShareCardContent, options: ShareCardOptions, highlight: SuraAyah?) {
     val w = options.aspect.width.toFloat()
     val h = options.aspect.height.toFloat()
     val palette = ShareBackgrounds.palette(options.background)
@@ -153,7 +165,7 @@ class ShareCardRenderer(context: Context) {
 
     // body: the ayahs, and the tafsir panel under them
     val available = bottom - top
-    val arabic = arabicText(content, options)
+    val arabic = arabicText(content, options, highlight, palette.text)
     val tafsir = if (options.showTafsir) tafsirText(content, options) else null
     val panelPadding = 28f
     val tafsirWidth = (contentWidth - 2 * panelPadding).toInt()
@@ -181,8 +193,10 @@ class ShareCardRenderer(context: Context) {
       val total = arabicLayout.height + tafsirBlockHeight(tafsirLayout, sourceLayout, panelPadding)
       if (total <= available) break
       when {
-        arabicSize > 40f -> arabicSize -= 2f
-        tafsir != null && tafsirSize > 24f -> tafsirSize -= 1f
+        // the tafsir gives way first, then the ayah, which is cut only as a last resort
+        tafsir != null && tafsirSize > 26f -> tafsirSize -= 1f
+        arabicSize > MIN_ARABIC_SIZE -> arabicSize -= if (arabicSize > 40f) 2f else 1f
+        tafsir != null && tafsirSize > 20f -> tafsirSize -= 1f
         else -> {
           // still too long at the smallest sizes: cut the end with an ellipsis
           val tafsirShare = if (tafsir != null) 0.4f else 0f
@@ -227,15 +241,28 @@ class ShareCardRenderer(context: Context) {
     return TAFSIR_GAP + padding * 2 + tafsir.height + (source?.let { it.height + 10f } ?: 0f)
   }
 
-  private fun arabicText(content: ShareCardContent, options: ShareCardOptions): String =
-    content.verses.joinToString(" ") { verse ->
+  private fun arabicText(
+    content: ShareCardContent,
+    options: ShareCardOptions,
+    highlight: SuraAyah?,
+    textColor: Int
+  ): CharSequence {
+    val builder = SpannableStringBuilder()
+    content.verses.forEachIndexed { index, verse ->
+      if (index > 0) builder.append(' ')
+      val start = builder.length
+      builder.append(verse.arabic)
       if (options.showAyahNumbers) {
         // the Uthmani font draws Arabic-Indic digits as the ornate end-of-ayah mark
-        verse.arabic + " " + arabicDigits(verse.suraAyah.ayah)
-      } else {
-        verse.arabic
+        builder.append(' ').append(arabicDigits(verse.suraAyah.ayah))
+      }
+      if (highlight != null && verse.suraAyah != highlight) {
+        val dimmed = (textColor and 0x00FFFFFF) or (DIMMED_ALPHA shl 24)
+        builder.setSpan(ForegroundColorSpan(dimmed), start, builder.length, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
       }
     }
+    return builder
+  }
 
   private fun tafsirText(content: ShareCardContent, options: ShareCardOptions): String? {
     val parts = content.verses.mapNotNull { verse ->
@@ -258,7 +285,7 @@ class ShareCardRenderer(context: Context) {
     }
 
   private fun layout(
-    text: String,
+    text: CharSequence,
     paint: TextPaint,
     width: Int,
     alignment: Layout.Alignment,
@@ -289,6 +316,8 @@ class ShareCardRenderer(context: Context) {
 
   companion object {
     private const val TAFSIR_GAP = 36f
+    private const val DIMMED_ALPHA = 0x59
+    private const val MIN_ARABIC_SIZE = 24f
 
     fun arabicDigits(number: Int): String =
       number.toString().map { '٠' + (it - '0') }.joinToString("")

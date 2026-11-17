@@ -99,6 +99,7 @@ class ShareComposerActivity : ComponentActivity() {
   @Inject lateinit var clipBuilder: RecitationClipBuilder
   @Inject lateinit var audioUtils: AudioUtils
   @Inject lateinit var currentQariManager: CurrentQariManager
+  @Inject lateinit var shareAnalytics: ShareAnalytics
 
   private lateinit var renderer: ShareCardRenderer
   private val prefs by lazy { getSharedPreferences(PREFS, Context.MODE_PRIVATE) }
@@ -144,6 +145,7 @@ class ShareComposerActivity : ComponentActivity() {
       reloadContent()
     }
     lifecycleScope.launch(Dispatchers.IO) {
+      clipBuilder.trimCache()
       val list = audioUtils.getQariList(this@ShareComposerActivity)
       val currentId = currentQariManager.currentQariId()
       withContext(Dispatchers.Main) {
@@ -347,6 +349,13 @@ class ShareComposerActivity : ComponentActivity() {
       color = MaterialTheme.colorScheme.onSurfaceVariant
     )
     Spacer(Modifier.height(8.dp))
+    ToggleRow(R.string.tasnim_share_video_motion, options.videoMotion) {
+      updateOptions(options.copy(videoMotion = it))
+    }
+    ToggleRow(R.string.tasnim_share_video_all_ayahs, options.videoAllAyahs) {
+      updateOptions(options.copy(videoAllAyahs = it))
+    }
+    Spacer(Modifier.height(8.dp))
     QariPicker()
     Spacer(Modifier.height(8.dp))
     val ready = content != null && qari != null
@@ -484,6 +493,7 @@ class ShareComposerActivity : ComponentActivity() {
 
   private fun shareImage() {
     val current = content ?: return
+    logShare("image", current)
     lifecycleScope.launch {
       val file = withContext(Dispatchers.IO) {
         val bitmap = renderer.render(current, options)
@@ -498,6 +508,7 @@ class ShareComposerActivity : ComponentActivity() {
 
   private fun saveImage() {
     val current = content ?: return
+    logShare("save", current)
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) return
     lifecycleScope.launch {
       val saved = withContext(Dispatchers.IO) {
@@ -551,9 +562,11 @@ class ShareComposerActivity : ComponentActivity() {
         val exporter = RecitationExporter(this@ShareComposerActivity)
         val directory = shareDirectory()
         val frames = if (video) {
-          val loaded = loader.load(from, lastAyah, sources, options.tafsirKey.takeIf { options.showTafsir })
-            ?: error("no text")
           val cardOptions = options
+          val allAyahs = cardOptions.videoAllAyahs
+          // with every ayah on screen there is no room for the tafsir, and the text keeps one size
+          val tafsirKey = cardOptions.tafsirKey.takeIf { cardOptions.showTafsir && !allAyahs }
+          val loaded = loader.load(from, lastAyah, sources, tafsirKey) ?: error("no text")
           val byAyah = loaded.verses.associateBy { it.suraAyah }
           val frameDirectory = File(directory, "frames")
           exporter.clearFrames(frameDirectory)
@@ -562,7 +575,11 @@ class ShareComposerActivity : ComponentActivity() {
           segments.map { it.ayah }.distinct().forEachIndexed { index, ayah ->
             val verse = byAyah[ayah] ?: loaded.verses.first()
             val bitmap = withContext(Dispatchers.Default) {
-              renderer.render(loader.forVerse(loaded, verse), cardOptions)
+              if (allAyahs) {
+                renderer.render(loaded, cardOptions.copy(showTafsir = false), highlight = ayah)
+              } else {
+                renderer.render(loader.forVerse(loaded, verse), cardOptions)
+              }
             }
             cards[ayah] = exporter.writeFrame(bitmap, frameDirectory, index)
             bitmap.recycle()
@@ -574,10 +591,17 @@ class ShareComposerActivity : ComponentActivity() {
 
         val stem = "tasnim_${from.sura}_${from.ayah}-${lastAyah.ayah}"
         val output = File(directory, if (video) "$stem.mp4" else "$stem.m4a")
-        exporter.export(segments, frames, output) { percent ->
+        val effects = if (frames != null && options.videoMotion) {
+          val palette = ShareBackgrounds.palette(options.background)
+          ShareVideoEffects.forVideo(cardBoundaries(segments, frames), palette.base, palette.light)
+        } else {
+          emptyList()
+        }
+        exporter.export(segments, frames, effects, output) { percent ->
           progress = ExportProgress.Rendering(percent)
         }
         progress = null
+        shareAnalytics.logShare(if (video) "video" else "audio", from, lastAyah, options)
         sendFile(output, if (video) "video/mp4" else "audio/mp4")
       } catch (e: CancellationException) {
         throw e
@@ -601,6 +625,18 @@ class ShareComposerActivity : ComponentActivity() {
     progress = null
   }
 
+  /** When each card starts and the video ends, in ms; a card shown for two segments counts once. */
+  private fun cardBoundaries(segments: List<RecitationSegment>, frames: List<File>): List<Long> {
+    val boundaries = mutableListOf(0L)
+    var time = 0L
+    segments.forEachIndexed { index, segment ->
+      if (index > 0 && frames[index] != frames[index - 1]) boundaries += time
+      time += segment.durationMs
+    }
+    boundaries += time
+    return boundaries
+  }
+
   /** Keeps whole ayahs up to [MAX_RECITATION_MS]; always at least the first ayah. */
   private fun limitDuration(segments: List<RecitationSegment>): List<RecitationSegment> {
     var total = 0L
@@ -614,6 +650,9 @@ class ShareComposerActivity : ComponentActivity() {
     }
     return kept
   }
+
+  private fun logShare(kind: String, content: ShareCardContent) =
+    shareAnalytics.logShare(kind, content.verses.first().suraAyah, content.verses.last().suraAyah, options)
 
   private fun sendFile(file: File, mimeType: String) {
     val uri: Uri = FileProvider.getUriForFile(this, getString(R.string.file_authority), file)
@@ -648,7 +687,9 @@ class ShareComposerActivity : ComponentActivity() {
       showPage = prefs.getBoolean(KEY_PAGE, defaults.showPage),
       showJuz = prefs.getBoolean(KEY_JUZ, defaults.showJuz),
       showTafsir = prefs.getBoolean(KEY_TAFSIR, defaults.showTafsir),
-      tafsirKey = prefs.getString(KEY_TAFSIR_SOURCE, null) ?: defaults.tafsirKey
+      tafsirKey = prefs.getString(KEY_TAFSIR_SOURCE, null) ?: defaults.tafsirKey,
+      videoMotion = prefs.getBoolean(KEY_VIDEO_MOTION, defaults.videoMotion),
+      videoAllAyahs = prefs.getBoolean(KEY_VIDEO_ALL_AYAHS, defaults.videoAllAyahs)
     )
   }
 
@@ -662,6 +703,8 @@ class ShareComposerActivity : ComponentActivity() {
       putBoolean(KEY_JUZ, options.showJuz)
       putBoolean(KEY_TAFSIR, options.showTafsir)
       putString(KEY_TAFSIR_SOURCE, options.tafsirKey)
+      putBoolean(KEY_VIDEO_MOTION, options.videoMotion)
+      putBoolean(KEY_VIDEO_ALL_AYAHS, options.videoAllAyahs)
     }
   }
 
@@ -682,6 +725,8 @@ class ShareComposerActivity : ComponentActivity() {
     private const val KEY_JUZ = "show_juz"
     private const val KEY_TAFSIR = "show_tafsir"
     private const val KEY_TAFSIR_SOURCE = "tafsir_source"
+    private const val KEY_VIDEO_MOTION = "video_motion"
+    private const val KEY_VIDEO_ALL_AYAHS = "video_all_ayahs"
 
     private const val PREVIEW_SCALE = 0.5f
     private const val MAX_RECITATION_MS = 3 * 60 * 1000L

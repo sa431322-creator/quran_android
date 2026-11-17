@@ -295,6 +295,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   @Inject lateinit var quranScreenInfo: QuranScreenInfo
   @Inject lateinit var arabicDatabaseUtils: ArabicDatabaseUtils
   @Inject lateinit var shareUtil: ShareUtil
+  @Inject lateinit var shareAnalytics: com.quran.labs.androidquran.feature.share.ShareAnalytics
   @Inject lateinit var audioUtils: AudioUtils
   @Inject override lateinit var quranDisplayData: QuranDisplayData
   @Inject override lateinit var quranInfo: QuranInfo
@@ -2226,6 +2227,13 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   }
 
   override fun onAyahShareOption(option: AyahShareSheet.Option, start: SuraAyah, end: SuraAyah) {
+    // the composer logs what it makes itself
+    when (option) {
+      AyahShareSheet.Option.TEXT -> shareAnalytics.logShare("text", start, end)
+      AyahShareSheet.Option.COPY -> shareAnalytics.logShare("copy", start, end)
+      AyahShareSheet.Option.LINK -> shareAnalytics.logShare("link", start, end)
+      else -> Unit
+    }
     when (option) {
       AyahShareSheet.Option.TEXT -> shareAyah(start, end, false)
       AyahShareSheet.Option.IMAGE -> openShareComposer(start, end, audio = false)

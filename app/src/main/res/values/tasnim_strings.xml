@@ -112,6 +112,8 @@
   <string name="tasnim_share_video">ویدیو با تلاوت</string>
   <string name="tasnim_share_audio">فقط صوت</string>
   <string name="tasnim_share_recitation">تلاوت</string>
+  <string name="tasnim_share_video_motion">نور ملایم و محو شدن بین آیات</string>
+  <string name="tasnim_share_video_all_ayahs">همه آیات، با رنگ آیه در حال تلاوت</string>
   <string name="tasnim_share_recitation_hint">حداکثر ۳ دقیقه یا یک صفحه</string>
   <string name="tasnim_share_saved">تصویر در گالری ذخیره شد</string>
   <string name="tasnim_share_save_failed">ذخیره تصویر ممکن نشد</string>

@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.Clock
@@ -20,6 +21,7 @@ import androidx.media3.transformer.DefaultAssetLoaderFactory
 import androidx.media3.transformer.DefaultDecoderFactory
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
@@ -59,6 +61,7 @@ class RecitationExporter(private val context: Context) {
   suspend fun export(
     segments: List<RecitationSegment>,
     frames: List<File>?,
+    videoEffects: List<Effect>,
     output: File,
     onProgress: (Int) -> Unit
   ): File {
@@ -69,7 +72,12 @@ class RecitationExporter(private val context: Context) {
       .addItems(segments.map { segment ->
         val clipping = MediaItem.ClippingConfiguration.Builder()
           .setStartPositionMs(segment.startMs)
-          .apply { segment.endMs?.let { setEndPositionMs(it) } }
+          // always end the clip: with index seeking, an open-ended MP3 re-measures its length
+          // during the export, which Transformer rejects
+          .setEndPositionMs(
+            segment.endMs
+              ?: if (segment.durationMs > 0) segment.startMs + segment.durationMs else C.TIME_END_OF_SOURCE
+          )
           .build()
         val item = MediaItem.Builder()
           .setUri(Uri.fromFile(segment.file))
@@ -94,7 +102,9 @@ class RecitationExporter(private val context: Context) {
       sequences += video
     }
     sequences += audio
-    val composition = Composition.Builder(sequences).build()
+    val composition = Composition.Builder(sequences)
+      .apply { if (frames != null && videoEffects.isNotEmpty()) setEffects(Effects(emptyList(), videoEffects)) }
+      .build()
 
     // index seeking makes the cut points in variable bit rate MP3 files exact
     val extractors = DefaultExtractorsFactory()
@@ -121,6 +131,8 @@ class RecitationExporter(private val context: Context) {
       }
       transformer = Transformer.Builder(context)
         .setAudioMimeType(MimeTypes.AUDIO_AAC)
+        // keep 1080×1920 upright in the file instead of landscape with a rotation flag
+        .setPortraitEncodingEnabled(true)
         .apply { if (frames != null) setVideoMimeType(MimeTypes.VIDEO_H264) }
         .setAssetLoaderFactory(assetLoaderFactory)
         .addListener(object : Transformer.Listener {

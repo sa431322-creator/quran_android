@@ -47,6 +47,25 @@ class RecitationClipBuilder @Inject constructor(
   private val okHttpClient: OkHttpClient
 ) {
 
+  /**
+   * Deletes recitation files downloaded for earlier shares once they are older than a day, or
+   * the oldest ones when they take more than [MAX_CACHE_BYTES].
+   */
+  fun trimCache() {
+    val directory = File(appContext.cacheDir, "share/audio")
+    val files = directory.walkTopDown().filter { it.isFile }.sortedBy { it.lastModified() }.toMutableList()
+    val dayAgo = System.currentTimeMillis() - 24 * 60 * 60 * 1000L
+    var total = files.sumOf { it.length() }
+    val iterator = files.iterator()
+    while (iterator.hasNext()) {
+      val file = iterator.next()
+      if (file.lastModified() < dayAgo || total > MAX_CACHE_BYTES) {
+        total -= file.length()
+        file.delete()
+      }
+    }
+  }
+
   suspend fun build(
     qari: QariItem,
     start: SuraAyah,
@@ -156,6 +175,10 @@ class RecitationClipBuilder @Inject constructor(
     } finally {
       retriever.release()
     }
+  }
+
+  private companion object {
+    const val MAX_CACHE_BYTES = 200L * 1024 * 1024
   }
 
   private fun ayahsBetween(start: SuraAyah, end: SuraAyah): List<SuraAyah> {
