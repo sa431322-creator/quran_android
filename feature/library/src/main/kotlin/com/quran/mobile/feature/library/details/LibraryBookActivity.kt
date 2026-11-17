@@ -15,6 +15,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.common.ui.core.isTv
 import com.quran.mobile.di.QuranApplicationComponentProvider
 import com.quran.mobile.feature.library.LibraryNavigation
 import com.quran.mobile.feature.library.R
@@ -74,22 +75,39 @@ class LibraryBookActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        CompositionLocalProvider(LocalAdProvider provides adProvider) {
-          BookDetailsScreen(
+        if (isTv()) {
+          // driven by the remote (docs/tv/PLAN.md, phase 3); no ads or share on TV
+          BookDetailsTvScreen(
             state = state,
             device = device,
             download = download,
-            onBack = onBackPressedDispatcher::onBackPressed,
             onRetry = ::load,
             onToggleSaved = {
               store.toggleSaved(bookId)
               refreshDevice()
             },
-            onShare = ::share,
             onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
             onDownload = ::startDownload,
             onOpenBook = { LibraryNavigation.openDetails(this, it) }
           )
+        } else {
+          CompositionLocalProvider(LocalAdProvider provides adProvider) {
+            BookDetailsScreen(
+              state = state,
+              device = device,
+              download = download,
+              onBack = onBackPressedDispatcher::onBackPressed,
+              onRetry = ::load,
+              onToggleSaved = {
+                store.toggleSaved(bookId)
+                refreshDevice()
+              },
+              onShare = ::share,
+              onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
+              onDownload = ::startDownload,
+              onOpenBook = { LibraryNavigation.openDetails(this, it) }
+            )
+          }
         }
       }
     }

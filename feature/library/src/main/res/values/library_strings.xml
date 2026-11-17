@@ -17,6 +17,11 @@
   <string name="library_file_unavailable" translatable="false">فایل این کتاب هنوز در دسترس نیست</string>
 
   <!-- library home -->
+  <string name="library_search" translatable="false">جستجو</string>
+  <string name="library_tv_zoom" translatable="false">بزرگ‌نمایی</string>
+  <string name="library_tv_two_pages" translatable="false">دو صفحه</string>
+  <string name="library_tv_reader_hint" translatable="false">چپ و راست: ورق زدن · وسط: ابزارها</string>
+  <string name="library_tv_zoom_hint" translatable="false">چپ و راست: ورق زدن · بالا و پایین: حرکت در صفحه · وسط: ابزارها</string>
   <string name="library_search_hint" translatable="false">جستجوی کتاب، نویسنده یا موضوع</string>
   <string name="library_search_clear" translatable="false">پاک کردن جستجو</string>
   <string name="library_no_results" translatable="false">کتابی با این مشخصات پیدا نشد</string>

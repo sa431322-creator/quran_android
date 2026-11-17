@@ -10,6 +10,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.common.ui.core.isTv
 import com.quran.mobile.feature.library.data.LibraryBook
 import com.quran.mobile.feature.library.data.LibraryChapter
 import com.quran.mobile.feature.library.data.LibraryFiles
@@ -75,23 +76,43 @@ class LibraryReaderActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        LibraryReaderScreen(
-          title = title,
-          state = state,
-          chapters = chapters,
-          bookmarks = bookmarks,
-          nightMode = nightMode,
-          onPageShown = { page, pageCount -> store.saveProgress(bookId, page, pageCount) },
-          onToggleBookmark = { page ->
-            store.toggleBookmark(bookId, page)
-            bookmarks = store.bookmarks(bookId)
-          },
-          onToggleNightMode = {
-            nightMode = !nightMode
-            store.nightMode = nightMode
-          },
-          onBack = onBackPressedDispatcher::onBackPressed
-        )
+        if (isTv()) {
+          // driven by the remote (docs/tv/PLAN.md, phase 3): two pages side by side
+          ReaderTvScreen(
+            title = title,
+            state = state,
+            chapters = chapters,
+            bookmarks = bookmarks,
+            nightMode = nightMode,
+            onPageShown = { page, pageCount -> store.saveProgress(bookId, page, pageCount) },
+            onToggleBookmark = { page ->
+              store.toggleBookmark(bookId, page)
+              bookmarks = store.bookmarks(bookId)
+            },
+            onToggleNightMode = {
+              nightMode = !nightMode
+              store.nightMode = nightMode
+            }
+          )
+        } else {
+          LibraryReaderScreen(
+            title = title,
+            state = state,
+            chapters = chapters,
+            bookmarks = bookmarks,
+            nightMode = nightMode,
+            onPageShown = { page, pageCount -> store.saveProgress(bookId, page, pageCount) },
+            onToggleBookmark = { page ->
+              store.toggleBookmark(bookId, page)
+              bookmarks = store.bookmarks(bookId)
+            },
+            onToggleNightMode = {
+              nightMode = !nightMode
+              store.nightMode = nightMode
+            },
+            onBack = onBackPressedDispatcher::onBackPressed
+          )
+        }
       }
     }
   }

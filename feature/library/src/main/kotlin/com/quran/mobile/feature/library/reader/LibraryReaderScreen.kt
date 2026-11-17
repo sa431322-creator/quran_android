@@ -104,10 +104,10 @@ import com.quran.mobile.feature.library.ui.LibraryIcons
 import kotlinx.coroutines.launch
 
 /** The dark surround of a page in night mode. */
-private val NightBackground = Color(0xFF0B0F11)
+internal val NightBackground = Color(0xFF0B0F11)
 
 /** Turns a white page dark and its black text light grey, which is gentler than pure white. */
-private val NightFilter = ColorFilter.colorMatrix(
+internal val NightFilter = ColorFilter.colorMatrix(
   ColorMatrix(
     floatArrayOf(
       -0.86f, 0f, 0f, 0f, 232f,
@@ -529,7 +529,7 @@ private fun BarAction(icon: ImageVector, label: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun GoToPageDialog(pageCount: Int, onGo: (Int) -> Unit, onDismiss: () -> Unit) {
+internal fun GoToPageDialog(pageCount: Int, onGo: (Int) -> Unit, onDismiss: () -> Unit) {
   val palette = LocalTasnimPalette.current
   var text by rememberSaveable { mutableStateOf("") }
   var invalid by rememberSaveable { mutableStateOf(false) }

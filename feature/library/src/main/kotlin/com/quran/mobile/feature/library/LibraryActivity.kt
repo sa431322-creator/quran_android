@@ -12,6 +12,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.common.ui.core.isTv
 import com.quran.mobile.di.QuranApplicationComponentProvider
 import com.quran.mobile.feature.library.data.LibraryCategory
 import com.quran.mobile.feature.library.data.LibraryFiles
@@ -20,6 +21,7 @@ import com.quran.mobile.feature.library.di.LibraryComponentInterface
 import com.quran.mobile.feature.library.presenter.LibraryPresenter
 import com.quran.mobile.feature.library.ui.LibraryScreen
 import com.quran.mobile.feature.library.ui.LibraryShelf
+import com.quran.mobile.feature.library.ui.tv.LibraryTvScreen
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
@@ -53,16 +55,28 @@ class LibraryActivity : AppCompatActivity() {
 
     setContent {
       QuranTheme {
-        CompositionLocalProvider(LocalAdProvider provides adProvider) {
-          LibraryScreen(
+        if (isTv()) {
+          // driven by the remote (docs/tv/PLAN.md, phase 3); no ads on TV
+          LibraryTvScreen(
             presenter = presenter,
             shelf = shelf,
             isOffline = { LibraryFiles.isOffline(this, it) },
             onOpenBook = { LibraryNavigation.openDetails(this, it) },
             onContinueBook = { LibraryNavigation.openReader(this, it) },
-            onOpenBookmark = { book, page -> LibraryNavigation.openReader(this, book, page) },
-            onBack = onBackPressedDispatcher::onBackPressed
+            onOpenBookmark = { book, page -> LibraryNavigation.openReader(this, book, page) }
           )
+        } else {
+          CompositionLocalProvider(LocalAdProvider provides adProvider) {
+            LibraryScreen(
+              presenter = presenter,
+              shelf = shelf,
+              isOffline = { LibraryFiles.isOffline(this, it) },
+              onOpenBook = { LibraryNavigation.openDetails(this, it) },
+              onContinueBook = { LibraryNavigation.openReader(this, it) },
+              onOpenBookmark = { book, page -> LibraryNavigation.openReader(this, book, page) },
+              onBack = onBackPressedDispatcher::onBackPressed
+            )
+          }
         }
       }
     }
