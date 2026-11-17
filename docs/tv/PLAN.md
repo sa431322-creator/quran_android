@@ -5,7 +5,12 @@ Base branch: `tasnim/upstream-base`. Each phase is its own branch and PR, cut fr
 Status: **plan, 2026-11-17.** Order agreed with the user: live video first, then radio,
 then the library, then the mushaf. Phase 1 done on `tasnim/tv-phase1`; phase 2 done on
 `tasnim/tv-phase2` (stacked on phase 1); phase 3 done on `tasnim/tv-phase3` (stacked on
-phase 2). All tried on the Google TV emulator (API 34, 1080p).
+phase 2); phase 4 done on `tasnim/tv-phase4` (stacked on phase 3). All tried on the Google TV
+emulator (API 34, 1080p). Still to do: one real TV, and the 4K screenshot review of phase 4.
+
+Phase 4 notes: this build's mushaf is drawn from the Quran fonts, so a TV needs no page-image
+download. TV opens the mushaf as two pages side by side (`values-television`
+`use_tablet_interface_by_default`), which fit the screen's height; the setting can turn it off.
 
 ---
 

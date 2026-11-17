@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  TV (docs/tv/PLAN.md, phase 4): the mushaf opens as two pages side by side, each fitting the
+  screen's height, as a printed mushaf lies open. A single page across a TV screen would be cut
+  off at the bottom, and the remote can't scroll inside it. The setting can still turn it off.
+-->
+<resources>
+  <bool name="use_tablet_interface_by_default">true</bool>
+</resources>

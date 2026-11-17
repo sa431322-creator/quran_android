@@ -1,5 +1,7 @@
 package com.quran.labs.androidquran.ui.fragment
 
+import android.view.WindowManager
+import com.quran.labs.androidquran.common.ui.core.isTv
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -103,6 +105,10 @@ class SuraJumpSheet : BottomSheetDialogFragment() {
 
   override fun onStart() {
     super.onStart()
+    // TV: the keyboard only when the viewer picks the search field
+    if (requireContext().isTv()) {
+      dialog?.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN)
+    }
     val sheet = (dialog as? BottomSheetDialog)
       ?.findViewById<View>(com.google.android.material.R.id.design_bottom_sheet) ?: return
     // the layout draws its own rounded background
@@ -120,7 +126,10 @@ class SuraJumpSheet : BottomSheetDialogFragment() {
     val normalText = ContextCompat.getColor(requireContext(), R.color.title_color)
     listOf(tabSuras to !juz, tabJuz to juz).forEach { (tab, selected) ->
       tab.isSelected = selected
-      tab.setBackgroundResource(if (selected) R.drawable.tasnim_segment_selected else 0)
+      // the unselected drawable is empty on phones, a focus ring on TV
+      tab.setBackgroundResource(
+        if (selected) R.drawable.tasnim_segment_selected else R.drawable.tasnim_segment_unselected
+      )
       tab.setTextColor(if (selected) selectedText else normalText)
     }
     refresh(scrollToCurrent = true)
@@ -138,6 +147,10 @@ class SuraJumpSheet : BottomSheetDialogFragment() {
     adapter.submit(rows, current)
     if (scrollToCurrent && current >= 0) {
       (list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(current, list.height / 3)
+      // TV: the remote starts on the current row, not in the search field (docs/tv/PLAN.md)
+      if (requireContext().isTv()) {
+        list.post { list.findViewHolderForAdapterPosition(current)?.itemView?.requestFocus() }
+      }
     }
   }
 

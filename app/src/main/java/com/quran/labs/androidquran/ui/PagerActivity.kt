@@ -66,6 +66,8 @@ import com.quran.data.model.selection.endSuraAyah
 import com.quran.data.model.selection.selectionIndicator
 import com.quran.data.model.selection.startSuraAyah
 import com.quran.data.model.selection.withXScroll
+import com.quran.labs.androidquran.common.ui.core.isTv
+import com.quran.labs.androidquran.tasnim.TasnimTvMushaf
 import com.quran.labs.androidquran.BuildConfig
 import com.quran.labs.androidquran.HelpActivity
 import com.quran.labs.androidquran.QuranApplication
@@ -827,6 +829,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)
+    // TV: back from a sheet or dialog, the remote returns to the page (phase 4)
+    if (hasFocus && isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
     if (hasFocus) {
       handler.sendEmptyMessageDelayed(MSG_HIDE_ACTIONBAR, DEFAULT_HIDE_AFTER_TIME)
     } else {
@@ -905,7 +909,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
     }
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode) {
+    // TV has no system bars to report back, so the bars follow the remote directly (phase 4)
+    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode) || isTv()) {
       animateToolBar(isVisible)
     }
   }
@@ -939,7 +944,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         // visibility (instead of requiring both to agree).
         val isVisible = isStatusBarVisible || isNavigationBarVisible
 
-        animateToolBar(isVisible)
+        // TV: no system bars, so this would always hide the bars; the remote drives them there
+        if (!isTv()) animateToolBar(isVisible)
         insets
       }
     } else {
@@ -956,6 +962,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   private fun animateToolBar(visible: Boolean) {
     isActionBarHidden = !visible
+    // TV: hidden bars can't keep the remote's focus (phase 4)
+    if (isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
     ayahCards.state.barsVisible = visible
 
     // animate toolbar
@@ -1044,6 +1052,19 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   }
 
   override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+    // TV remote (docs/tv/PLAN.md, phase 4): bars on center, recitation on play
+    if (isTv() && TasnimTvMushaf.onReaderKeyDown(
+        keyCode, event, currentFocus, viewPager,
+        hasAudio = audioStatusRepositoryBridge.audioRequest() != null,
+        toggleBars = {
+          toggleActionBar()
+          TasnimTvMushaf.focusBars(!isActionBarHidden, toolBarArea, viewPager)
+        },
+        play = ::onPlayPressed
+      )
+    ) {
+      return true
+    }
     val navigate = (audioStatusRepositoryBridge.audioRequest() == null
         && quranSettings.navigateWithVolumeKeys())
     if (navigate && keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
@@ -2261,7 +2282,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     ).forEach { (view, viewMode) ->
       val selected = viewMode == mode
       view.isSelected = selected
-      view.setBackgroundResource(if (selected) R.drawable.tasnim_segment_selected else 0)
+      // the unselected drawable is empty on phones, a focus ring on TV
+      view.setBackgroundResource(
+        if (selected) R.drawable.tasnim_segment_selected else R.drawable.tasnim_segment_unselected
+      )
       view.setTextColor(if (selected) selectedText else normalText)
     }
   }

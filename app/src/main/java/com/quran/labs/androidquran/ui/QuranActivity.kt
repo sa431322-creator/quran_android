@@ -37,6 +37,8 @@ import androidx.lifecycle.lifecycleScope
 import androidx.viewpager.widget.ViewPager
 import com.quran.data.page.provider.madani.MadaniV2PageProvider
 import com.quran.data.core.QuranInfo
+import com.quran.labs.androidquran.common.ui.core.isTv
+import com.quran.labs.androidquran.tasnim.TasnimTvMushaf
 import com.quran.data.dao.RecentPagesDao
 import com.quran.data.model.Page
 import com.quran.data.model.SuraAyah
@@ -206,6 +208,8 @@ class QuranActivity : AppCompatActivity(),
     pager.adapter = pagerAdapter
     val indicator = findViewById<SlidingTabLayout>(R.id.indicator)
     indicator.setViewPager(pager)
+    // TV: the list sits beside a side column, so its tabs share the row's width (phase 4)
+    if (isTv()) TasnimTvMushaf.fitTabsToWidth(indicator)
     jumpToPageOnResume = if (isRtl) {
       TITLES.size - 1
     } else {

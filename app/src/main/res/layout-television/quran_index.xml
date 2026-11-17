@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The mushaf's home on TV (docs/tv/PLAN.md, phase 4): the phone layout stacks the continue
+  card, the tajweed button and the live card above the list, which leaves the list a strip a
+  few rows high on a TV. Here they sit in a side column and the sura / juz / bookmark lists
+  take the full height beside it. Same view ids as layout/quran_index.xml, which
+  QuranActivity binds. The bottom navigation stays (its ids are bound) but is hidden: on TV the
+  start screen already leads to live, radio and the library.
+  The paddings keep everything inside the TV's safe area (overscan).
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/toolbar"
+    android:orientation="vertical"
+    android:paddingStart="48dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="48dp">
+
+  <androidx.appcompat.widget.Toolbar
+      android:id="@+id/toolbar"
+      android:layout_width="match_parent"
+      android:layout_height="?attr/actionBarSize"
+      android:theme="@style/ToolbarStyle"
+      app:contentInsetStart="0dp"
+      app:popupTheme="@style/ThemeOverlay.AppCompat"
+      app:subtitleTextAppearance="@style/ToolbarSubtitleText"
+      app:titleTextAppearance="@style/ToolbarTitleText">
+
+    <!-- Tasnim brand: logo and name -->
+    <LinearLayout
+        android:id="@+id/brand"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+      <ImageView
+          android:layout_width="40dp"
+          android:layout_height="40dp"
+          android:importantForAccessibility="no"
+          android:src="@drawable/tasnim_logo" />
+
+      <TextView
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content"
+          android:layout_marginStart="10dp"
+          android:text="@string/app_name"
+          android:textAppearance="@style/TasnimTitleText"
+          android:textSize="26sp" />
+    </LinearLayout>
+  </androidx.appcompat.widget.Toolbar>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="0dp"
+      android:layout_marginTop="8dp"
+      android:layout_weight="1"
+      android:baselineAligned="false"
+      android:clipChildren="false"
+      android:orientation="horizontal">
+
+    <!-- the side column: continue reading, the tajweed mushaf, live and radio -->
+    <ScrollView
+        android:layout_width="384dp"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="27dp">
+
+      <LinearLayout
+          android:id="@+id/toolbar_area"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:clipChildren="false"
+          android:orientation="vertical">
+
+        <!-- continue reading (Home artboard) -->
+        <LinearLayout
+            android:id="@+id/continue_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:background="@drawable/tasnim_continue_card"
+            android:clickable="true"
+            android:focusable="true"
+            android:orientation="vertical"
+            android:padding="20dp"
+            android:stateListAnimator="@animator/tasnim_tv_focus_scale">
+
+          <requestFocus />
+
+          <TextView
+              android:id="@+id/continue_label"
+              android:layout_width="wrap_content"
+              android:layout_height="wrap_content"
+              android:drawablePadding="8dp"
+              android:gravity="center_vertical"
+              android:text="@string/tasnim_continue_reading"
+              android:textAppearance="@style/TasnimUiText.Medium"
+              android:textColor="@color/tasnim_gold_light"
+              android:textSize="16sp"
+              app:drawableStartCompat="@drawable/ic_tasnim_bookmark"
+              app:drawableTint="@color/tasnim_gold_light" />
+
+          <LinearLayout
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_marginTop="10dp"
+              android:gravity="bottom"
+              android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+              <TextView
+                  android:id="@+id/continue_sura"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:textColor="@color/tasnim_cream"
+                  android:textSize="30sp" />
+
+              <TextView
+                  android:id="@+id/continue_details"
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:layout_marginTop="4dp"
+                  android:textAppearance="@style/TasnimUiText"
+                  android:textColor="@color/tasnim_on_continue_muted"
+                  android:textSize="16sp" />
+            </LinearLayout>
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/tasnim_circle_cream"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                app:srcCompat="@drawable/ic_tasnim_chevron"
+                app:tint="@color/tasnim_continue_card" />
+          </LinearLayout>
+
+          <ProgressBar
+              android:id="@+id/continue_progress"
+              style="?android:attr/progressBarStyleHorizontal"
+              android:layout_width="match_parent"
+              android:layout_height="4dp"
+              android:layout_marginTop="14dp"
+              android:importantForAccessibility="no"
+              android:max="604"
+              android:progressDrawable="@drawable/tasnim_continue_progress" />
+        </LinearLayout>
+
+        <!-- opens the reader's text pages drawn as the tajweed mushaf -->
+        <TextView
+            android:id="@+id/tajweed_button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/tasnim_pill_outline"
+            android:drawablePadding="10dp"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:stateListAnimator="@animator/tasnim_tv_focus_scale"
+            android:text="@string/tasnim_tajweed_mushaf"
+            android:textAppearance="@style/TasnimUiText.Medium"
+            android:textColor="@color/tasnim_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_tasnim_mushaf_primary" />
+
+        <!-- live video and radio -->
+        <LinearLayout
+            android:id="@+id/live_card"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:background="@drawable/tasnim_card_outline"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="10dp"
+            android:stateListAnimator="@animator/tasnim_tv_focus_scale">
+
+          <FrameLayout
+              android:layout_width="92dp"
+              android:layout_height="52dp"
+              android:background="@drawable/tasnim_video_thumb">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                app:srcCompat="@drawable/ic_tasnim_play"
+                app:tint="#FFE8E0CC" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="5dp"
+                android:background="@drawable/tasnim_live_badge"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:text="@string/tasnim_live_badge"
+                android:textAppearance="@style/TasnimUiText.Medium"
+                android:textColor="#FFFFFFFF"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+          </FrameLayout>
+
+          <LinearLayout
+              android:layout_width="0dp"
+              android:layout_height="wrap_content"
+              android:layout_marginStart="12dp"
+              android:layout_weight="1"
+              android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/tasnim_live_video"
+                android:textAppearance="@style/TasnimUiText.Medium"
+                android:textColor="@color/title_color"
+                android:textSize="17sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/live_card_subtitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxLines="1"
+                android:text="@string/tasnim_coming_soon"
+                android:textAppearance="@style/TasnimUiText"
+                android:textColor="@color/tasnim_muted"
+                android:textSize="14sp" />
+          </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/radio_button"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/tasnim_pill_outline"
+            android:drawablePadding="10dp"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:stateListAnimator="@animator/tasnim_tv_focus_scale"
+            android:text="@string/tasnim_section_radio"
+            android:textAppearance="@style/TasnimUiText.Medium"
+            android:textColor="@color/tasnim_primary"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            app:drawableStartCompat="@drawable/ic_tasnim_radio_waves"
+            app:drawableTint="@color/tasnim_primary" />
+      </LinearLayout>
+    </ScrollView>
+
+    <!-- the sura, juz and bookmark lists, the full height of the screen -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="32dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+      <com.quran.labs.androidquran.view.SlidingTabLayout
+          android:id="@+id/indicator"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content" />
+
+      <com.quran.labs.androidquran.view.QuranViewPager
+          android:id="@+id/index_pager"
+          android:layout_width="match_parent"
+          android:layout_height="0dp"
+          android:layout_weight="1" />
+    </LinearLayout>
+  </LinearLayout>
+
+  <!-- bound by QuranActivity; hidden on TV, where the start screen has these sections -->
+  <LinearLayout
+      android:id="@+id/bottom_nav"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:visibility="gone">
+
+    <TextView
+        android:id="@+id/nav_quran"
+        style="@style/TasnimNavItem"
+        app:drawableTopCompat="@drawable/tasnim_nav_quran_selected" />
+
+    <TextView
+        android:id="@+id/nav_listen"
+        style="@style/TasnimNavItem" />
+
+    <TextView
+        android:id="@+id/nav_live"
+        style="@style/TasnimNavItem" />
+
+    <TextView
+        android:id="@+id/nav_library"
+        style="@style/TasnimNavItem" />
+  </LinearLayout>
+</LinearLayout>
