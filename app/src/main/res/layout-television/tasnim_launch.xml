@@ -24,6 +24,7 @@
   <ScrollView
       android:layout_width="match_parent"
       android:layout_height="match_parent"
+      android:clipChildren="false"
       android:clipToPadding="false"
       android:fillViewport="true"
       android:paddingStart="48dp"
@@ -34,12 +35,14 @@
     <LinearLayout
         android:id="@+id/launch_content"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
         android:orientation="vertical">
 
       <FrameLayout
           android:layout_width="match_parent"
-          android:layout_height="wrap_content">
+          android:layout_height="wrap_content"
+          android:clipChildren="false">
 
         <ImageButton
             android:id="@+id/launch_menu"
@@ -66,9 +69,12 @@
             app:tint="@color/tasnim_gold_light" />
       </FrameLayout>
 
+      <!-- takes the height left under the top buttons, so the content sits in the middle -->
       <LinearLayout
           android:layout_width="match_parent"
-          android:layout_height="wrap_content"
+          android:layout_height="0dp"
+          android:layout_weight="1"
+          android:clipChildren="false"
           android:gravity="center_vertical"
           android:orientation="horizontal">
 
@@ -112,6 +118,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="32dp"
             android:layout_weight="1.4"
+            android:clipChildren="false"
             android:contentDescription="@string/tasnim_sections_description"
             android:orientation="vertical">
 
@@ -136,6 +143,7 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:layout_marginTop="16dp"
+              android:clipChildren="false"
               android:orientation="horizontal">
 
             <TextView
@@ -170,6 +178,7 @@
               android:layout_width="match_parent"
               android:layout_height="wrap_content"
               android:layout_marginTop="20dp"
+              android:clipChildren="false"
               android:orientation="horizontal">
 
             <TextView

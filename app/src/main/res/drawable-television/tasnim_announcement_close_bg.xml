@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- TV: a teal ring on the close button when the remote is on it (the card itself is cream) -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item android:state_focused="true">
+    <shape android:shape="oval">
+      <solid android:color="#261F4E56" />
+      <stroke android:width="3dp" android:color="@color/tasnim_card_teal" />
+    </shape>
+  </item>
+  <item android:drawable="@android:color/transparent" />
+</selector>

@@ -49,7 +49,7 @@
         android:id="@+id/announcement_close"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/tasnim_announcement_close_bg"
         android:contentDescription="@string/tasnim_announcement_close"
         app:srcCompat="@drawable/ic_tasnim_close"
         app:tint="@color/tasnim_card_muted" />

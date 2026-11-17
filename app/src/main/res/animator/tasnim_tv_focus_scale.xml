@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- TV: the item the remote is on grows a little (docs/tv/PLAN.md, focus look) -->
+<!-- TV: the item the remote is on grows a little and draws over its neighbours (docs/tv/PLAN.md, focus look) -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
   <item android:state_focused="true">
     <set>
@@ -12,6 +12,11 @@
           android:duration="150"
           android:propertyName="scaleY"
           android:valueTo="1.06"
+          android:valueType="floatType" />
+      <objectAnimator
+          android:duration="150"
+          android:propertyName="translationZ"
+          android:valueTo="12"
           android:valueType="floatType" />
     </set>
   </item>
@@ -26,6 +31,11 @@
           android:duration="150"
           android:propertyName="scaleY"
           android:valueTo="1"
+          android:valueType="floatType" />
+      <objectAnimator
+          android:duration="150"
+          android:propertyName="translationZ"
+          android:valueTo="0"
           android:valueType="floatType" />
     </set>
   </item>

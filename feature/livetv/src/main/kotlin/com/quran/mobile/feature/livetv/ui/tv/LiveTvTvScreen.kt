@@ -11,6 +11,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.focusable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsFocusedAsState
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.CircularProgressIndicator
@@ -57,6 +59,7 @@ import androidx.compose.ui.input.key.type
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -111,7 +114,8 @@ fun LiveTvTvScreen(
   val channel = channels.firstOrNull { it.id == selectedId } ?: channels.first()
   val source = channel.source
   val onAir = rememberOnAirIndex(channel.schedule)
-  val programTitle = channel.schedule.getOrNull(onAir)?.title ?: channel.name
+  // null without a schedule: the channel's name alone is the heading then
+  val programTitle = channel.schedule.getOrNull(onAir)?.title
 
   // exactly one of the two drives the broadcast, depending on the source
   val exoController = remember(source) {
@@ -161,7 +165,11 @@ fun LiveTvTvScreen(
       panelVisible = false
     }
   }
-  LaunchedEffect(panelVisible) {
+  // a request made before the window has focus is lost (the screen would open with nothing
+  // focused), so it is made again once the window gets it
+  val windowFocused = LocalWindowInfo.current.isWindowFocused
+  LaunchedEffect(panelVisible, windowFocused) {
+    if (!windowFocused) return@LaunchedEffect
     // the focus target appears in the frame after the change
     withFrameNanos { }
     runCatching { if (panelVisible) panelFocus.requestFocus() else idleFocus.requestFocus() }
@@ -320,7 +328,7 @@ private fun OurVideo(controller: LivePlayerController, state: LivePlayerState, i
 private fun ControlPanel(
   channels: List<LiveChannel>,
   channel: LiveChannel,
-  programTitle: String,
+  programTitle: String?,
   onAir: Int,
   isPlaying: Boolean,
   isPaused: Boolean,
@@ -351,23 +359,34 @@ private fun ControlPanel(
         LiveBadge(pulsing = isPlaying)
         Text(
           text = channel.name,
-          color = palette.gold,
+          color = if (programTitle == null) palette.onVideo else palette.gold,
           fontFamily = Vazirmatn,
-          fontSize = 18.sp,
-          fontWeight = FontWeight.SemiBold
+          fontSize = if (programTitle == null) 28.sp else 18.sp,
+          fontWeight = FontWeight.SemiBold,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis
         )
       }
-      Text(
-        text = programTitle,
-        color = palette.onVideo,
-        fontFamily = Vazirmatn,
-        fontSize = 28.sp,
-        fontWeight = FontWeight.SemiBold,
-        maxLines = 1,
-        overflow = TextOverflow.Ellipsis,
-        modifier = Modifier.padding(top = 6.dp, bottom = 18.dp)
-      )
+      if (programTitle != null) {
+        Text(
+          text = programTitle,
+          color = palette.onVideo,
+          fontFamily = Vazirmatn,
+          fontSize = 28.sp,
+          fontWeight = FontWeight.SemiBold,
+          maxLines = 1,
+          overflow = TextOverflow.Ellipsis,
+          modifier = Modifier.padding(top = 6.dp)
+        )
+      }
+      Spacer(Modifier.height(18.dp))
+      // scrolls sideways when the channels don't fit; the focused one is always brought into view
       Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .horizontalScroll(rememberScrollState())
+          // room for the focused item's frame, which grows past its bounds
+          .padding(vertical = 6.dp, horizontal = 6.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(20.dp)
       ) {
@@ -549,7 +568,9 @@ private fun TvChip(text: String, selected: Boolean, onClick: () -> Unit) {
       color = if (focused) palette.videoBackground else palette.onVideo,
       fontFamily = Vazirmatn,
       fontSize = 18.sp,
-      fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal
+      fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Normal,
+      maxLines = 1,
+      softWrap = false
     )
   }
 }
