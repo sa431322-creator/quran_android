@@ -19,6 +19,7 @@ import com.squareup.moshi.Moshi
 import dev.zacsweers.metro.Inject
 import dev.zacsweers.metro.Named
 import dev.zacsweers.metro.SingleIn
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.flow.Flow
@@ -139,28 +140,57 @@ open class TranslationManagerPresenter @Inject internal constructor(
     .flowOn(Dispatchers.IO)
   }
 
+  /**
+   * Where the list is asked for when the Tasnim server fails: quran.app, or null when the
+   * list already comes from quran.app.
+   */
+  internal var fallbackHost: String? =
+    TasnimDataHost.of(Constants.HOST).takeIf { it != host }
+
+  /**
+   * The list from the Tasnim server; when that fails, from quran.app. A quran.app list is
+   * shown but not cached, so the next refresh asks the Tasnim server again and its own
+   * choices (hidden and added translations) are not overwritten.
+   */
   internal fun remoteTranslationList(): Flow<TranslationList> {
     return flow {
-      val url = host + WEB_SERVICE_ENDPOINT
-      val request: Request = Request.Builder()
-        .url(url)
-        .build()
-      val response = okHttpClient.newCall(request).execute()
-      // e.g. 503 from the Tasnim server before its first sync: treat it like a network
-      // failure so the cached list is kept, instead of parsing the error body.
-      if (!response.isSuccessful) {
-        response.close()
-        throw IOException("Translation list answered ${response.code}")
+      val fromServer = try {
+        fetchTranslationList(host)
+      } catch (e: Exception) {
+        if (e is CancellationException) throw e
+        val fallback = fallbackHost ?: throw e
+        Timber.w(e, "Tasnim translation list failed, asking %s", fallback)
+        val list = try {
+          fetchTranslationList(fallback)
+        } catch (fallbackError: Exception) {
+          e.addSuppressed(fallbackError)
+          throw e
+        }
+        if (list != null) emit(list)
+        return@flow
       }
-      val responseBody = response.body
-      val result = moshiTranslationListAdapter.fromJson(responseBody!!.source())
-      responseBody.close()
-      if (result != null && result.translations.isNotEmpty()) {
-        emit(result)
+      if (fromServer != null) {
+        writeTranslationList(fromServer)
+        emit(fromServer)
       }
     }
-      .onEach { list -> writeTranslationList(list) }
       .flowOn(Dispatchers.IO)
+  }
+
+  /** The list at [base], or null when it is empty. */
+  private fun fetchTranslationList(base: String): TranslationList? {
+    val request: Request = Request.Builder()
+      .url(base + WEB_SERVICE_ENDPOINT)
+      .build()
+    okHttpClient.newCall(request).execute().use { response ->
+      // e.g. 503 from the Tasnim server before its first sync: treat it like a network
+      // failure, instead of parsing the error body.
+      if (!response.isSuccessful) {
+        throw IOException("Translation list answered ${response.code}")
+      }
+      val result = moshiTranslationListAdapter.fromJson(response.body.source())
+      return result?.takeIf { it.translations.isNotEmpty() }
+    }
   }
 
   open fun writeTranslationList(list: TranslationList) {

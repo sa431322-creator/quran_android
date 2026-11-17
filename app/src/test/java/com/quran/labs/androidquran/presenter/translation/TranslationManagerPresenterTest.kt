@@ -239,13 +239,73 @@ class TranslationManagerPresenterTest {
     Truth.assertThat(mockWebServer.requestCount).isEqualTo(0)
   }
 
-  private fun enqueueMockResponse() {
+  @Test
+  fun `list comes from quran app when the Tasnim server fails, and is not cached`() = runTest {
+    val quranApp = MockWebServer()
+    try {
+      mockWebServer.enqueue(MockResponse().setResponseCode(503))
+      enqueueMockResponse(quranApp)
+      val writes = mutableListOf<TranslationList>()
+      val manager = translationManager(writes = writes).apply {
+        fallbackHost = quranApp.url("").toString()
+      }
+
+      manager.remoteTranslationList().test {
+        Truth.assertThat(awaitItem().translations).hasSize(57)
+        awaitComplete()
+      }
+      Truth.assertThat(quranApp.takeRequest().path).isEqualTo("/data/translations.php?v=5")
+      Truth.assertThat(writes).isEmpty()
+    } finally {
+      quranApp.shutdown()
+    }
+  }
+
+  @Test
+  fun `list from the Tasnim server is cached and quran app is not asked`() = runTest {
+    val quranApp = MockWebServer()
+    try {
+      enqueueMockResponse()
+      val writes = mutableListOf<TranslationList>()
+      val manager = translationManager(writes = writes).apply {
+        fallbackHost = quranApp.url("").toString()
+      }
+
+      manager.remoteTranslationList().test {
+        Truth.assertThat(awaitItem().translations).hasSize(57)
+        awaitComplete()
+      }
+      Truth.assertThat(writes).hasSize(1)
+      Truth.assertThat(quranApp.requestCount).isEqualTo(0)
+    } finally {
+      quranApp.shutdown()
+    }
+  }
+
+  @Test
+  fun `when both lists fail the Tasnim error is reported`() = runTest {
+    val quranApp = MockWebServer()
+    try {
+      mockWebServer.enqueue(MockResponse().setResponseCode(503))
+      quranApp.enqueue(MockResponse().setResponseCode(500))
+      val manager = translationManager().apply { fallbackHost = quranApp.url("").toString() }
+
+      manager.remoteTranslationList().test {
+        Truth.assertThat(awaitError()).hasMessageThat().contains("503")
+      }
+      Truth.assertThat(quranApp.requestCount).isEqualTo(1)
+    } finally {
+      quranApp.shutdown()
+    }
+  }
+
+  private fun enqueueMockResponse(server: MockWebServer = mockWebServer) {
     val mockResponse = MockResponse()
     val file = File(CLI_ROOT_DIRECTORY, "translations.json")
     val buffer = Buffer()
     buffer.writeAll(file.source())
     mockResponse.setBody(buffer)
-    mockWebServer.enqueue(mockResponse)
+    server.enqueue(mockResponse)
   }
 
   private fun makeTranslation(
@@ -267,7 +327,10 @@ class TranslationManagerPresenterTest {
     )
   }
 
-  private fun translationManager(withCache: Boolean = false): TranslationManagerPresenter {
+  private fun translationManager(
+    withCache: Boolean = false,
+    writes: MutableList<TranslationList>? = null
+  ): TranslationManagerPresenter {
     val appContext = ApplicationProvider.getApplicationContext<Application>()
     val okHttp = OkHttpClient.Builder().build()
 
@@ -278,7 +341,7 @@ class TranslationManagerPresenterTest {
         if (withCache) File(CLI_ROOT_DIRECTORY, "translations.json") else super.cachedFile
 
       override fun writeTranslationList(list: TranslationList) {
-        // no op
+        writes?.add(list)
       }
     }.apply {
       host = mockWebServer.url("").toString()

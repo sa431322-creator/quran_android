@@ -13,6 +13,8 @@ import java.util.concurrent.ConcurrentHashMap
  * other than 416, which only means a partial download is already complete), the same request is
  * sent to the Tasnim server's copy. If the copy fails too, the upstream result is kept.
  * Requests with no copy on the Tasnim server (see [MirrorFallback]) are left alone.
+ * Translation and tafsir files go the other way round: the Tasnim copy first, upstream as the
+ * fallback (see [MirrorFallback.prefersMirror]).
  *
  * After an upstream host fails, the copy is asked first for a few minutes, so a blocked or down
  * host does not cost a full connect timeout on every page.
@@ -27,6 +29,10 @@ class MirrorFallbackInterceptor(
     val request = chain.request()
     val mirrorUrl = MirrorFallback.fallbackUrl(request.url, tasnimBase)
       ?: return chain.proceed(request)
+
+    if (MirrorFallback.prefersMirror(request.url)) {
+      return mirrorFirst(chain, request, mirrorUrl)
+    }
 
     val host = request.url.host
     if (isDown(host)) {
@@ -50,6 +56,33 @@ class MirrorFallbackInterceptor(
     val kept = upstream.newBuilder().body(upstream.peekBody(MAX_KEPT_ERROR_BYTES)).build()
     upstream.close()
     return tryMirror(chain, mirrorUrl, upstreamFailure = null) ?: kept
+  }
+
+  /**
+   * The Tasnim server's copy first; upstream when the copy fails. After the Tasnim server
+   * fails, upstream is asked directly for a few minutes, so a down server costs one timeout.
+   */
+  private fun mirrorFirst(chain: Interceptor.Chain, request: Request, mirrorUrl: HttpUrl): Response {
+    val mirrorHost = mirrorUrl.host
+    if (!isDown(mirrorHost)) {
+      val mirrored = try {
+        chain.proceed(request.newBuilder().url(mirrorUrl).build())
+      } catch (e: IOException) {
+        if (chain.call().isCanceled()) throw e
+        hostDownSince[mirrorHost] = now()
+        null
+      }
+      if (mirrored != null) {
+        if (mirrored.isSuccessful || mirrored.code == HTTP_RANGE_NOT_SATISFIABLE) {
+          hostDownSince.remove(mirrorHost)
+          return mirrored
+        }
+        if (mirrored.code >= 500) hostDownSince[mirrorHost] = now()
+        mirrored.close()
+        Timber.d("Tasnim copy failed for %s, trying upstream", mirrorUrl)
+      }
+    }
+    return chain.proceed(request)
   }
 
   private fun isDown(host: String): Boolean {
