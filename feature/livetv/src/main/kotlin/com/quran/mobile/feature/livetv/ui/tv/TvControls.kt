@@ -36,10 +36,6 @@ import com.quran.labs.androidquran.common.ui.core.tvFocusFrame
 
 // The remote-driven controls shared by the TV live and radio screens (docs/tv/PLAN.md).
 
-/** The TV safe area: overscan can hide the outer 5% of the picture. */
-internal val TvSafeSide = 48.dp
-internal val TvSafeTop = 27.dp
-
 /** A round remote-friendly button with its name under it (TVs have no hover or long-press hints). */
 @Composable
 internal fun TvControl(

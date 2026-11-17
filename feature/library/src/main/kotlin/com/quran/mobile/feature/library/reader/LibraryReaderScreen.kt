@@ -95,6 +95,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
+import com.quran.labs.androidquran.common.ui.core.TasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
 import com.quran.labs.androidquran.common.ui.core.toPersianDigits
@@ -116,6 +117,17 @@ internal val NightFilter = ColorFilter.colorMatrix(
       0f, 0f, 0f, 1f, 0f
     )
   )
+)
+
+/** The reader's bars in night mode (phone and TV), in the dark palette of the live screens. */
+internal fun TasnimPalette.readerNightBars(): TasnimPalette = copy(
+  background = NightBackground,
+  surface = Color(0xFF1A252A),
+  ink = onVideo,
+  muted = Color(0xFFA9A08C),
+  accent = Color(0xFF8CCADB),
+  border = Color(0xFF2A363B),
+  track = Color(0xFF1A252A)
 )
 
 /**
@@ -214,17 +226,7 @@ private fun Reader(
     scope.launch { pagerState.scrollToPage(page.coerceIn(0, pageCount - 1)) }
   }
   // in night mode the bars go dark too, in the dark palette of the live screens
-  val barPalette = if (nightMode) {
-    palette.copy(
-      background = NightBackground,
-      ink = palette.onVideo,
-      muted = Color(0xFFA9A08C),
-      accent = Color(0xFF8CCADB),
-      track = Color(0xFF1A252A)
-    )
-  } else {
-    palette
-  }
+  val barPalette = if (nightMode) palette.readerNightBars() else palette
 
   BoxWithConstraints(Modifier.fillMaxSize()) {
     val widthPx = with(LocalDensity.current) { maxWidth.roundToPx() }

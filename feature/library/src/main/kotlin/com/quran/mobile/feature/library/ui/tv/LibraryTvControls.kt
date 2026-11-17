@@ -32,10 +32,6 @@ import com.quran.labs.androidquran.common.ui.core.tvFocusFrame
 
 // The remote-driven pieces shared by the library's TV screens (docs/tv/PLAN.md, phase 3).
 
-// the TV safe area: overscan can hide the outer 5% of the picture
-internal val TvSafeSide = 48.dp
-internal val TvSafeTop = 27.dp
-
 /** A pill-shaped button or tab (a category, search, bookmarks), framed in gold under the remote. */
 @Composable
 internal fun TvPill(
@@ -81,14 +77,4 @@ internal fun TvPill(
       )
     }
   }
-}
-
-/** A clickable area that grows and gets a gold frame while the remote is on it. */
-@Composable
-internal fun Modifier.tvClickable(shape: Shape, onClick: () -> Unit): Modifier {
-  val interaction = remember { MutableInteractionSource() }
-  val focused by interaction.collectIsFocusedAsState()
-  return this
-    .tvFocusFrame(focused, shape)
-    .clickable(interactionSource = interaction, indication = null, role = Role.Button, onClick = onClick)
 }

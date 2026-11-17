@@ -68,6 +68,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.quran.labs.androidquran.common.ui.core.tvClickable
+import com.quran.labs.androidquran.common.ui.core.TvSafeTop
+import com.quran.labs.androidquran.common.ui.core.TvSafeSide
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
@@ -76,9 +79,6 @@ import com.quran.mobile.feature.library.R
 import com.quran.mobile.feature.library.data.LibraryChapter
 import com.quran.mobile.feature.library.ui.LibraryIcons
 import com.quran.mobile.feature.library.ui.tv.TvPill
-import com.quran.mobile.feature.library.ui.tv.TvSafeSide
-import com.quran.mobile.feature.library.ui.tv.TvSafeTop
-import com.quran.mobile.feature.library.ui.tv.tvClickable
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -92,7 +92,8 @@ import kotlinx.coroutines.launch
  * - Center (or menu) opens the tools: contents, bookmark, bookmarks, go to page, zoom and
  *   night mode. They hide again after a few seconds, and back hides them before it leaves.
  *
- * The page on the right is the one saved as the reading position and bookmarked.
+ * The last page on screen is saved as the reading position, so a spread read to its end is not
+ * opened one page back; a bookmark covers the spread.
  */
 @Composable
 fun ReaderTvScreen(
@@ -167,15 +168,24 @@ private fun TvReader(
   // key-ups of the presses this screen handled itself, so they don't reach a button
   val handledKeys = remember { mutableSetOf<Key>() }
   val step = if (zoomed) 1 else 2
+  val cache = remember(state.pages) { PageCache() }
 
   fun goTo(target: Int) {
     page = target.coerceIn(0, pageCount - 1)
   }
 
+  // the pages on screen: two side by side, or the one zoomed in
+  val shownPages = if (zoomed || page + 1 >= pageCount) listOf(page) else listOf(page, page + 1)
+  // the reading position is the last page on screen: the left one of a spread was read too
+  LaunchedEffect(page, zoomed) {
+    onPageShown(shownPages.last(), pageCount)
+  }
   LaunchedEffect(page) {
-    onPageShown(page, pageCount)
     zoomScroll.scrollTo(0)
   }
+  // a spread is marked when either of its pages is; the button removes that mark, or marks the
+  // spread's first page, where opening the bookmark shows the same two pages
+  val markedPage = shownPages.firstOrNull { it in bookmarks }
   LaunchedEffect(toolsVisible, inputCount, dialog) {
     if (toolsVisible && dialog == null) {
       delay(TOOLS_TIMEOUT_MILLIS)
@@ -228,6 +238,15 @@ private fun TvReader(
   ) {
     BoxWithConstraints(Modifier.fillMaxSize()) {
       val widthPx = with(LocalDensity.current) { maxWidth.roundToPx() }
+      // the spreads on either side are drawn ahead, so turning a page shows it at once
+      val pageWidth = if (zoomed) widthPx else widthPx / 2
+      LaunchedEffect(cache, page, zoomed, pageWidth) {
+        cache.keepAround(page, pageWidth)
+        val ahead = (1..2).map { page + step - 1 + it } + (0 until step).map { page - step + it }
+        ahead.filter { it in 0 until pageCount }.forEach { index ->
+          cache.load(state.pages, index, pageWidth)
+        }
+      }
       if (zoomed) {
         // one page across the screen, moved along with up and down
         Column(
@@ -235,7 +254,7 @@ private fun TvReader(
             .fillMaxSize()
             .verticalScroll(zoomScroll, enabled = false)
         ) {
-          TvPage(pages = state.pages, index = page, widthPx = widthPx, nightMode = nightMode, fillWidth = true)
+          TvPage(pages = state.pages, cache = cache, index = page, widthPx = widthPx, nightMode = nightMode, fillWidth = true)
         }
       } else {
         // the page being read on the right (the start of a right-to-left row), the next on the left
@@ -247,6 +266,7 @@ private fun TvReader(
         ) {
           TvPage(
             pages = state.pages,
+            cache = cache,
             index = page,
             widthPx = widthPx / 2,
             nightMode = nightMode,
@@ -258,6 +278,7 @@ private fun TvReader(
           if (page + 1 < pageCount) {
             TvPage(
               pages = state.pages,
+              cache = cache,
               index = page + 1,
               widthPx = widthPx / 2,
               nightMode = nightMode,
@@ -273,19 +294,7 @@ private fun TvReader(
     }
 
     // in night mode the tools go dark too, as the phone's bars do
-    val barPalette = if (nightMode) {
-      palette.copy(
-        background = NightBackground,
-        surface = Color(0xFF1A252A),
-        ink = palette.onVideo,
-        muted = Color(0xFFA9A08C),
-        accent = Color(0xFF8CCADB),
-        border = Color(0xFF2A363B),
-        track = Color(0xFF1A252A)
-      )
-    } else {
-      palette
-    }
+    val barPalette = if (nightMode) palette.readerNightBars() else palette
     CompositionLocalProvider(LocalTasnimPalette provides barPalette) {
       Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         AnimatedVisibility(
@@ -297,14 +306,14 @@ private fun TvReader(
             title = title,
             page = page,
             pageCount = pageCount,
-            twoPages = !zoomed && page + 1 < pageCount,
+            twoPages = shownPages.size == 2,
             hasChapters = chapters.isNotEmpty(),
-            bookmarked = page in bookmarks,
+            bookmarked = markedPage != null,
             zoomed = zoomed,
             nightMode = nightMode,
             firstFocus = toolsFocus,
             onContents = { dialog = TvReaderDialog.CONTENTS },
-            onToggleBookmark = { onToggleBookmark(page) },
+            onToggleBookmark = { onToggleBookmark(markedPage ?: page) },
             onBookmarks = { dialog = TvReaderDialog.BOOKMARKS },
             onGoTo = { dialog = TvReaderDialog.GO_TO },
             onToggleZoom = { zoomed = !zoomed },
@@ -370,6 +379,7 @@ private fun TvReader(
 @Composable
 private fun TvPage(
   pages: PdfPages,
+  cache: PageCache,
   index: Int,
   widthPx: Int,
   nightMode: Boolean,
@@ -378,8 +388,8 @@ private fun TvPage(
   alignment: Alignment = Alignment.Center
 ) {
   val palette = LocalTasnimPalette.current
-  val bitmap by produceState<Bitmap?>(null, pages, index, widthPx) {
-    value = runCatching { pages.render(index, widthPx) }.getOrNull()
+  val bitmap by produceState(cache.get(index, widthPx), pages, index, widthPx) {
+    if (value == null) value = cache.load(pages, index, widthPx)
   }
   Box(
     modifier = modifier.then(if (fillWidth) Modifier.fillMaxWidth() else Modifier.fillMaxHeight()),
@@ -608,3 +618,25 @@ private const val TOOLS_TIMEOUT_MILLIS = 8_000L
 
 /** How far one press of up or down moves a zoomed page. */
 private const val SCROLL_STEP_PX = 360f
+
+/**
+ * The pages drawn so far, near the one being read: the spread on screen and those on either
+ * side, so a page turn needs no drawing. Pages far away are dropped to keep memory small.
+ */
+private class PageCache {
+  private val bitmaps = HashMap<Pair<Int, Int>, Bitmap>()
+
+  fun get(index: Int, width: Int): Bitmap? = synchronized(bitmaps) { bitmaps[index to width] }
+
+  suspend fun load(pages: PdfPages, index: Int, width: Int): Bitmap? {
+    get(index, width)?.let { return it }
+    val bitmap = runCatching { pages.render(index, width) }.getOrNull() ?: return null
+    synchronized(bitmaps) { bitmaps[index to width] = bitmap }
+    return bitmap
+  }
+
+  /** Drops every page not within a few of [page], or drawn at another width. */
+  fun keepAround(page: Int, width: Int) = synchronized(bitmaps) {
+    bitmaps.keys.removeAll { (index, w) -> w != width || index !in page - 3..page + 4 }
+  }
+}

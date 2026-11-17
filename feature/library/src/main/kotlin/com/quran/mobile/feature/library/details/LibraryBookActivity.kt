@@ -73,6 +73,12 @@ class LibraryBookActivity : AppCompatActivity() {
     // the page opens on the teal band, so the status bar keeps light icons
     enableEdgeToEdge(statusBarStyle = SystemBarStyle.dark(Color.TRANSPARENT))
 
+    // the same on phone and TV
+    val onToggleSaved = {
+      store.toggleSaved(bookId)
+      refreshDevice()
+    }
+    val onRead = { page: Int? -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) }; Unit }
     setContent {
       QuranTheme {
         if (isTv()) {
@@ -82,11 +88,8 @@ class LibraryBookActivity : AppCompatActivity() {
             device = device,
             download = download,
             onRetry = ::load,
-            onToggleSaved = {
-              store.toggleSaved(bookId)
-              refreshDevice()
-            },
-            onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
+            onToggleSaved = onToggleSaved,
+            onRead = onRead,
             onDownload = ::startDownload,
             onOpenBook = { LibraryNavigation.openDetails(this, it) }
           )
@@ -98,12 +101,9 @@ class LibraryBookActivity : AppCompatActivity() {
               download = download,
               onBack = onBackPressedDispatcher::onBackPressed,
               onRetry = ::load,
-              onToggleSaved = {
-                store.toggleSaved(bookId)
-                refreshDevice()
-              },
+              onToggleSaved = onToggleSaved,
               onShare = ::share,
-              onRead = { page -> readyBook()?.let { LibraryNavigation.openReader(this, it, page) } },
+              onRead = onRead,
               onDownload = ::startDownload,
               onOpenBook = { LibraryNavigation.openDetails(this, it) }
             )

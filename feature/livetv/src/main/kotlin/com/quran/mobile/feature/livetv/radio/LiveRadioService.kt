@@ -1,6 +1,7 @@
 package com.quran.mobile.feature.livetv.radio
 
 import android.app.PendingIntent
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.annotation.OptIn
@@ -36,6 +37,7 @@ class LiveRadioService : MediaSessionService() {
 
   override fun onCreate() {
     super.onCreate()
+    running = true
     val injector = (application as QuranApplicationComponentProvider)
       .provideQuranApplicationComponent() as LiveTvComponentInterface
     stations = injector.radioStationRepository()
@@ -57,6 +59,10 @@ class LiveRadioService : MediaSessionService() {
       BroadcastClockSync(player, shouldSync = { currentStation(player)?.source?.loops == true })
     )
     player.addListener(object : Player.Listener {
+      override fun onPlayWhenReadyChanged(playWhenReady: Boolean, reason: Int) {
+        playing = playWhenReady
+      }
+
       override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
         val loops = currentStation(player)?.source?.loops == true
         player.repeatMode = if (loops) Player.REPEAT_MODE_ONE else Player.REPEAT_MODE_OFF
@@ -88,6 +94,8 @@ class LiveRadioService : MediaSessionService() {
   }
 
   override fun onDestroy() {
+    running = false
+    playing = false
     session?.run {
       player.release()
       release()
@@ -96,8 +104,25 @@ class LiveRadioService : MediaSessionService() {
     super.onDestroy()
   }
 
-  private companion object {
-    const val SESSION_ID = "tasnim_live_radio"
+  companion object {
+    private const val SESSION_ID = "tasnim_live_radio"
+
+    @Volatile
+    private var running = false
+
+    @Volatile
+    private var playing = false
+
+    /**
+     * Stops a radio left paused, so its media session lets go of the remote's media keys
+     * (Android sends them to the last session that played). Used when the mushaf opens on TV,
+     * so play there doesn't bring the radio back. A playing radio is left alone.
+     */
+    fun stopIfPaused(context: Context) {
+      if (running && !playing) {
+        context.stopService(Intent(context, LiveRadioService::class.java))
+      }
+    }
   }
 
   private fun currentStation(player: Player): RadioStation? =

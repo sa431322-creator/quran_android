@@ -72,6 +72,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.TvSafeTop
+import com.quran.labs.androidquran.common.ui.core.TvSafeSide
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn

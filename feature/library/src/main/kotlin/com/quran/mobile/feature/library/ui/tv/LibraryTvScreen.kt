@@ -64,6 +64,9 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
+import com.quran.labs.androidquran.common.ui.core.tvClickable
+import com.quran.labs.androidquran.common.ui.core.TvSafeTop
+import com.quran.labs.androidquran.common.ui.core.TvSafeSide
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.NotoKufiArabic
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider

@@ -2,6 +2,7 @@ package com.quran.labs.androidquran.ui.fragment
 
 import android.view.WindowManager
 import com.quran.labs.androidquran.common.ui.core.isTv
+import androidx.core.view.doOnNextLayout
 import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
@@ -120,6 +121,8 @@ class SuraJumpSheet : BottomSheetDialogFragment() {
     }
   }
 
+  private var focusedRow = false
+
   private fun selectTab(juz: Boolean) {
     showingJuz = juz
     val selectedText = ContextCompat.getColor(requireContext(), R.color.tasnim_on_primary)
@@ -147,9 +150,12 @@ class SuraJumpSheet : BottomSheetDialogFragment() {
     adapter.submit(rows, current)
     if (scrollToCurrent && current >= 0) {
       (list.layoutManager as LinearLayoutManager).scrollToPositionWithOffset(current, list.height / 3)
-      // TV: the remote starts on the current row, not in the search field (docs/tv/PLAN.md)
-      if (requireContext().isTv()) {
-        list.post { list.findViewHolderForAdapterPosition(current)?.itemView?.requestFocus() }
+      // TV: the remote starts on the current row, not in the search field (docs/tv/PLAN.md);
+      // once, when the sheet opens: choosing a tab leaves the remote on the tab
+      if (!focusedRow && requireContext().isTv()) {
+        focusedRow = true
+        // the row exists only after the scroll's layout pass
+        list.doOnNextLayout { list.findViewHolderForAdapterPosition(current)?.itemView?.requestFocus() }
       }
     }
   }

@@ -74,6 +74,16 @@ class LibraryReaderActivity : AppCompatActivity() {
 
     enableEdgeToEdge()
 
+    // the same on phone and TV
+    val onPageShown = { page: Int, pageCount: Int -> store.saveProgress(bookId, page, pageCount) }
+    val onToggleBookmark = { page: Int ->
+      store.toggleBookmark(bookId, page)
+      bookmarks = store.bookmarks(bookId)
+    }
+    val onToggleNightMode = {
+      nightMode = !nightMode
+      store.nightMode = nightMode
+    }
     setContent {
       QuranTheme {
         if (isTv()) {
@@ -84,15 +94,9 @@ class LibraryReaderActivity : AppCompatActivity() {
             chapters = chapters,
             bookmarks = bookmarks,
             nightMode = nightMode,
-            onPageShown = { page, pageCount -> store.saveProgress(bookId, page, pageCount) },
-            onToggleBookmark = { page ->
-              store.toggleBookmark(bookId, page)
-              bookmarks = store.bookmarks(bookId)
-            },
-            onToggleNightMode = {
-              nightMode = !nightMode
-              store.nightMode = nightMode
-            }
+            onPageShown = onPageShown,
+            onToggleBookmark = onToggleBookmark,
+            onToggleNightMode = onToggleNightMode
           )
         } else {
           LibraryReaderScreen(
@@ -101,15 +105,9 @@ class LibraryReaderActivity : AppCompatActivity() {
             chapters = chapters,
             bookmarks = bookmarks,
             nightMode = nightMode,
-            onPageShown = { page, pageCount -> store.saveProgress(bookId, page, pageCount) },
-            onToggleBookmark = { page ->
-              store.toggleBookmark(bookId, page)
-              bookmarks = store.bookmarks(bookId)
-            },
-            onToggleNightMode = {
-              nightMode = !nightMode
-              store.nightMode = nightMode
-            },
+            onPageShown = onPageShown,
+            onToggleBookmark = onToggleBookmark,
+            onToggleNightMode = onToggleNightMode,
             onBack = onBackPressedDispatcher::onBackPressed
           )
         }

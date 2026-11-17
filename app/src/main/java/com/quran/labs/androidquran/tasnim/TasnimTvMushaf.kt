@@ -1,10 +1,13 @@
 package com.quran.labs.androidquran.tasnim
 
+import android.content.Context
+import androidx.activity.OnBackPressedCallback
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import com.quran.labs.androidquran.view.SlidingTabLayout
+import com.quran.mobile.feature.livetv.radio.LiveRadioService
 
 /**
  * The mushaf on TV (docs/tv/PLAN.md, phase 4): the Tasnim side of the small hooks in the
@@ -35,10 +38,11 @@ object TasnimTvMushaf {
    * The remote in the mushaf reader. Left/right already turn pages (the pager handles the
    * arrows, right to left). This adds:
    * - center / enter / menu on the page: show or hide the bars (sura jump, audio, settings);
-   * - play / play-pause with nothing playing: start the recitation from this page. Where a
-   *   media session already holds the media keys (AudioService's, after any recitation) the
-   *   system sends them there instead, which pauses and resumes; a first recitation then starts
-   *   from the audio bar's play button, which the remote reaches from the bars.
+   * - play / play-pause with nothing playing: start the recitation from this page. Android
+   *   sends media keys to the last media session that played, when there is one, so this runs
+   *   only before any: after a recitation the keys reach AudioService's session (pause/resume),
+   *   and a paused radio's session is stopped on entering the reader ([onReaderResume]). A first
+   *   recitation can always start from the audio bar's play button, reachable from the bars.
    *
    * Returns true when the key was handled.
    */
@@ -82,4 +86,24 @@ object TasnimTvMushaf {
   fun keepFocus(barsHidden: Boolean, focused: View?, pager: View) {
     if (focused == null || (barsHidden && focused !== pager)) pager.requestFocus()
   }
+
+  /** The reader came to the front: a paused radio lets go of the remote's media keys. */
+  fun onReaderResume(context: Context) {
+    LiveRadioService.stopIfPaused(context)
+  }
+
+  /**
+   * Back hides the bars first on TV (they don't hide by themselves while the remote is in
+   * them), then leaves. Enabled only while the bars show: see [onBarsShown].
+   */
+  fun barsBackCallback(hideBars: () -> Unit) = object : OnBackPressedCallback(false) {
+    override fun handleOnBackPressed() = hideBars()
+  }
+
+  fun onBarsShown(callback: OnBackPressedCallback, shown: Boolean) {
+    callback.isEnabled = shown
+  }
+
+  /** The bars' auto-hide waits while the remote is inside them. */
+  fun mayAutoHide(focused: View?, pager: View): Boolean = focused == null || focused === pager
 }

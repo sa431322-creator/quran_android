@@ -47,6 +47,9 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.quran.labs.androidquran.common.ui.core.tvClickable
+import com.quran.labs.androidquran.common.ui.core.TvSafeTop
+import com.quran.labs.androidquran.common.ui.core.TvSafeSide
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
@@ -63,9 +66,6 @@ import com.quran.mobile.feature.library.ui.fileSizeLabel
 import com.quran.mobile.feature.library.ui.persian
 import com.quran.mobile.feature.library.ui.readingTimeLabel
 import com.quran.mobile.feature.library.ui.tv.TvPill
-import com.quran.mobile.feature.library.ui.tv.TvSafeSide
-import com.quran.mobile.feature.library.ui.tv.TvSafeTop
-import com.quran.mobile.feature.library.ui.tv.tvClickable
 import kotlin.math.roundToInt
 
 /**

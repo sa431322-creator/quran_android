@@ -463,9 +463,9 @@ class QuranDataActivity : AppCompatActivity(), SimpleDownloadListener, OnRequest
   private fun promptForDownload() {
     val dataStatus = quranDataStatus ?: return
     // Tasnim on TV: the start screen (live video, radio) comes first, without asking for the
-    // mushaf pages; they are fetched when the mushaf is opened (docs/tv/PLAN.md, phase 1).
-    // The page type is left as it is (no image fallback: nobody chose it), and a patch for
-    // pages already there is still offered.
+    // mushaf pages (docs/tv/PLAN.md, phase 1). Image editions fetch each page as it is opened
+    // (canProceedWithoutDownload); the page type is left as it is (no image fallback: nobody
+    // chose it), and a patch for pages already there is still offered.
     if (isTv() && dataStatus.patchParam.isNullOrEmpty()) {
       runListView()
       return

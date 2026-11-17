@@ -276,6 +276,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private var isSplitScreen = false
 
   private lateinit var onClearAyahModeBackCallback: OnBackPressedCallback
+  private val tvBarsBackCallback = TasnimTvMushaf.barsBackCallback { toggleActionBarVisibility(false) }
   private lateinit var onAyahCardsBackCallback: OnBackPressedCallback
   private lateinit var onAutoScrollBackCallback: OnBackPressedCallback
   private var persianTextJob: Job? = null
@@ -340,7 +341,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       val activity = activity.get()
       if (activity != null) {
         if (msg.what == MSG_HIDE_ACTIONBAR) {
-          activity.toggleActionBarVisibility(false)
+          // TV: not while the remote is in the bars (phase 4)
+          if (!activity.isTv() || TasnimTvMushaf.mayAutoHide(activity.currentFocus, activity.viewPager)) {
+            activity.toggleActionBarVisibility(false)
+          }
         } else {
           super.handleMessage(msg)
         }
@@ -754,6 +758,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
     }
     onBackPressedDispatcher.addCallback(this, onClearAyahModeBackCallback)
+
+    // TV: back hides the reader's bars before it leaves (phase 4)
+    if (isTv()) onBackPressedDispatcher.addCallback(this, tvBarsBackCallback)
   }
 
   override fun onRequestPermissionsResult(
@@ -927,7 +934,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
     viewPager.systemUiVisibility = flags
 
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode) {
+    // TV has no system bars to report back, so the bars follow the remote directly (phase 4)
+    if ((Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && isInMultiWindowMode) || isTv()) {
       animateToolBar(isVisible)
     }
   }
@@ -951,7 +959,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     } else {
       viewPager.setOnSystemUiVisibilityChangeListener { flags: Int ->
         val visible = (flags and View.SYSTEM_UI_FLAG_FULLSCREEN) == 0
-        animateToolBar(visible)
+        // TV: no system bars; the remote drives the bars there
+        if (!isTv()) animateToolBar(visible)
       }
     }
   }
@@ -962,8 +971,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   private fun animateToolBar(visible: Boolean) {
     isActionBarHidden = !visible
-    // TV: hidden bars can't keep the remote's focus (phase 4)
-    if (isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
+    // TV: hidden bars can't keep the remote's focus, and back hides shown ones (phase 4)
+    if (isTv()) {
+      TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
+      TasnimTvMushaf.onBarsShown(tvBarsBackCallback, visible)
+    }
     ayahCards.state.barsVisible = visible
 
     // animate toolbar
@@ -1088,6 +1100,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   public override fun onResume() {
     super.onResume()
+    // TV: a paused radio must not keep the remote's media keys here (phase 4)
+    if (isTv()) TasnimTvMushaf.onReaderResume(this)
     quranSettings.registerPreferencesListener(themePreferencesListener)
     refreshQuranPages()
     // the text size or page colors may have changed in the settings

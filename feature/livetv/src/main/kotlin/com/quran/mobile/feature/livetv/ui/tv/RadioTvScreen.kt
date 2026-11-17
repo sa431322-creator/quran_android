@@ -24,6 +24,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +50,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.quran.labs.androidquran.common.ui.core.TvSafeTop
+import com.quran.labs.androidquran.common.ui.core.TvSafeSide
 import com.quran.labs.androidquran.common.ui.core.LocalTasnimPalette
 import com.quran.labs.androidquran.common.ui.core.TasnimPaletteProvider
 import com.quran.labs.androidquran.common.ui.core.Vazirmatn
@@ -106,12 +111,14 @@ fun RadioTvScreen(
     }
   }
 
-  // a request made before the window has focus is lost, so it waits for the window
+  // a request made before the window has focus is lost, so it waits for the window; once per
+  // screen, so coming back (from home, or after a dialog) leaves the remote where it was
   val windowFocused = LocalWindowInfo.current.isWindowFocused
+  var focusedOnce by rememberSaveable { mutableStateOf(false) }
   LaunchedEffect(windowFocused) {
-    if (!windowFocused) return@LaunchedEffect
+    if (!windowFocused || focusedOnce) return@LaunchedEffect
     withFrameNanos { }
-    runCatching { playFocus.requestFocus() }
+    focusedOnce = runCatching { playFocus.requestFocus() }.isSuccess
   }
 
   fun switchStation(step: Int) {
