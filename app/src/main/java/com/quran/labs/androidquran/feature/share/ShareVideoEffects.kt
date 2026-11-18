@@ -35,9 +35,9 @@ object ShareVideoEffects {
    * Effects for a whole video whose cards change at [boundariesMs] (from 0, each card's start,
    * then the end). [background] is the card's main background color.
    */
-  fun forVideo(boundariesMs: List<Long>, background: Int, light: Int): List<Effect> =
+  fun forVideo(boundariesMs: List<Long>, background: Int, light: Int, lightAlpha: Float): List<Effect> =
     listOf(
-      OverlayEffect(ImmutableList.of<TextureOverlay>(DriftingLight(light))),
+      OverlayEffect(ImmutableList.of<TextureOverlay>(DriftingLight(light, lightAlpha))),
       FadeBetweenCards(boundariesMs, background)
     )
 
@@ -67,7 +67,7 @@ object ShareVideoEffects {
   }
 
   /** A soft round glow that slowly sweeps across the frame and back. */
-  private class DriftingLight(color: Int) : BitmapOverlay() {
+  private class DriftingLight(color: Int, private val alpha: Float) : BitmapOverlay() {
     private val glow: Bitmap = createBitmap(GLOW_SIZE, GLOW_SIZE).also { bitmap ->
       val paint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         shader = RadialGradient(
@@ -87,7 +87,7 @@ object ShareVideoEffects {
       val y = (0.35 * sin(phase * 0.5 + 1.0)).toFloat()
       return StaticOverlaySettings.Builder()
         .setBackgroundFrameAnchor(x, y)
-        .setAlphaScale(0.55f)
+        .setAlphaScale(alpha)
         .build()
     }
 

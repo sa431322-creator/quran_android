@@ -16,8 +16,9 @@ import kotlin.math.sin
 data class SharePalette(
   /** the background's main color, which video cards fade toward between ayahs */
   val base: Int,
-  /** the drifting light of videos */
+  /** the drifting light of videos, and how strongly it shows */
   val light: Int,
+  val lightAlpha: Float = 0.55f,
   val frame: Int,
   val text: Int,
   val muted: Int,
@@ -44,7 +45,7 @@ object ShareBackgrounds {
 
   fun palette(index: Int): SharePalette = when (index.mod(COUNT)) {
     2 -> SharePalette(
-      base = CREAM, light = 0xFFFFFFFF.toInt(),
+      base = CREAM, light = GOLD, lightAlpha = 0.18f,
       frame = GOLD_DEEP, text = INK, muted = 0xFF6B5A3A.toInt(),
       panel = 0x14000000, badge = 0xFFFFFAEE.toInt()
     )

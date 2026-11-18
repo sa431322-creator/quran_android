@@ -7,6 +7,8 @@ import com.quran.data.model.SuraAyah
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import com.quran.labs.androidquran.data.TimingRepository
 import com.quran.labs.androidquran.util.AudioUtils
+import com.quran.labs.androidquran.util.QuranFileUtils
+import com.quran.labs.androidquran.util.ZipUtils
 import com.quran.mobile.di.qualifier.ApplicationContext
 import dev.zacsweers.metro.Inject
 import kotlinx.coroutines.Dispatchers
@@ -44,6 +46,7 @@ class RecitationClipBuilder @Inject constructor(
   private val quranInfo: QuranInfo,
   private val audioUtils: AudioUtils,
   private val timingRepository: TimingRepository,
+  private val quranFileUtils: QuranFileUtils,
   private val okHttpClient: OkHttpClient
 ) {
 
@@ -82,9 +85,8 @@ class RecitationClipBuilder @Inject constructor(
     onProgress: (Int, Int) -> Unit
   ): List<RecitationSegment> {
     val databasePath = audioUtils.getQariDatabasePathIfGapless(qari)
-    if (databasePath == null || !File(databasePath).exists()) {
-      throw RecitationException(RecitationException.Reason.NO_TIMINGS)
-    }
+      ?: throw RecitationException(RecitationException.Reason.NO_TIMINGS)
+    if (!File(databasePath).exists()) downloadTimings(qari, File(databasePath))
     val suras = ayahs.map { it.sura }.distinct()
     val segments = mutableListOf<RecitationSegment>()
     suras.forEachIndexed { index, sura ->
@@ -104,8 +106,11 @@ class RecitationClipBuilder @Inject constructor(
           timings.get(999, -1L) > startMs -> timings.get(999, -1L)
           else -> null
         }
-        val durationMs = (endMs ?: fileDuration) - startMs
-        if (durationMs > 0) segments += RecitationSegment(ayah, file, startMs, endMs, durationMs)
+        segments += (if (endMs != null) {
+          RecitationSegment(ayah, file, startMs, endMs, endMs - startMs)
+        } else {
+          toEndOfFile(ayah, file, startMs, fileDuration)
+        } ?: return@forEach)
       }
     }
     return segments
@@ -122,13 +127,25 @@ class RecitationClipBuilder @Inject constructor(
       // gapped qaris record the bismillah once (1:1); it opens every sura but 1 and 9
       if (ayah.ayah == 1 && ayah.sura != 1 && ayah.sura != 9) {
         val bismillah = ayahFile(qari, SuraAyah(1, 1))
-        segments += RecitationSegment(ayah, bismillah, 0, null, duration(bismillah))
+        toEndOfFile(ayah, bismillah, 0, duration(bismillah))?.let { segments += it }
       }
       val file = ayahFile(qari, ayah)
-      segments += RecitationSegment(ayah, file, 0, null, duration(file))
+      segments += toEndOfFile(ayah, file, 0, duration(file))
+        ?: throw RecitationException(RecitationException.Reason.DOWNLOAD_FAILED) // unreadable file
       onProgress(index + 1, ayahs.size)
     }
     return segments
+  }
+
+  /**
+   * A clip from [startMs] to the end of [file]. An MP3's length is first estimated and corrected by
+   * a few ms once it has been read, and Transformer stops with an error when a clip's length
+   * changes, so the clip ends a little before the end (the silence after the recitation). The card
+   * of a video is shown for exactly the same time.
+   */
+  private fun toEndOfFile(ayah: SuraAyah, file: File, startMs: Long, fileDurationMs: Long): RecitationSegment? {
+    val endMs = fileDurationMs - END_MARGIN_MS
+    return if (endMs > startMs) RecitationSegment(ayah, file, startMs, endMs, endMs - startMs) else null
   }
 
   private fun ayahFile(qari: QariItem, ayah: SuraAyah): File =
@@ -137,6 +154,21 @@ class RecitationClipBuilder @Inject constructor(
       ayah.sura.toString() + File.separator + ayah.ayah,
       String.format(Locale.US, "%03d%03d.mp3", ayah.sura, ayah.ayah)
     )
+
+  /**
+   * Fetches the qari's ayah timings into the qari's audio folder, where the player keeps them too,
+   * the same way the player does before gapless playback (a zip next to the audio, unpacked).
+   */
+  private fun downloadTimings(qari: QariItem, database: File) {
+    val name = qari.databaseName ?: throw RecitationException(RecitationException.Reason.NO_TIMINGS)
+    val directory = database.parentFile ?: throw RecitationException(RecitationException.Reason.NO_TIMINGS)
+    directory.mkdirs()
+    val zip = File(directory, name + AudioUtils.ZIP_EXTENSION)
+    download(quranFileUtils.gaplessDatabaseRootUrl.trimEnd('/') + "/" + zip.name, zip)
+    val unzipped = ZipUtils.unzipFile(zip, directory, zip.name, null)
+    zip.delete()
+    if (!unzipped || !database.exists()) throw RecitationException(RecitationException.Reason.NO_TIMINGS)
+  }
 
   /**
    * The reader's own copy at `<qari path>/<localName>.mp3` if there is one, else a copy in the
@@ -149,20 +181,24 @@ class RecitationClipBuilder @Inject constructor(
     val cached = File(appContext.cacheDir, "share/audio/${qari.id}/$remoteName")
     if (cached.length() > 0) return cached
     cached.parentFile?.mkdirs()
-    val url = qari.url("mp3") + remoteName
+    download(qari.url("mp3") + remoteName, cached)
+    return cached
+  }
+
+  /** Saves [url] to [destination], through a ".part" file so a broken download never looks complete. */
+  private fun download(url: String, destination: File) {
     try {
       okHttpClient.newCall(Request.Builder().url(url).build()).execute().use { response ->
         if (!response.isSuccessful) throw IOException("HTTP ${response.code} for $url")
-        val partial = File(cached.path + ".part")
+        val partial = File(destination.path + ".part")
         response.body.byteStream().use { input ->
           partial.outputStream().use { output -> input.copyTo(output) }
         }
-        if (!partial.renameTo(cached)) throw IOException("could not save $cached")
+        if (!partial.renameTo(destination)) throw IOException("could not save $destination")
       }
     } catch (e: IOException) {
       throw RecitationException(RecitationException.Reason.DOWNLOAD_FAILED, e)
     }
-    return cached
   }
 
   private fun duration(file: File): Long {
@@ -179,6 +215,7 @@ class RecitationClipBuilder @Inject constructor(
 
   private companion object {
     const val MAX_CACHE_BYTES = 200L * 1024 * 1024
+    const val END_MARGIN_MS = 150L
   }
 
   private fun ayahsBetween(start: SuraAyah, end: SuraAyah): List<SuraAyah> {

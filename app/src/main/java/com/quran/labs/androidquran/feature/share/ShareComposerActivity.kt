@@ -593,7 +593,9 @@ class ShareComposerActivity : ComponentActivity() {
         val output = File(directory, if (video) "$stem.mp4" else "$stem.m4a")
         val effects = if (frames != null && options.videoMotion) {
           val palette = ShareBackgrounds.palette(options.background)
-          ShareVideoEffects.forVideo(cardBoundaries(segments, frames), palette.base, palette.light)
+          ShareVideoEffects.forVideo(
+            cardBoundaries(segments, frames), palette.base, palette.light, palette.lightAlpha
+          )
         } else {
           emptyList()
         }
@@ -612,7 +614,9 @@ class ShareComposerActivity : ComponentActivity() {
         )
       } catch (e: Exception) {
         Timber.e(e, "ayah share export failed")
-        errorMessage = getString(R.string.tasnim_share_error_export)
+        val noSpace = generateSequence<Throwable>(e) { it.cause }
+          .any { it.message?.contains("ENOSPC") == true || it.message?.contains("No space left") == true }
+        errorMessage = getString(if (noSpace) R.string.tasnim_share_error_space else R.string.tasnim_share_error_export)
       } finally {
         progress = null
         window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
