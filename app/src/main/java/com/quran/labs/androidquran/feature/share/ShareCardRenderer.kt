@@ -43,21 +43,43 @@ class ShareCardRenderer(context: Context) {
 
   /**
    * Renders at the card's full size, or scaled down by [scale] for previews. With [highlight],
-   * that ayah is drawn in full color and the others dimmed (a video frame of a whole passage).
+   * that ayah is drawn in full color and the others dimmed (a video frame of a whole passage), and
+   * only its tafsir is shown. [arabicSize] fixes the ayah text size, so the frames of one video
+   * keep the same text size whatever the length of each ayah's tafsir.
    */
   fun render(
     content: ShareCardContent,
     options: ShareCardOptions,
     scale: Float = 1f,
-    highlight: SuraAyah? = null
-  ): Bitmap {
-    val width = (options.aspect.width * scale).toInt()
-    val height = (options.aspect.height * scale).toInt()
+    highlight: SuraAyah? = null,
+    arabicSize: Float? = null
+  ): Bitmap = renderSized(content, options, scale, highlight, arabicSize).first
+
+  /**
+   * The ayah text size that fits when [highlight] is the ayah with the longest tafsir, to pass to
+   * [render] for every frame of a passage.
+   */
+  fun arabicSizeFor(content: ShareCardContent, options: ShareCardOptions, highlight: SuraAyah?): Float {
+    // the size comes from the text layout, so a tiny bitmap is enough
+    val (bitmap, size) = renderSized(content, options, scale = 0.05f, highlight = highlight, arabicSize = null)
+    bitmap.recycle()
+    return size
+  }
+
+  private fun renderSized(
+    content: ShareCardContent,
+    options: ShareCardOptions,
+    scale: Float,
+    highlight: SuraAyah?,
+    arabicSize: Float?
+  ): Pair<Bitmap, Float> {
+    val width = (options.aspect.width * scale).toInt().coerceAtLeast(1)
+    val height = (options.aspect.height * scale).toInt().coerceAtLeast(1)
     val bitmap = createBitmap(width, height)
     val canvas = Canvas(bitmap)
     canvas.scale(scale, scale)
-    draw(canvas, content, options, highlight)
-    return bitmap
+    val used = draw(canvas, content, options, highlight, arabicSize)
+    return bitmap to used
   }
 
   /** A small swatch of background [index] for the picker. */
@@ -78,7 +100,14 @@ class ShareCardRenderer(context: Context) {
     return bitmap
   }
 
-  private fun draw(canvas: Canvas, content: ShareCardContent, options: ShareCardOptions, highlight: SuraAyah?) {
+  /** Draws the card and returns the ayah text size it used. */
+  private fun draw(
+    canvas: Canvas,
+    content: ShareCardContent,
+    options: ShareCardOptions,
+    highlight: SuraAyah?,
+    fixedArabicSize: Float?
+  ): Float {
     val w = options.aspect.width.toFloat()
     val h = options.aspect.height.toFloat()
     val palette = ShareBackgrounds.palette(options.background)
@@ -166,12 +195,12 @@ class ShareCardRenderer(context: Context) {
     // body: the ayahs, and the tafsir panel under them
     val available = bottom - top
     val arabic = arabicText(content, options, highlight, palette.text)
-    val tafsir = if (options.showTafsir) tafsirText(content, options) else null
+    val tafsir = if (options.showTafsir) tafsirText(content, options, highlight) else null
     val panelPadding = 28f
     val tafsirWidth = (contentWidth - 2 * panelPadding).toInt()
 
     // taller cards have room for bigger text; long passages shrink from here until they fit
-    var arabicSize = (80f * h / 1080f).coerceIn(80f, 110f)
+    var arabicSize = fixedArabicSize ?: (80f * h / 1080f).coerceIn(80f, 110f)
     var tafsirSize = 34f
     var arabicLayout: StaticLayout
     var tafsirLayout: StaticLayout? = null
@@ -195,7 +224,8 @@ class ShareCardRenderer(context: Context) {
       when {
         // the tafsir gives way first, then the ayah, which is cut only as a last resort
         tafsir != null && tafsirSize > 26f -> tafsirSize -= 1f
-        arabicSize > MIN_ARABIC_SIZE -> arabicSize -= if (arabicSize > 40f) 2f else 1f
+        fixedArabicSize == null && arabicSize > MIN_ARABIC_SIZE ->
+          arabicSize -= if (arabicSize > 40f) 2f else 1f
         tafsir != null && tafsirSize > 20f -> tafsirSize -= 1f
         else -> {
           // still too long at the smallest sizes: cut the end with an ellipsis
@@ -234,6 +264,7 @@ class ShareCardRenderer(context: Context) {
         drawLayout(canvas, it, contentLeft + panelPadding, y + panelPadding + tafsirLayout.height + 10f)
       }
     }
+    return arabicSize
   }
 
   private fun tafsirBlockHeight(tafsir: StaticLayout?, source: StaticLayout?, padding: Float): Float {
@@ -254,7 +285,8 @@ class ShareCardRenderer(context: Context) {
       builder.append(verse.arabic)
       if (options.showAyahNumbers) {
         // the Uthmani font draws Arabic-Indic digits as the ornate end-of-ayah mark
-        builder.append(' ').append(arabicDigits(verse.suraAyah.ayah))
+        // a no-break space keeps the mark on the line of the ayah's last word
+        builder.append(' ').append(arabicDigits(verse.suraAyah.ayah))
       }
       if (highlight != null && verse.suraAyah != highlight) {
         val dimmed = (textColor and 0x00FFFFFF) or (DIMMED_ALPHA shl 24)
@@ -264,8 +296,17 @@ class ShareCardRenderer(context: Context) {
     return builder
   }
 
-  private fun tafsirText(content: ShareCardContent, options: ShareCardOptions): String? {
-    val parts = content.verses.mapNotNull { verse ->
+  private fun tafsirText(content: ShareCardContent, options: ShareCardOptions, highlight: SuraAyah?): String? {
+    if (highlight != null) {
+      return content.verses.firstOrNull { it.suraAyah == highlight }?.tafsir?.trim()?.takeIf { it.isNotEmpty() }
+    }
+    // ayahs explained together share one text: show it once
+    var previous: String? = null
+    val parts = content.verses.filter { verse ->
+      val same = verse.tafsir != null && verse.tafsir == previous
+      previous = verse.tafsir
+      !same
+    }.mapNotNull { verse ->
       verse.tafsir?.takeIf { it.isNotBlank() }?.let { text ->
         if (options.showAyahNumbers && content.verses.size > 1) {
           "(" + persianDigits(verse.suraAyah.ayah) + ") " + text.trim()

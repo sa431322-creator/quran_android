@@ -53,6 +53,16 @@ class ShareCardRendererTest {
   }
 
   @Test
+  fun `a passage keeps one text size for every highlighted ayah`() {
+    val renderer = ShareCardRenderer(context)
+    val passage = content(7, "تفسیر ".repeat(40))
+    val size = renderer.arabicSizeFor(passage, ShareCardOptions(showTafsir = true), SuraAyah(2, 1))
+    assertThat(size).isAtLeast(24f)
+    val bitmap = renderer.render(passage, ShareCardOptions(showTafsir = true), highlight = SuraAyah(2, 5), arabicSize = size)
+    assertThat(bitmap.width).isEqualTo(1080)
+  }
+
+  @Test
   fun `ayah numbers use Arabic-Indic digits and tafsir numbers Persian digits`() {
     assertThat(ShareCardRenderer.arabicDigits(255)).isEqualTo("٢٥٥")
     assertThat(ShareCardRenderer.persianDigits(255)).isEqualTo("۲۵۵")

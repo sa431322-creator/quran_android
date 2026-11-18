@@ -135,7 +135,7 @@ class ShareComposerActivity : ComponentActivity() {
     end = SuraAyah(intent.getIntExtra(EXTRA_END_SURA, start.sura), intent.getIntExtra(EXTRA_END_AYAH, start.ayah))
     val audioFirst = intent.getBooleanExtra(EXTRA_AUDIO, false)
     options = loadOptions()
-    wholePage = savedInstanceState?.getBoolean(STATE_WHOLE_PAGE) ?: false
+    wholePage = prefs.getBoolean(KEY_WHOLE_PAGE, false)
 
     lifecycleScope.launch {
       sources = loader.tafsirSources()
@@ -162,10 +162,6 @@ class ShareComposerActivity : ComponentActivity() {
     }
   }
 
-  override fun onSaveInstanceState(outState: Bundle) {
-    super.onSaveInstanceState(outState)
-    outState.putBoolean(STATE_WHOLE_PAGE, wholePage)
-  }
 
   private fun range(): Pair<SuraAyah, SuraAyah> =
     if (wholePage) loader.pageRange(start) else start to end
@@ -244,6 +240,7 @@ class ShareComposerActivity : ComponentActivity() {
         SectionTitle(R.string.tasnim_share_show)
         ToggleRow(R.string.tasnim_share_whole_page, wholePage) {
           wholePage = it
+          prefs.edit { putBoolean(KEY_WHOLE_PAGE, it) }
           reloadContent()
         }
         ToggleRow(R.string.tasnim_share_show_sura, options.showSuraName) {
@@ -564,9 +561,16 @@ class ShareComposerActivity : ComponentActivity() {
         val frames = if (video) {
           val cardOptions = options
           val allAyahs = cardOptions.videoAllAyahs
-          // with every ayah on screen there is no room for the tafsir, and the text keeps one size
-          val tafsirKey = cardOptions.tafsirKey.takeIf { cardOptions.showTafsir && !allAyahs }
+          val tafsirKey = cardOptions.tafsirKey.takeIf { cardOptions.showTafsir }
           val loaded = loader.load(from, lastAyah, sources, tafsirKey) ?: error("no text")
+          // with every ayah on screen, each frame shows the recited ayah's tafsir; the ayahs keep
+          // the size that fits next to the longest one, so the text does not jump between frames
+          val passageArabicSize = if (allAyahs) {
+            val longest = loaded.verses.maxByOrNull { it.tafsir?.length ?: 0 }?.suraAyah
+            withContext(Dispatchers.Default) { renderer.arabicSizeFor(loaded, cardOptions, longest) }
+          } else {
+            null
+          }
           val byAyah = loaded.verses.associateBy { it.suraAyah }
           val frameDirectory = File(directory, "frames")
           exporter.clearFrames(frameDirectory)
@@ -576,7 +580,7 @@ class ShareComposerActivity : ComponentActivity() {
             val verse = byAyah[ayah] ?: loaded.verses.first()
             val bitmap = withContext(Dispatchers.Default) {
               if (allAyahs) {
-                renderer.render(loaded, cardOptions.copy(showTafsir = false), highlight = ayah)
+                renderer.render(loaded, cardOptions, highlight = ayah, arabicSize = passageArabicSize)
               } else {
                 renderer.render(loader.forVerse(loaded, verse), cardOptions)
               }
@@ -718,7 +722,7 @@ class ShareComposerActivity : ComponentActivity() {
     private const val EXTRA_END_SURA = "end_sura"
     private const val EXTRA_END_AYAH = "end_ayah"
     private const val EXTRA_AUDIO = "audio"
-    private const val STATE_WHOLE_PAGE = "whole_page"
+    private const val KEY_WHOLE_PAGE = "whole_page"
 
     private const val PREFS = "tasnim_share"
     private const val KEY_ASPECT = "aspect"
