@@ -15,6 +15,7 @@ import com.quran.labs.androidquran.tasnim.TasnimConfigRepository
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.util.ShareUtil
+import com.quran.labs.androidquran.util.TranslationUtil
 import com.quran.mobile.di.qualifier.ApplicationContext
 import com.quran.mobile.persiantafsir.data.PersianTafsirRepository
 import dev.zacsweers.metro.Inject
@@ -157,7 +158,12 @@ class ShareContentLoader @Inject constructor(
       val handler = DatabaseHandler.getDatabaseHandler(appContext, filename, quranFileUtils)
       val mapped = ayahMapper.mapRange(range)
       val data = handler.getVerses(mapped, DatabaseHandler.TextType.TRANSLATION)
-      ayahMapper.mapKufiData(range, data).associate { SuraAyah(it.sura, it.ayah) to clean(it.text) }
+      ayahMapper.mapKufiData(range, data).associate { verse ->
+        // some tafsirs explain several ayahs together: the other ayahs hold only the number of the
+        // row with the text, which the database handler puts in extraData
+        val text = if (TranslationUtil.getHyperlinkAyahId(verse) != null) verse.extraData.orEmpty() else verse.text
+        SuraAyah(verse.sura, verse.ayah) to clean(text)
+      }
     }.getOrDefault(emptyMap())
   }
 
