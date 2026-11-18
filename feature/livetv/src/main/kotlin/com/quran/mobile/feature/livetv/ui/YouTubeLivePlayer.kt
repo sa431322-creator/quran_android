@@ -243,15 +243,25 @@ private fun youTubePlayerHtml(source: LiveStreamSource.YouTube, origin: String):
   <!doctype html>
   <html><head>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <style>html,body{margin:0;height:100%;background:#000;overflow:hidden}
-  iframe{border:0;width:100%;height:100%}</style>
+  <style>html,body{margin:0;background:#000;overflow:hidden}
+  iframe{position:fixed;left:0;top:0;border:0}</style>
   </head><body>
   <iframe id="player" src="${youTubeEmbedUrl(source, origin)}"
     allow="autoplay; encrypted-media; picture-in-picture"
     referrerpolicy="strict-origin-when-cross-origin"></iframe>
   <script>
+    // sized in pixels from the window: the WebView's layout viewport can stay 0 high (the page
+    // loads before the view has a size), so 100% and 100vh gave a frame 0 pixels high
+    function fit() {
+      var f = document.getElementById('player');
+      f.style.width = innerWidth + 'px';
+      f.style.height = innerHeight + 'px';
+    }
+    fit();
+    addEventListener('resize', fit);
     var player;
     function onYouTubeIframeAPIReady() {
+      fit();
       player = new YT.Player('player', { events: {
         onStateChange: function (e) { TasnimYouTube.onState(e.data); },
         onError: function (e) { TasnimYouTube.onError(e.data); }
