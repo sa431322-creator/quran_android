@@ -38,6 +38,15 @@ object MirrorFallback {
     return ReachableUrl.of("$base$mirrorPath$query", server).toHttpUrlOrNull()
   }
 
+  /**
+   * True for files the Tasnim server should be asked for first, with upstream only as the
+   * fallback: translation and tafsir databases (`data/getTranslation.php?id=..`).
+   */
+  fun prefersMirror(url: HttpUrl): Boolean =
+    url.host == QURAN_ANDROID_HOST && url.encodedPath == TRANSLATION_PATH
+
+  private const val TRANSLATION_PATH = "/data/getTranslation.php"
+
   /** The base url ending with "/", or null when there is no Tasnim server. */
   fun normalisedBase(tasnimBase: String): String? {
     val base = tasnimBase.trim().ifBlank { return null }

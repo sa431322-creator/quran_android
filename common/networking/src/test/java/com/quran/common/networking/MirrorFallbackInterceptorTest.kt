@@ -172,4 +172,57 @@ class MirrorFallbackInterceptorTest {
       assertThat(it.body.string()).isEqualTo("upstream")
     }
   }
+
+  private fun translationRequest(port: Int = upstream.port) = Request.Builder()
+    .url("http://android.quran.com:$port/data/getTranslation.php?id=75&ext=zip")
+    .build()
+
+  @Test
+  fun `translations come from the mirror first`() {
+    mirror.enqueue(MockResponse().setBody("tafsir"))
+
+    client().newCall(translationRequest()).execute().use { response ->
+      assertThat(response.body.string()).isEqualTo("tafsir")
+    }
+    assertThat(mirror.takeRequest().path).isEqualTo("/data/getTranslation.php?id=75&ext=zip")
+    assertThat(upstream.requestCount).isEqualTo(0)
+  }
+
+  @Test
+  fun `translations fall back to upstream when the mirror fails`() {
+    mirror.enqueue(MockResponse().setResponseCode(404))
+    upstream.enqueue(MockResponse().setBody("upstream tafsir"))
+
+    client().newCall(translationRequest()).execute().use { response ->
+      assertThat(response.body.string()).isEqualTo("upstream tafsir")
+    }
+    assertThat(upstream.takeRequest().path).isEqualTo("/data/getTranslation.php?id=75&ext=zip")
+  }
+
+  @Test
+  fun `a down mirror is skipped for translations for a while`() {
+    mirror.enqueue(MockResponse().setResponseCode(503))
+    upstream.enqueue(MockResponse().setBody("one"))
+    upstream.enqueue(MockResponse().setBody("two"))
+    val client = client()
+
+    client.newCall(translationRequest()).execute().use { assertThat(it.body.string()).isEqualTo("one") }
+    client.newCall(translationRequest()).execute().use { assertThat(it.body.string()).isEqualTo("two") }
+    assertThat(mirror.requestCount).isEqualTo(1)
+  }
+
+  @Test
+  fun `translations with no Tasnim server go straight upstream`() {
+    upstream.enqueue(MockResponse().setBody("upstream tafsir"))
+    val upstreamAddress = InetAddress.getByName(upstream.hostName)
+    val client = OkHttpClient.Builder()
+      .dns { host -> if (host == "android.quran.com") listOf(upstreamAddress) else Dns.SYSTEM.lookup(host) }
+      .addInterceptor(MirrorFallbackInterceptor(""))
+      .build()
+
+    client.newCall(translationRequest()).execute().use { response ->
+      assertThat(response.body.string()).isEqualTo("upstream tafsir")
+    }
+    assertThat(mirror.requestCount).isEqualTo(0)
+  }
 }

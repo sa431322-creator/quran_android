@@ -84,6 +84,7 @@ interface ApplicationComponent : QuranApplicationComponent {
   fun inject(bookmarksFragment: BookmarksFragment)
   fun inject(fragment: QuranSettingsFragment)
   fun inject(translationManagerActivity: TranslationManagerActivity)
+  fun inject(shareComposerActivity: com.quran.labs.androidquran.feature.share.ShareComposerActivity)
   fun inject(quranAdvancedSettingsFragment: QuranAdvancedSettingsFragment)
   fun inject(suraListFragment: SuraListFragment)
   fun inject(juzListFragment: JuzListFragment)
