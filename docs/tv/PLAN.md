@@ -6,7 +6,9 @@ Status: **plan, 2026-11-17.** Order agreed with the user: live video first, then
 then the library, then the mushaf. Phase 1 done on `tasnim/tv-phase1`; phase 2 done on
 `tasnim/tv-phase2` (stacked on phase 1); phase 3 done on `tasnim/tv-phase3` (stacked on
 phase 2); phase 4 done on `tasnim/tv-phase4` (stacked on phase 3). All tried on the Google TV
-emulator (API 34, 1080p). Still to do: one real TV, and the 4K screenshot review of phase 4.
+emulator (API 34, 1080p), and on Android 10 TV (API 29); YouTube live, the Quran and Sunnah
+channels and the Quran radio station tried on TV too (2026-11-18). Still to do: one real TV,
+and the 4K screenshot review of phase 4.
 
 Phase 4 notes: this build's mushaf is drawn from the Quran fonts, so a TV needs no page-image
 download. TV opens the mushaf as two pages side by side (`values-television`
@@ -64,8 +66,10 @@ Fire TV runs the same APK; publishing to the Amazon store comes later.
    formats are not planned for now.
 9. **No share buttons on TV** (no share sheet there).
 
-New dependency (recommended): `androidx.tv:tv-material` for TV-only composables
-(`Surface`, `Card`, `Button` with built-in focus handling). Used only in the TV screens.
+No new dependency: the TV screens use plain Compose with a shared focus look
+(`tvFocusFrame`, `tvClickable`, `TvSafeSide`/`TvSafeTop` in `common/ui/core/Tv.kt`), and the
+View screens use `-television` drawables and layouts. `androidx.tv:tv-material` was planned
+but not needed.
 
 Testing for every phase: Android TV emulator (Google TV, API 34, 1080p) driven by D-pad
 keys via `adb shell input keyevent`, screenshots in `docs/tv/reports/`, plus one real TV
@@ -209,4 +213,4 @@ Fire TV / Amazon Appstore: later, not in this plan.
 1. Ads on TV: **off** (decided 2026-11-17).
 2. Store: **same Google Play listing**, TV opt-in after phase 2 (decided 2026-11-17).
 3. Fire TV / Amazon: **later** (decided 2026-11-17).
-4. `androidx.tv:tv-material` for the TV screens: **yes** (recommended; confirm at phase 1).
+4. `androidx.tv:tv-material`: **not used** — plain Compose plus the shared helpers above was enough (phase 1).
