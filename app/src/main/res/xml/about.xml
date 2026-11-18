@@ -215,6 +215,15 @@
           android:data="@string/about_numberPicker_url"/>
     </Preference>
 
+    <Preference
+        android:summary="@string/tasnim_about_titr_font_url"
+        android:title="@string/tasnim_about_titr_font"
+        app:iconSpaceReserved="false">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/tasnim_about_titr_font_url"/>
+    </Preference>
+
   </PreferenceCategory>
 
   <PreferenceCategory

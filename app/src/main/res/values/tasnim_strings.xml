@@ -128,4 +128,7 @@
   <string name="tasnim_share_error_space">فضای خالی دستگاه برای ساخت فایل کافی نیست.</string>
   <string name="tasnim_share_trimmed">تلاوت به ۳ دقیقه محدود شد.</string>
   <string name="tasnim_share_page_limited">تلاوت به آیات همین صفحه محدود شد.</string>
+  <!-- the card title font, credited in About (GPL) -->
+  <string name="tasnim_about_titr_font" translatable="false">Titr Bold font (Sharif FarsiWeb, GPL)</string>
+  <string name="tasnim_about_titr_font_url" translatable="false">https://fontlibrary.org/font/titr</string>
 </resources>

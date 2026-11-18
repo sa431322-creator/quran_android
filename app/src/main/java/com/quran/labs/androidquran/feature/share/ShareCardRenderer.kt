@@ -37,6 +37,9 @@ class ShareCardRenderer(context: Context) {
   private val uiMediumTypeface: Typeface =
     ResourcesCompat.getFont(appContext, com.quran.mobile.common.ui.core.R.font.tasnim_ui_medium)
       ?: Typeface.DEFAULT_BOLD
+  /** Titr Bold (Sharif FarsiWeb, GPL; license in assets/licenses) for the card's titles */
+  private val titleTypeface: Typeface =
+    ResourcesCompat.getFont(appContext, R.font.titr_bold) ?: uiMediumTypeface
   private val logo: Bitmap? by lazy {
     BitmapFactory.decodeResource(appContext.resources, R.drawable.tasnim_logo)
   }
@@ -140,7 +143,7 @@ class ShareCardRenderer(context: Context) {
 
     // header: the sura name in a gold-edged cartouche
     if (options.showSuraName) {
-      val titlePaint = textPaint(uiMediumTypeface, 46f, palette.frame)
+      val titlePaint = textPaint(titleTypeface, 46f, palette.frame)
       val titleWidth = titlePaint.measureText(content.suraTitle)
       val boxWidth = titleWidth + 120f
       val boxHeight = 84f
@@ -181,7 +184,7 @@ class ShareCardRenderer(context: Context) {
       content.pageLabel.takeIf { options.showPage },
       content.juzLabel.takeIf { options.showJuz }
     ).joinToString("  ·  ")
-    val infoPaint = textPaint(uiMediumTypeface, 32f, palette.text)
+    val infoPaint = textPaint(titleTypeface, 32f, palette.text)
     val infoLayout = layout(info, infoPaint, contentWidth, Layout.Alignment.ALIGN_CENTER, maxLines = 2)
     bottom -= infoLayout.height
     drawLayout(canvas, infoLayout, contentLeft, bottom)
@@ -216,7 +219,7 @@ class ShareCardRenderer(context: Context) {
           Layout.Alignment.ALIGN_NORMAL, spacing = 1.3f
         )
         sourceLayout = content.tafsirSourceName?.let {
-          layout(it, textPaint(uiTypeface, 24f, palette.muted), tafsirWidth, Layout.Alignment.ALIGN_NORMAL)
+          layout(it, textPaint(titleTypeface, 24f, palette.muted), tafsirWidth, Layout.Alignment.ALIGN_NORMAL)
         }
       }
       val total = arabicLayout.height + tafsirBlockHeight(tafsirLayout, sourceLayout, panelPadding)
