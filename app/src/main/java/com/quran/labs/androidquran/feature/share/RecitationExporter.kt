@@ -7,6 +7,7 @@ import android.os.Handler
 import android.os.Looper
 import androidx.annotation.OptIn
 import androidx.media3.common.C
+import androidx.media3.common.Effect
 import androidx.media3.common.MediaItem
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.util.Clock
@@ -20,6 +21,7 @@ import androidx.media3.transformer.DefaultAssetLoaderFactory
 import androidx.media3.transformer.DefaultDecoderFactory
 import androidx.media3.transformer.EditedMediaItem
 import androidx.media3.transformer.EditedMediaItemSequence
+import androidx.media3.transformer.Effects
 import androidx.media3.transformer.ExportException
 import androidx.media3.transformer.ExportResult
 import androidx.media3.transformer.ProgressHolder
@@ -59,6 +61,7 @@ class RecitationExporter(private val context: Context) {
   suspend fun export(
     segments: List<RecitationSegment>,
     frames: List<File>?,
+    videoEffects: List<Effect>,
     output: File,
     onProgress: (Int) -> Unit
   ): File {
@@ -94,11 +97,16 @@ class RecitationExporter(private val context: Context) {
       sequences += video
     }
     sequences += audio
-    val composition = Composition.Builder(sequences).build()
+    val composition = Composition.Builder(sequences)
+      .apply { if (frames != null && videoEffects.isNotEmpty()) setEffects(Effects(emptyList(), videoEffects)) }
+      .build()
 
-    // index seeking makes the cut points in variable bit rate MP3 files exact
+    // index seeking makes cut points inside a sura's MP3 exact. It re-measures a file's length
+    // while reading, which Transformer rejects for whole files, so ayah-per-file qaris (no cuts
+    // inside a file) read their files without it.
+    val cutsInsideFiles = segments.any { it.startMs > 0 }
     val extractors = DefaultExtractorsFactory()
-      .setMp3ExtractorFlags(Mp3Extractor.FLAG_ENABLE_INDEX_SEEKING)
+      .apply { if (cutsInsideFiles) setMp3ExtractorFlags(Mp3Extractor.FLAG_ENABLE_INDEX_SEEKING) }
     val assetLoaderFactory = DefaultAssetLoaderFactory(
       context,
       DefaultDecoderFactory(context),
@@ -107,6 +115,25 @@ class RecitationExporter(private val context: Context) {
       DataSourceBitmapLoader(context)
     )
 
+    return try {
+      run(composition, assetLoaderFactory, video = frames != null, portrait = frames != null, output, onProgress)
+    } catch (e: ExportException) {
+      // some encoders take only landscape sizes; the video is then stored turned, with a rotation
+      // flag that players apply
+      if (frames == null) throw e
+      run(composition, assetLoaderFactory, video = true, portrait = false, output, onProgress)
+    }
+  }
+
+  private suspend fun run(
+    composition: Composition,
+    assetLoaderFactory: DefaultAssetLoaderFactory,
+    video: Boolean,
+    portrait: Boolean,
+    output: File,
+    onProgress: (Int) -> Unit
+  ): File {
+    output.delete()
     return suspendCancellableCoroutine { continuation ->
       val handler = Handler(Looper.getMainLooper())
       val progressHolder = ProgressHolder()
@@ -121,7 +148,9 @@ class RecitationExporter(private val context: Context) {
       }
       transformer = Transformer.Builder(context)
         .setAudioMimeType(MimeTypes.AUDIO_AAC)
-        .apply { if (frames != null) setVideoMimeType(MimeTypes.VIDEO_H264) }
+        // keep 1080×1920 upright in the file instead of landscape with a rotation flag
+        .setPortraitEncodingEnabled(portrait)
+        .apply { if (video) setVideoMimeType(MimeTypes.VIDEO_H264) }
         .setAssetLoaderFactory(assetLoaderFactory)
         .addListener(object : Transformer.Listener {
           override fun onCompleted(composition: Composition, exportResult: ExportResult) {

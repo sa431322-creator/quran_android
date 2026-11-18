@@ -112,6 +112,8 @@
   <string name="tasnim_share_video">ویدیو با تلاوت</string>
   <string name="tasnim_share_audio">فقط صوت</string>
   <string name="tasnim_share_recitation">تلاوت</string>
+  <string name="tasnim_share_video_motion">نور ملایم و محو شدن بین آیات</string>
+  <string name="tasnim_share_video_all_ayahs">همه آیات، با رنگ آیه در حال تلاوت</string>
   <string name="tasnim_share_recitation_hint">حداکثر ۳ دقیقه یا یک صفحه</string>
   <string name="tasnim_share_saved">تصویر در گالری ذخیره شد</string>
   <string name="tasnim_share_save_failed">ذخیره تصویر ممکن نشد</string>
@@ -120,9 +122,10 @@
   <string name="tasnim_share_cancel">لغو</string>
   <string name="tasnim_share_loading">در حال بارگذاری…</string>
   <string name="tasnim_share_no_text">متن آیه در دسترس نیست. ابتدا فایل‌های مصحف را دریافت کنید.</string>
-  <string name="tasnim_share_error_timings">زمان‌بندی آیات این قاری روی دستگاه نیست. یک بار تلاوت این قاری را دانلود کنید یا قاری دیگری انتخاب کنید.</string>
+  <string name="tasnim_share_error_timings">زمان‌بندی آیات این قاری دریافت نشد. اتصال اینترنت را بررسی کنید یا قاری دیگری انتخاب کنید.</string>
   <string name="tasnim_share_error_download">دریافت فایل تلاوت ممکن نشد. اتصال اینترنت را بررسی کنید.</string>
-  <string name="tasnim_share_error_export">ساخت فایل ممکن نشد.</string>
+  <string name="tasnim_share_error_export">ساخت فایل ممکن نشد. دوباره امتحان کنید؛ اگر باز هم نشد، قاری یا اندازه دیگری را انتخاب کنید.</string>
+  <string name="tasnim_share_error_space">فضای خالی دستگاه برای ساخت فایل کافی نیست.</string>
   <string name="tasnim_share_trimmed">تلاوت به ۳ دقیقه محدود شد.</string>
   <string name="tasnim_share_page_limited">تلاوت به آیات همین صفحه محدود شد.</string>
 </resources>

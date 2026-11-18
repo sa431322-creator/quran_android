@@ -46,6 +46,13 @@ class ShareCardRendererTest {
   }
 
   @Test
+  fun `a whole passage renders with one ayah highlighted`() {
+    val renderer = ShareCardRenderer(context)
+    val bitmap = renderer.render(content(7, null), ShareCardOptions(aspect = ShareAspect.STORY), highlight = SuraAyah(2, 3))
+    assertThat(bitmap.height).isEqualTo(1920)
+  }
+
+  @Test
   fun `ayah numbers use Arabic-Indic digits and tafsir numbers Persian digits`() {
     assertThat(ShareCardRenderer.arabicDigits(255)).isEqualTo("٢٥٥")
     assertThat(ShareCardRenderer.persianDigits(255)).isEqualTo("۲۵۵")

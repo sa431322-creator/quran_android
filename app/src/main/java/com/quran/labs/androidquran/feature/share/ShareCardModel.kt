@@ -31,7 +31,11 @@ data class ShareCardOptions(
   val showPage: Boolean = true,
   val showJuz: Boolean = true,
   val showTafsir: Boolean = false,
-  val tafsirKey: String = TafsirSource.Persian.key
+  val tafsirKey: String = TafsirSource.Persian.key,
+  /** videos: a drifting light and a fade between ayahs */
+  val videoMotion: Boolean = true,
+  /** videos: every ayah on one card, the one being recited in full color and the rest dimmed */
+  val videoAllAyahs: Boolean = false
 )
 
 /** One ayah of the card: its Arabic text and, when chosen, the text shown under it. */
