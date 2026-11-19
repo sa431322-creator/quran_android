@@ -6,6 +6,7 @@ import com.quran.mobile.feature.livetv.data.OwnChannelInfo
 import com.quran.mobile.feature.livetv.data.ScheduleEntry
 import com.quran.mobile.feature.livetv.data.StreamLinks
 import com.quran.mobile.feature.livetv.data.StreamLinksProvider
+import com.quran.mobile.feature.livetv.data.tehranToLocalMinute
 import dev.zacsweers.metro.ContributesBinding
 import dev.zacsweers.metro.Inject
 
@@ -42,9 +43,10 @@ class TasnimStreamLinks(private val server: TasnimConfigRepository) : StreamLink
 
   private fun AppOwnChannel.toInfo() = OwnChannelInfo(
     name = name,
-    // drop anything outside the day so the on-air marker stays meaningful
+    // drop anything outside the day so the on-air marker stays meaningful; the server's times
+    // are Tehran time, shown in the viewer's own time (sorted again by StreamLinks)
     schedule = schedule
       .filter { it.startMinute in 0 until 24 * 60 && it.title.isNotBlank() }
-      .map { ScheduleEntry(it.startMinute, it.title) }
+      .map { ScheduleEntry(tehranToLocalMinute(it.startMinute), it.title) }
   )
 }

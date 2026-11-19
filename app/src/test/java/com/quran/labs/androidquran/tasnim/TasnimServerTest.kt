@@ -7,6 +7,7 @@ import com.google.common.truth.Truth.assertThat
 import com.quran.mobile.feature.livetv.data.OwnChannelInfo
 import com.quran.mobile.feature.livetv.data.ScheduleEntry
 import com.quran.mobile.feature.livetv.data.StreamLinks
+import com.quran.mobile.feature.livetv.data.tehranToLocalMinute
 import kotlinx.coroutines.test.runTest
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockResponse
@@ -129,7 +130,8 @@ class TasnimServerTest {
         ownRadio = "https://s.example/radio",
         quranRadio = "https://q.example/r.mp3",
         sunnahRadio = "https://a.example/api/v1/live/sunnah-radio",
-        ownLiveInfo = OwnChannelInfo("شبکهٔ تسنیم", listOf(ScheduleEntry(360, "صبح")))
+        ownLiveInfo = OwnChannelInfo("شبکهٔ تسنیم", // 06:00 Tehran, in this machine's time
+          listOf(ScheduleEntry(tehranToLocalMinute(360), "صبح")))
       )
     )
   }

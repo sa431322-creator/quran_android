@@ -23,6 +23,9 @@ import java.net.URI
  *
  * Each player also keeps its own cookies: the Quran radio's DASH manifest sets a session cookie
  * that its audio chunks need (HLS carries the same token in its links instead).
+ *
+ * Bunny Stream (our channel's recorded videos, tasneem-backend ADR 0014) serves its files only to
+ * its own player, so requests to its CDN carry that player's Referer.
  */
 @OptIn(UnstableApi::class)
 fun liveExoPlayerBuilder(context: Context): ExoPlayer.Builder {
@@ -42,11 +45,11 @@ private class CookieDataSource(
 
   override fun open(dataSpec: DataSpec): Long {
     val stored = cookies.get(URI(dataSpec.uri.toString()), emptyMap())["Cookie"].orEmpty()
-    val spec = if (stored.isEmpty()) {
-      dataSpec
-    } else {
-      dataSpec.withAdditionalHeaders(mapOf("Cookie" to stored.joinToString("; ")))
+    val headers = buildMap {
+      if (stored.isNotEmpty()) put("Cookie", stored.joinToString("; "))
+      if (isBunnyCdn(dataSpec.uri.host)) put("Referer", BUNNY_REFERER)
     }
+    val spec = if (headers.isEmpty()) dataSpec else dataSpec.withAdditionalHeaders(headers)
     val length = upstream.open(spec)
     // after redirects, the cookies belong to the final address
     val finalUri = upstream.uri ?: dataSpec.uri
@@ -54,3 +57,8 @@ private class CookieDataSource(
     return length
   }
 }
+
+/** The Referer of Bunny Stream's own player; its CDN refuses our channel's files without it. */
+internal const val BUNNY_REFERER = "https://iframe.mediadelivery.net/"
+
+internal fun isBunnyCdn(host: String?): Boolean = host?.lowercase()?.endsWith(".b-cdn.net") == true
