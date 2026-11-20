@@ -31,6 +31,7 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -243,9 +244,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private lateinit var translationsSpinner: QuranSpinner
   private lateinit var overlay: FrameLayout
   private lateinit var toolBarArea: View
-  private lateinit var readerModeMushaf: TextView
-  private lateinit var readerModePersian: TextView
-  private lateinit var readerModeTajweed: TextView
 
   // the ayah cards (Phase 2 of docs/text-mushaf/PLAN.md), over the pages
   private val ayahCards by lazy {
@@ -540,7 +538,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     toolbar.setOnClickListener { showSuraJumpSheet() }
 
     initAyahActionPanel()
-    initReaderModeToggle()
     if (savedInstanceState?.getBoolean(LAST_SHOWING_AYAH_CARDS) == true) {
       // after onCreate (the pages are set up below) and once the bars are laid out, for the
       // cards' insets
@@ -743,7 +740,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     onAyahCardsBackCallback = object : OnBackPressedCallback(false) {
       override fun handleOnBackPressed() {
         hideAyahCards()
-        setReaderMode(pagesMode())
       }
     }
     onBackPressedDispatcher.addCallback(this, onAyahCardsBackCallback)
@@ -1443,10 +1439,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       switchToQuran()
       return true
     } else if (itemId == R.id.goto_translation) {
-      if (translations != null) {
-        quranEventLogger.switchToTranslationMode(translations!!.size)
-        switchToTranslation()
-      }
+      showReaderModeMenu()
       return true
     } else if (itemId == R.id.page_theme) {
       showPageThemeSheet()
@@ -2281,65 +2274,70 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   private enum class ReaderMode { MUSHAF, PERSIAN, TAJWEED }
 
   /**
-   * The Tasnim "mushaf / Persian translation and tafsir / tajweed" toggle. The Persian side shows
-   * the ayah cards (each ayah with its Persian text) at the selected ayah or the first ayah on the
-   * page. The mushaf and tajweed sides draw the reader's own text pages plain or in tajweed colors:
-   * both mushafs hold the same ayahs on every page, so the reader stays where it is. Tajweed needs
-   * the text pages, so it is not offered with page images.
+   * The globe icon's menu: how to read (mushaf, tajweed, Persian translation and tafsir) and the
+   * other translations and tafsirs. The Persian choice shows the ayah cards (each ayah with its
+   * Persian text) at the selected ayah or the first ayah on the page. The mushaf and tajweed
+   * choices draw the reader's own text pages plain or in tajweed colors: both mushafs hold the
+   * same ayahs on every page, so the reader stays where it is. Tajweed needs the text pages, so it
+   * is not offered with page images.
    */
-  private fun initReaderModeToggle() {
-    readerModeMushaf = findViewById(R.id.reader_mode_mushaf)
-    readerModePersian = findViewById(R.id.reader_mode_persian)
-    readerModeTajweed = findViewById(R.id.reader_mode_tajweed)
-    readerModeMushaf.setOnClickListener {
-      if (slidingPanel.isPaneVisible) {
-        slidingPanel.collapsePane()
-      }
-      hideAyahCards()
-      setPagesMode(tajweed = false)
+  private fun showReaderModeMenu() {
+    val anchor = findViewById<View>(R.id.goto_translation) ?: findViewById(R.id.toolbar)
+    val popup = PopupMenu(this, anchor)
+    val menu = popup.menu
+    val mode = currentMode()
+    val group = 1
+    menu.add(group, MENU_MODE_MUSHAF, 0, R.string.tasnim_reader_mushaf)
+      .setChecked(!showingTranslation && mode == ReaderMode.MUSHAF)
+    if (hasTextPages()) {
+      menu.add(group, MENU_MODE_TAJWEED, 1, R.string.tasnim_reader_tajweed)
+        .setChecked(!showingTranslation && mode == ReaderMode.TAJWEED)
     }
-    readerModePersian.setOnClickListener { openAyahCards() }
-    readerModeTajweed.setOnClickListener {
-      if (slidingPanel.isPaneVisible) {
-        slidingPanel.collapsePane()
+    menu.add(group, MENU_MODE_PERSIAN, 2, R.string.tasnim_reader_persian)
+      .setChecked(!showingTranslation && mode == ReaderMode.PERSIAN)
+    menu.add(group, MENU_MODE_TRANSLATIONS, 3, R.string.tasnim_reader_translations)
+      .setChecked(showingTranslation)
+    menu.setGroupCheckable(group, true, true)
+    popup.setOnMenuItemClickListener { item ->
+      when (item.itemId) {
+        MENU_MODE_MUSHAF -> showPages(tajweed = false)
+        MENU_MODE_TAJWEED -> showPages(tajweed = true)
+        MENU_MODE_PERSIAN -> {
+          if (showingTranslation) switchToQuran()
+          openAyahCards()
+        }
+        MENU_MODE_TRANSLATIONS -> translations?.let {
+          if (ayahCards.isShowing) hideAyahCards()
+          quranEventLogger.switchToTranslationMode(it.size)
+          switchToTranslation()
+        }
       }
-      hideAyahCards()
-      setPagesMode(tajweed = true)
+      true
     }
-    readerModeTajweed.isVisible = hasTextPages()
-    setReaderMode(pagesMode())
+    popup.show()
+  }
+
+  /** The reader's own pages, plain or in tajweed colors. */
+  private fun showPages(tajweed: Boolean) {
+    if (slidingPanel.isPaneVisible) {
+      slidingPanel.collapsePane()
+    }
+    if (showingTranslation) switchToQuran()
+    hideAyahCards()
+    setPagesMode(tajweed)
   }
 
   private fun hasTextPages() = quranSettings.pageType == MadaniV2PageProvider.PAGE_TYPE
 
-  /** The side of the toggle for what is on screen: the cards, or the pages plain or in tajweed. */
+  /** What is on screen: the cards, or the pages plain or in tajweed. */
   private fun currentMode(): ReaderMode = if (ayahCards.isShowing) ReaderMode.PERSIAN else pagesMode()
 
-  /** The side of the toggle that shows how the pages are drawn (plain or tajweed). */
+  /** How the pages are drawn (plain or tajweed). */
   private fun pagesMode(): ReaderMode =
     if (hasTextPages() && TextMushaf.isTajweed(this)) ReaderMode.TAJWEED else ReaderMode.MUSHAF
 
   private fun setPagesMode(tajweed: Boolean) {
     if (hasTextPages()) TextMushaf.setTajweed(this, tajweed)
-    setReaderMode(pagesMode())
-  }
-
-  private fun setReaderMode(mode: ReaderMode) {
-    val selectedText = ContextCompat.getColor(this, R.color.tasnim_on_primary)
-    val normalText = ContextCompat.getColor(this, R.color.title_color)
-    listOf(
-      readerModeMushaf to ReaderMode.MUSHAF,
-      readerModePersian to ReaderMode.PERSIAN,
-      readerModeTajweed to ReaderMode.TAJWEED
-    ).forEach { (view, viewMode) ->
-      val selected = viewMode == mode
-      view.isSelected = selected
-      // the unselected drawable is empty on phones, a focus ring on TV
-      view.setBackgroundResource(
-        if (selected) R.drawable.tasnim_segment_selected else R.drawable.tasnim_segment_unselected
-      )
-      view.setTextColor(if (selected) selectedText else normalText)
-    }
   }
 
   /** The ayah cards, at the selected ayah or the first ayah on the page, under the reader's bars. */
@@ -2369,7 +2367,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
           ?.associate { ayahKey(it.suraAyah.sura, it.suraAyah.ayah) to it.text }
       }
     }
-    setReaderMode(ReaderMode.PERSIAN)
   }
 
   /** Whether the scrolling pages can stand in for the reader's pages now. */
@@ -2416,7 +2413,6 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
     if (ayahCards.isShowing) {
       hideAyahCards()
-      setReaderMode(pagesMode())
     }
     handler.removeMessages(MSG_HIDE_ACTIONBAR)
     toggleActionBarVisibility(false)
@@ -2605,16 +2601,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
       slidingPanel.hidePane()
       readingEventPresenter.onPanelClosed()
-      setReaderMode(currentMode())
     }
 
     override fun onPanelExpanded(panel: View) {
       readingEventPresenter.onPanelOpened()
-      setReaderMode(
-        if (slidingPager.currentItem ==
-          slidingPagerAdapter.getPagePositionForOrder(SlidingPagerAdapter.PERSIAN_TAFSIR_PAGE)
-        ) ReaderMode.PERSIAN else currentMode()
-      )
     }
 
     override fun onPanelAnchored(panel: View) {
@@ -2622,6 +2612,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   }
 
   companion object {
+    private const val MENU_MODE_MUSHAF = 1
+    private const val MENU_MODE_TAJWEED = 2
+    private const val MENU_MODE_PERSIAN = 3
+    private const val MENU_MODE_TRANSLATIONS = 4
     private val PAGE_COLOR_PREFERENCES = setOf(
       Constants.PREF_PAGE_THEME,
       Constants.PREF_PAGE_APPEARANCE,

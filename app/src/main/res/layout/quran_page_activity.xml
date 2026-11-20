@@ -46,36 +46,6 @@
           />
     </androidx.appcompat.widget.Toolbar>
 
-    <!-- Tasnim: mushaf / Persian translation and tafsir toggle (Reader artboard) -->
-    <LinearLayout
-        android:id="@+id/reader_mode_toggle"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="14dp"
-        android:layout_marginEnd="14dp"
-        android:layout_marginBottom="8dp"
-        android:background="@drawable/tasnim_segment_track"
-        android:orientation="horizontal"
-        android:padding="4dp"
-        >
-      <TextView
-          android:id="@+id/reader_mode_mushaf"
-          style="@style/TasnimSegment"
-          android:text="@string/tasnim_reader_mushaf"
-          />
-      <TextView
-          android:id="@+id/reader_mode_persian"
-          style="@style/TasnimSegment"
-          android:layout_marginStart="4dp"
-          android:text="@string/tasnim_reader_persian"
-          />
-      <TextView
-          android:id="@+id/reader_mode_tajweed"
-          style="@style/TasnimSegment"
-          android:layout_marginStart="4dp"
-          android:text="@string/tasnim_reader_tajweed"
-          />
-    </LinearLayout>
   </LinearLayout>
 
   <!-- Tasnim: page slider, shown with the toolbar; the bubble names the page while dragging -->
