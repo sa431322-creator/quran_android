@@ -113,7 +113,7 @@ git grep -nE '^(<<<<<<<|>>>>>>>)( |$)' -- . ':!*.md' || echo "no markers"
 
 1. **Build** (compiles Kotlin + Java):
    ```bash
-   JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac -q --max-workers=2 -Dorg.gradle.jvmargs=-Xmx1536m -Pkotlin.compiler.execution.strategy=in-process
+   JAVA_HOME="/c/Program Files/Android/Android Studio/jbr" ./gradlew :app:compileMadaniDebugJavaWithJavac -q --max-workers=2 "-Dorg.gradle.jvmargs=-Xmx1536m -Dfile.encoding=UTF-8 -Duser.language=en -Duser.country=US" -Pkotlin.compiler.execution.strategy=in-process
    ```
    Then the unit tests, in **two separate Gradle runs**: library modules only have `testReleaseUnitTest`, and naming a `Release` task turns on the Firebase plugin, which breaks the app's debug tests in the same run:
    ```bash
@@ -121,7 +121,7 @@ git grep -nE '^(<<<<<<<|>>>>>>>)( |$)' -- . ':!*.md' || echo "no markers"
    ./gradlew :app:testMadaniDebugUnitTest --continue -q ...
    ```
    Upstream tests that check upstream defaults (e.g. the Light page theme) are expected to need Tasnim's values.
-   Not `--offline` here: upstream may have bumped dependencies that must be downloaded. The low-memory flags matter on this PC: the default 4G heap fails with "paging file is too small". Expect errors where upstream renamed/removed functions our code calls — switch to the replacement that gives the same behavior. Run it in the background if slow. Fix any errors (usually API changes in code we touched) and commit the fixes on the sync branch.
+   Not `--offline` here: upstream may have bumped dependencies that must be downloaded. The low-memory flags matter on this PC: the default 4G heap fails with "paging file is too small". Keep the locale flags in that `jvmargs` override (it replaces the ones in `gradle.properties`): without them this PC's Arabic locale makes KSP/Moshi codegen in `build-logic` write Arabic digits (`٣٨`) and the build fails with Kotlin syntax errors in `*JsonAdapter.kt`. If that already happened once, `build-logic` (which has `org.gradle.caching=true`) restores the broken output from the build cache: delete `build-logic/convention/build` and run once with `--no-build-cache`. Expect errors where upstream renamed/removed functions our code calls — switch to the replacement that gives the same behavior. Run it in the background if slow. Fix any errors (usually API changes in code we touched) and commit the fixes on the sync branch.
 2. **Our features still present** — quick sanity check that the merge did not drop our work:
    ```bash
    git diff --stat "$BR" HEAD -- . ':!**/values-*/strings.xml' | tail -5
