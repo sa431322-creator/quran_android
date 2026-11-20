@@ -21,7 +21,7 @@ val useFirebase = !project.hasProperty("disableFirebase")
 val noAds = project.hasProperty("noAds")
 val oauthProperties = Properties().apply {
   // Optional local sync config. Android OAuth uses PKCE, so client secrets are intentionally unsupported.
-  val oauthPropertiesFile = rootProject.file("oauth.properties")
+  val oauthPropertiesFile = isolated.rootProject.projectDirectory.file("oauth.properties").asFile
   if (oauthPropertiesFile.exists()) {
     oauthPropertiesFile.inputStream().use(::load)
   }
