@@ -64,7 +64,8 @@ fun MushafFontPage(
   onTap: () -> Unit,
   onAyahLongPress: (Int, MushafAyahBounds) -> Unit = { _, _ -> },
   hits: MushafPageHits? = null,
-  onGesture: ((MushafGesture, Offset) -> Unit)? = null
+  onGesture: ((MushafGesture, Offset) -> Unit)? = null,
+  showLabels: Boolean = true
 ) {
   // the loading and error messages have no words: a tap there is a plain tap
   val messageTap: () -> Unit = { onGesture?.invoke(MushafGesture.TAP, Offset.Unspecified) ?: onTap() }
@@ -96,7 +97,8 @@ fun MushafFontPage(
       onTap = onTap,
       onAyahLongPress = onAyahLongPress,
       hits = hits,
-      onGesture = onGesture
+      onGesture = onGesture,
+      showLabels = showLabels
     )
     FontState.Loading -> PageMessage(
       stringResource(R.string.mushaf_loading),

@@ -21,7 +21,11 @@ open class QuranImagePageLayout(context: Context) : QuranPageLayout(context) {
 
   init {
     this.initialize()
+    imageView.setFramed(isFramed)
   }
+
+  // the mushaf's page in its ornamental frame (a single portrait page)
+  override fun shouldShowFrame(): Boolean = true
 
   override fun generateContentView(context: Context, isLandscape: Boolean): View {
     imageView = HighlightingImageView(context).apply {

@@ -39,7 +39,9 @@ import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
 class QuranTextPageLayout(
   context: Context,
   private val page: Int,
-  private val quranDisplayData: QuranDisplayData
+  private val quranDisplayData: QuranDisplayData,
+  /** in Tasnim's ornamental page frame (a single page); a tablet's two pages have none */
+  private val withFrame: Boolean = true
 ) : QuranPageLayout(context) {
 
   private val composeView = ComposeView(context)
@@ -57,6 +59,8 @@ class QuranTextPageLayout(
     composeView.setContent { QuranTheme { Content() } }
   }
 
+  override fun shouldShowFrame(): Boolean = withFrame
+
   override fun generateContentView(context: Context, isLandscape: Boolean): View = composeView
 
   // the text page scrolls itself on short screens, keeping the page's proportions
@@ -64,6 +68,7 @@ class QuranTextPageLayout(
 
   override fun updateView(quranSettings: QuranSettings) {
     super.updateView(quranSettings)
+    setFrameLabels(labels.suraName, labels.juz, labels.pageNumber)
     nightMode = quranSettings.isNightMode
     // the night ink as upstream's pages draw it: text brightness lifted with the background's
     nightBrightness = quranSettings.pageTextBrightness
@@ -93,7 +98,8 @@ class QuranTextPageLayout(
       highlights = highlights.otherColors(::colorOf),
       onTap = {},
       hits = hits,
-      onGesture = ::onGesture
+      onGesture = ::onGesture,
+      showLabels = !isFramed
     )
   }
 

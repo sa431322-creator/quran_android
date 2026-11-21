@@ -28,5 +28,5 @@ class TextPageViewFactory(private val quranDisplayData: QuranDisplayData) : Page
     if (pageMode == PageMode.SingleArabicPage) TextPageFragment.newInstance(pageNumber) else null
 
   override fun providePageView(context: Context, pageNumber: Int, pageMode: PageMode): View? =
-    QuranTextPageLayout(context, pageNumber, quranDisplayData)
+    QuranTextPageLayout(context, pageNumber, quranDisplayData, withFrame = false)
 }

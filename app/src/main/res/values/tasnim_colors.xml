@@ -58,4 +58,15 @@
   <color name="tasnim_launch_background">#ff143a40</color>
   <color name="tasnim_live">#ffb3261e</color>
   <color name="tasnim_video_thumb">#ff0e1518</color>
+  <!-- the ornamental page frame (TasnimPageFrame) -->
+  <color name="page_frame_band">#ff1f4e56</color>
+  <color name="page_frame_band_light">#ff2f6a76</color>
+  <color name="page_frame_band_night">#ff143438</color>
+  <color name="page_frame_band_light_night">#ff1f4a50</color>
+  <color name="page_frame_gold">#ffc8a45e</color>
+  <color name="page_frame_cartouche">#fffcf6e8</color>
+  <color name="page_frame_cartouche_night">#ff1a2528</color>
+  <color name="page_frame_ink">#ff1f4e56</color>
+  <color name="page_frame_button">#fffcf6e8</color>
+  <color name="page_frame_button_night">#ff1a2528</color>
 </resources>

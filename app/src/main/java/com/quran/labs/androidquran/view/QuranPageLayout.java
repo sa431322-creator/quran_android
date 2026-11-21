@@ -6,6 +6,9 @@ import android.content.res.Resources;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.RectF;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
@@ -15,9 +18,11 @@ import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ImageButton;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.annotation.Px;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.ViewCompat;
@@ -77,6 +82,12 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   private int viewPaddingSmall;
   private int viewPaddingLarge;
 
+  // Tasnim's ornamental frame around a single portrait page (null where there is no room for it)
+  @Nullable private TasnimPageFrame frame;
+  private final RectF frameContent = new RectF();
+  private ImageButton frameMenuButton;
+  private ImageButton frameSearchButton;
+
   public QuranPageLayout(Context context) {
     super(context);
     this.context = context;
@@ -126,8 +137,89 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
           BitmapFactory.decodeResource(resources, R.drawable.night_right_border));
     }
 
+    if (!isLandscape && shouldShowFrame()) {
+      frame = new TasnimPageFrame(context);
+      frameMenuButton = frameButton(R.drawable.ic_tasnim_menu, R.string.menu_settings, true);
+      frameSearchButton = frameButton(R.drawable.ic_tasnim_search, R.string.menu_search, false);
+      // keep the frame's header and footer clear of the screen's cutouts (a camera hole)
+      ViewCompat.setOnApplyWindowInsetsListener(this, (v, insets) -> {
+        androidx.core.view.DisplayCutoutCompat cutout = insets.getDisplayCutout();
+        int top = cutout == null ? 0 : cutout.getSafeInsetTop();
+        int bottom = cutout == null ? 0 : cutout.getSafeInsetBottom();
+        if (frame != null && frame.setInsets(top, bottom)) {
+          requestLayout();
+          invalidate();
+        }
+        return insets;
+      });
+    }
+
     updateGradients();
     setWillNotDraw(false);
+  }
+
+  /** Whether this kind of page takes the ornamental frame in portrait (the mushaf's own pages). */
+  protected boolean shouldShowFrame() {
+    return false;
+  }
+
+  /** Whether the ornamental frame is drawn around this page (it then shows the page's labels). */
+  public boolean isFramed() {
+    return frame != null;
+  }
+
+  /** The sura, juz and page number in the frame's header and footer. */
+  public void setFrameLabels(String sura, String juz, String page) {
+    if (frame == null) return;
+    frame.setSura(sura);
+    frame.setJuz(juz);
+    frame.setPage(page);
+    invalidate();
+  }
+
+  private ImageButton frameButton(int icon, int description, boolean isMenu) {
+    ImageButton button = new ImageButton(context);
+    button.setImageResource(icon);
+    button.setContentDescription(context.getString(description));
+    button.setScaleType(ImageButton.ScaleType.CENTER);
+    button.setOnClickListener(v -> {
+      if (context instanceof PageFrameHost) {
+        if (isMenu) {
+          ((PageFrameHost) context).onPageFrameMenu();
+        } else {
+          ((PageFrameHost) context).onPageFrameSearch();
+        }
+      }
+    });
+    addView(button, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
+    return button;
+  }
+
+  private void styleFrameButtons(boolean nightMode) {
+    if (frame == null) return;
+    int ring = ContextCompat.getColor(context,
+        nightMode ? R.color.page_frame_band_night : R.color.page_frame_band);
+    int face = ContextCompat.getColor(context,
+        nightMode ? R.color.page_frame_button_night : R.color.page_frame_button);
+    int gold = ContextCompat.getColor(context,
+        nightMode ? R.color.mushaf_gilt_night : R.color.page_frame_gold);
+    int icon = ContextCompat.getColor(context,
+        nightMode ? R.color.mushaf_gilt_night : R.color.page_frame_band);
+    int inset = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f,
+        getResources().getDisplayMetrics()));
+    for (ImageButton button : new ImageButton[] { frameMenuButton, frameSearchButton }) {
+      GradientDrawable outer = new GradientDrawable();
+      outer.setShape(GradientDrawable.OVAL);
+      outer.setColor(ring);
+      GradientDrawable inner = new GradientDrawable();
+      inner.setShape(GradientDrawable.OVAL);
+      inner.setColor(face);
+      inner.setStroke(Math.max(1, inset / 2), gold);
+      LayerDrawable background = new LayerDrawable(new Drawable[] { outer, inner });
+      background.setLayerInset(1, inset, inset, inset, inset);
+      button.setBackground(background);
+      button.setColorFilter(icon);
+    }
   }
 
   @Override
@@ -135,7 +227,17 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
 
     View view = resolveView();
-    if (view != null) {
+    if (view != null && frame != null) {
+      int width = MeasureSpec.getSize(widthMeasureSpec);
+      int height = MeasureSpec.getSize(heightMeasureSpec);
+      frame.content(width, height, frameContent);
+      view.measure(
+          MeasureSpec.makeMeasureSpec(Math.max(0, Math.round(frameContent.width())), MeasureSpec.EXACTLY),
+          MeasureSpec.makeMeasureSpec(Math.max(0, Math.round(frameContent.height())), MeasureSpec.EXACTLY));
+      int size = MeasureSpec.makeMeasureSpec(frame.getButtonSize(), MeasureSpec.EXACTLY);
+      frameMenuButton.measure(size, size);
+      frameSearchButton.measure(size, size);
+    } else if (view != null) {
       int width = MeasureSpec.getSize(widthMeasureSpec);
       int height = MeasureSpec.getSize(heightMeasureSpec);
       int leftLineWidth = leftBorder == BorderMode.LINE ? 1 : getBorderWidth(leftPageBorder);
@@ -165,7 +267,18 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   @Override
   protected void onLayout(boolean changed, int l, int t, int r, int b) {
     View view = resolveView();
-    if (view != null) {
+    if (view != null && frame != null) {
+      frame.content(getMeasuredWidth(), getMeasuredHeight(), frameContent);
+      view.layout(Math.round(frameContent.left), Math.round(frameContent.top),
+          Math.round(frameContent.right), Math.round(frameContent.bottom));
+      int top = frame.buttonTop();
+      int inset = frame.buttonInset();
+      int size = frame.getButtonSize();
+      int width = getMeasuredWidth();
+      frameSearchButton.layout(inset, top, inset + size, top + size);
+      frameMenuButton.layout(width - inset - size, top, width - inset, top + size);
+      super.onLayout(changed, l, t, r, b);
+    } else if (view != null) {
       int width = getMeasuredWidth();
       int height = getMeasuredHeight();
       @Px int leftLineWidth = leftBorder == BorderMode.LINE ?
@@ -183,7 +296,9 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   protected void onDraw(Canvas canvas) {
     super.onDraw(canvas);
     int width = getWidth();
-    if (width > 0) {
+    if (width > 0 && frame != null) {
+      frame.draw(canvas, width, getHeight());
+    } else if (width > 0) {
       int height = getHeight();
       if (leftBorder != BorderMode.LINE || !shouldHideLine) {
         Drawable left = leftBorder == BorderMode.LINE ? lineDrawable :
@@ -265,6 +380,11 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     }
 
     updateBackground(nightMode, quranSettings);
+    if (frame != null) {
+      frame.setNightMode(nightMode);
+      styleFrameButtons(nightMode);
+      invalidate();
+    }
   }
 
   protected void updateBackground(boolean nightMode, QuranSettings quranSettings) {

@@ -132,4 +132,19 @@
   <!-- the card title font, credited in About (GPL) -->
   <string name="tasnim_about_titr_font" translatable="false">Titr Bold font (Sharif FarsiWeb, GPL)</string>
   <string name="tasnim_about_titr_font_url" translatable="false">https://fontlibrary.org/font/titr</string>
+  <!-- the mushaf menu (the page frame's menu button) -->
+  <string name="tasnim_menu_title" translatable="false">تنظیمات مصحف</string>
+  <string name="tasnim_menu_close" translatable="false">بستن</string>
+  <string name="tasnim_menu_display_mode" translatable="false">روش نمایش مصحف</string>
+  <string name="tasnim_menu_mode_vertical" translatable="false">مصحف عمودی</string>
+  <string name="tasnim_menu_mode_horizontal" translatable="false">مصحف افقی</string>
+  <string name="tasnim_menu_section_reading" translatable="false">خواندن</string>
+  <string name="tasnim_menu_reading_mode" translatable="false">قرآن، ترجمه و تفسیر</string>
+  <string name="tasnim_menu_index" translatable="false">فهرست</string>
+  <string name="tasnim_menu_audio" translatable="false">صوتی‌ها</string>
+  <string name="tasnim_menu_section_look" translatable="false">ظاهر</string>
+  <string name="tasnim_menu_night_mode" translatable="false">حالت شب</string>
+  <string name="tasnim_menu_page_colors" translatable="false">مصحف خود را رنگ‌آمیزی کنید</string>
+  <string name="tasnim_menu_section_more" translatable="false">مورد علاقه</string>
+  <string name="tasnim_menu_bookmark_page" translatable="false">نشانک این صفحه</string>
 </resources>
