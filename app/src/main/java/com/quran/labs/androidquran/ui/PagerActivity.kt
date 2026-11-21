@@ -240,6 +240,13 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       refreshQuranPages()
       if (ayahCards.isShowing) updateAyahCardsSettings()
       if (scrollPages.isShowing) updateScrollPagesSettings()
+    } else if (key in TEXT_SIZE_PREFERENCES) {
+      // the ayah and translation text sizes: the translation pages, the cards and the panel
+      refreshQuranPages()
+      if (ayahCards.isShowing) updateAyahCardsSettings()
+      supportFragmentManager.fragments
+        .filterIsInstance<com.quran.labs.androidquran.ui.fragment.AyahActionFragment>()
+        .forEach { it.onTextSizeChanged() }
     }
   }
   private lateinit var pagerAdapter: QuranPageAdapter
@@ -2005,7 +2012,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       canScrollPages = canScrollPages(),
       isScrollReading = ReaderScrollPages.isScrollReading(this),
       nightMode = quranSettings.isNightMode,
-      pageTheme = PageTheme.fromKey(quranSettings.pageTheme)
+      pageTheme = PageTheme.fromKey(quranSettings.pageTheme),
+      ayahTextSize = quranSettings.ayahTextSize,
+      translationTextSize = quranSettings.translationTextSize
     )
     val actions = object : MushafMenuActions {
       override fun onScrollReading(scroll: Boolean) {
@@ -2035,6 +2044,13 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
 
       override fun onMorePageThemes() = showPageThemeSheet()
+      override fun onAyahTextSize(size: Int) {
+        quranSettings.ayahTextSize = size
+      }
+
+      override fun onTranslationTextSize(size: Int) {
+        quranSettings.translationTextSize = size
+      }
       override fun onBookmarkPage() = showReadingBookmarkSheet(ReadingBookmarkTarget.Page(currentPage))
       override fun onSettings() {
         startActivity(Intent(this@PagerActivity, QuranPreferenceActivity::class.java))
@@ -2566,6 +2582,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       // the page theme's paper (or the night background), as behind the pages
       paper = quranSettings.pageThemeBackgroundColor,
       textSize = quranSettings.translationTextSize,
+      ayahTextSize = quranSettings.ayahTextSize,
       columns = if (resources.configuration.screenWidthDp >= TWO_COLUMN_CARDS_DP) 2 else 1
     )
   }
@@ -2682,6 +2699,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     private const val MENU_MODE_TAJWEED = 2
     private const val MENU_MODE_PERSIAN = 3
     private const val MENU_MODE_TRANSLATIONS = 4
+    private val TEXT_SIZE_PREFERENCES = setOf(
+      Constants.PREF_AYAH_TEXT_SIZE,
+      Constants.PREF_TRANSLATION_TEXT_SIZE
+    )
     private val PAGE_COLOR_PREFERENCES = setOf(
       Constants.PREF_PAGE_THEME,
       Constants.PREF_PAGE_APPEARANCE,

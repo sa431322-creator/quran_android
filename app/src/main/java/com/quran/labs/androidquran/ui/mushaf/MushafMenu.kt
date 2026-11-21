@@ -34,6 +34,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -73,7 +75,10 @@ data class MushafMenuState(
   val canScrollPages: Boolean,
   val isScrollReading: Boolean,
   val nightMode: Boolean,
-  val pageTheme: PageTheme
+  val pageTheme: PageTheme,
+  /** «اندازهٔ متن آیه» and «اندازه قلم ترجمه» (sp) */
+  val ayahTextSize: Int = 15,
+  val translationTextSize: Int = 15
 )
 
 /** What the mushaf menu asks of the reader. */
@@ -88,6 +93,8 @@ interface MushafMenuActions {
   fun onNightMode(night: Boolean)
   fun onPageTheme(theme: PageTheme)
   fun onMorePageThemes()
+  fun onAyahTextSize(size: Int)
+  fun onTranslationTextSize(size: Int)
   fun onBookmarkPage()
   fun onSettings()
 }
@@ -202,6 +209,24 @@ private fun MushafMenu(state: MushafMenuState, actions: MushafMenuActions, onDis
               PageColors(state.pageTheme, state.nightMode, colors,
                 onTheme = { theme -> close { actions.onPageTheme(theme) } },
                 onMore = { close { actions.onMorePageThemes() } }
+              )
+
+              SectionTitle(stringResource(R.string.tasnim_menu_section_text_size), colors)
+              TextSizeRow(
+                stringResource(R.string.prefs_ayah_text_title),
+                state.ayahTextSize,
+                preview = stringResource(R.string.tasnim_menu_ayah_preview),
+                arabic = true,
+                colors = colors,
+                onChange = actions::onAyahTextSize
+              )
+              TextSizeRow(
+                stringResource(R.string.prefs_translation_text_title),
+                state.translationTextSize,
+                preview = stringResource(R.string.tasnim_menu_translation_preview),
+                arabic = false,
+                colors = colors,
+                onChange = actions::onTranslationTextSize
               )
 
               SectionTitle(stringResource(R.string.tasnim_menu_section_more), colors)
@@ -384,3 +409,56 @@ private fun PageColors(
     HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = colors.gold.copy(alpha = 0.35f))
   }
 }
+
+/**
+ * A text size: its name and size, a slider (saved when let go, so the pages behind follow) and a
+ * preview line at that size.
+ */
+@Composable
+private fun TextSizeRow(
+  title: String,
+  size: Int,
+  preview: String,
+  arabic: Boolean,
+  colors: MenuColors,
+  onChange: (Int) -> Unit
+) {
+  var value by remember { mutableStateOf(size.toFloat()) }
+  Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      Text(title, style = MenuText.copy(color = colors.ink), modifier = Modifier.weight(1f))
+      Text(
+        com.quran.labs.androidquran.util.QuranUtils.getLocalizedNumber(value.toInt()),
+        style = MenuText.copy(color = colors.muted, fontSize = 14.sp)
+      )
+    }
+    Slider(
+      value = value,
+      onValueChange = { value = it },
+      onValueChangeFinished = { onChange(value.toInt()) },
+      valueRange = MIN_TEXT_SIZE.toFloat()..MAX_TEXT_SIZE.toFloat(),
+      // whole sizes only, one stop for each
+      steps = MAX_TEXT_SIZE - MIN_TEXT_SIZE - 1,
+      colors = SliderDefaults.colors(
+        thumbColor = colors.accent,
+        activeTrackColor = colors.accent,
+        inactiveTrackColor = colors.gold.copy(alpha = 0.35f)
+      )
+    )
+    Text(
+      preview,
+      style = if (arabic) {
+        TextStyle(fontSize = (value * 1.4f).sp, color = colors.ink)
+      } else {
+        MenuText.copy(fontSize = value.sp, color = colors.ink)
+      },
+      maxLines = 1,
+      modifier = Modifier.fillMaxWidth()
+    )
+  }
+  HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = colors.gold.copy(alpha = 0.35f))
+}
+
+/** The settings screen's range for both sizes (its sliders run to 40); a size under 10 is unreadable. */
+private const val MIN_TEXT_SIZE = 10
+private const val MAX_TEXT_SIZE = 40

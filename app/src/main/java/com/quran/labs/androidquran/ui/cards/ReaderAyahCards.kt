@@ -85,7 +85,15 @@ class ReaderAyahCards(
     state.selectedAyah = suraAyah?.let { ayahKey(it.sura, it.ayah) }
   }
 
-  fun updateSettings(nightMode: Boolean, nightBrightness: Int, paper: Int, textSize: Int, columns: Int) {
+  fun updateSettings(
+    nightMode: Boolean,
+    nightBrightness: Int,
+    paper: Int,
+    textSize: Int,
+    columns: Int,
+    ayahTextSize: Int = textSize
+  ) {
+    state.ayahTextSize = ayahTextSize
     state.nightMode = nightMode
     state.nightBrightness = nightBrightness
     state.paper = paper
