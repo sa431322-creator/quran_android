@@ -191,6 +191,10 @@ public class QuranSettings implements PageThemeSettings {
         Constants.DEFAULT_TEXT_SIZE);
   }
 
+  public void setTranslationTextSize(int size) {
+    prefs.edit().putInt(Constants.PREF_TRANSLATION_TEXT_SIZE, size).apply();
+  }
+
   public int getLastPage() {
     return prefs.getInt(Constants.PREF_LAST_PAGE, Constants.NO_PAGE);
   }

@@ -68,4 +68,9 @@ abstract class AyahActionFragment : Fragment() {
   open fun onToggleDetailsPanel(isVisible: Boolean) { }
 
   protected abstract fun refreshView()
+
+  /** The text sizes changed (the mushaf menu): draw the panel's text again. */
+  fun onTextSizeChanged() {
+    if (view != null) refreshView()
+  }
 }

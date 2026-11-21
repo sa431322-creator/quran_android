@@ -96,6 +96,8 @@ class AyahCardsState {
   var paper by mutableIntStateOf(0xFFF6EEDD.toInt())
   /** the app's text-size setting (sp), which the cards follow */
   var textSize by mutableIntStateOf(15)
+  /** the ayah text size setting («اندازهٔ متن آیه»): the cards' Arabic text */
+  var ayahTextSize by mutableIntStateOf(15)
   var columns by mutableIntStateOf(1)
   /** the reader's bars over the cards, in px, and whether they are showing */
   var topInset by mutableIntStateOf(0)
@@ -206,7 +208,7 @@ private fun CardList(
   }
   val grid = rememberLazyGridState()
   val uiFont = remember { FontFamily(Font(com.quran.mobile.common.ui.core.R.font.tasnim_ui)) }
-  val arabicSize = (state.textSize * 1.75f).coerceAtMost(64f).sp
+  val arabicSize = (state.ayahTextSize * 1.75f).coerceAtMost(64f).sp
   val persianSize = state.textSize.toFloat().sp
   val openingRow = with(density) { (arabicSize.toPx() * 1.9f).toDp() }
 
