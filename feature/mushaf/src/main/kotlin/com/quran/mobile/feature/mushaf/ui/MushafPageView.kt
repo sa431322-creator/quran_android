@@ -106,7 +106,9 @@ data class MushafPageStyle(
    * Applied to the page font's glyphs only (not the decorations): a color page font (V4 tajweed)
    * draws its letters in black of its own, which [ink] cannot change, so a night page needs one.
    */
-  val glyphFilter: ColorFilter? = null
+  val glyphFilter: ColorFilter? = null,
+  /** the cream plaque inside the sura header's cartouche and the ayah markers */
+  val plaque: Color = Color(0xFFFCF6E8)
 )
 
 /**
@@ -301,6 +303,8 @@ fun MushafPageView(
               ends = line.ends,
               textStyle = textStyle,
               gilt = style.gilt,
+              accent = style.accent,
+              plaque = style.plaque,
               glyphFilter = style.glyphFilter,
               markerFont = style.headerFont, // plain digits: the Uthmani face draws its own ayah ornament around them
               centered = page.isOpening,
@@ -484,6 +488,8 @@ private fun PageLine(
   ends: List<Boolean>,
   textStyle: TextStyle,
   gilt: Color,
+  accent: Color,
+  plaque: Color,
   markerFont: FontFamily,
   glyphFilter: ColorFilter?,
   centered: Boolean,
@@ -534,7 +540,7 @@ private fun PageLine(
           val number = ayahNumber(ayahs[word])
           val diameter = minOf((placed.rights[word] - placed.lefts[word]) * 1.35f, size.height * 0.8f)
           val center = Offset((placed.lefts[word] + placed.rights[word]) / 2f, size.height / 2f)
-          drawAyahMarker(measurer, number, center, diameter, gilt, textStyle.color, markerFont)
+          drawAyahMarker(measurer, number, center, diameter, gilt, textStyle.color, markerFont, accent, plaque)
         }
       },
     content = {
@@ -580,67 +586,102 @@ private fun PageLine(
 }
 
 /**
- * The sura header frame (Tasnim's gilt design): a double gilt rule around a gilt-outlined pill
- * with the sura's name, between two filled eight-pointed stars.
+ * The sura header (Tasnim's design, matching the page frame): a teal band edged in gilt with a
+ * row of gilt lozenges, gilt rosettes at its ends, and the sura's name on a cream cartouche with
+ * pointed ends in the middle.
  */
 @Composable
 internal fun SuraHeader(name: String, style: MushafPageStyle, rowHeight: Dp, modifier: Modifier) {
-  Box(modifier.padding(vertical = rowHeight * 0.09f), contentAlignment = Alignment.Center) {
-    Row(
-      Modifier
-        .fillMaxSize()
-        .drawBehind { drawSuraFrame(style.gilt) },
-      horizontalArrangement = Arrangement.spacedBy(rowHeight * 0.22f, Alignment.CenterHorizontally),
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      FrameStar(style.gilt, rowHeight * 0.26f)
-      Box(
-        Modifier
-          .height(rowHeight * 0.56f)
-          .drawBehind {
-            val radius = CornerRadius(size.height / 2, size.height / 2)
-            drawRoundRect(style.gilt, cornerRadius = radius, style = Stroke(1.5.dp.toPx()))
-          }
-          .padding(horizontal = rowHeight * 0.45f),
-        contentAlignment = Alignment.Center
-      ) {
-        Text(
-          text = name,
-          style = TextStyle(
-            fontFamily = style.titleFont,
-            color = style.ink,
-            fontSize = with(LocalDensity.current) { (rowHeight * 0.36f).toSp() }
-          ),
-          maxLines = 1,
-          softWrap = false
-        )
-      }
-      FrameStar(style.gilt, rowHeight * 0.26f)
-    }
-  }
-}
-
-@Composable
-private fun FrameStar(gilt: Color, size: Dp) {
-  Box(Modifier.height(size).aspectRatio(1f).drawBehind { drawStar(gilt, center, this.size.minDimension / 2f, 0f, filled = true) })
-}
-
-/** The header's double gilt rule: an outer line and a finer one just inside it. */
-private fun DrawScope.drawSuraFrame(gilt: Color) {
-  val outer = 1.5.dp.toPx()
-  val inner = 1.dp.toPx()
-  val inset = 5.dp.toPx()
-  val corner = CornerRadius(4.dp.toPx(), 4.dp.toPx())
-  drawRoundRect(gilt, Offset(outer / 2, outer / 2), Size(size.width - outer, size.height - outer), corner, Stroke(outer))
-  drawRoundRect(
-    gilt, Offset(inset, inset), Size(size.width - inset * 2, size.height - inset * 2),
-    CornerRadius(2.dp.toPx(), 2.dp.toPx()), Stroke(inner)
+  val measurer = rememberTextMeasurer()
+  val nameStyle = TextStyle(
+    fontFamily = style.titleFont,
+    color = style.ink,
+    fontSize = with(LocalDensity.current) { (rowHeight * 0.36f).toSp() }
+  )
+  Box(
+    modifier
+      .padding(vertical = rowHeight * 0.1f)
+      .drawBehind { drawSuraHeader(measurer, name, nameStyle, style) }
   )
 }
 
+private fun DrawScope.drawSuraHeader(measurer: TextMeasurer, name: String, nameStyle: TextStyle, style: MushafPageStyle) {
+  val w = size.width
+  val h = size.height
+  val cy = h / 2f
+  val line = 1.dp.toPx()
+  val corner = CornerRadius(3.dp.toPx(), 3.dp.toPx())
+
+  // the band and its gilt edges
+  drawRoundRect(style.accent, cornerRadius = corner)
+  drawRoundRect(style.gilt, Offset(line / 2, line / 2), Size(w - line, h - line), corner, Stroke(line * 1.4f))
+  val inset = 3.dp.toPx()
+  drawRect(style.gilt, Offset(inset, inset), Size(w - inset * 2, h - inset * 2), style = Stroke(line * 0.7f))
+
+  // the name's cartouche, sized to the name
+  val text = measurer.measure(name, nameStyle, softWrap = false, maxLines = 1)
+  val plaqueH = h * 0.66f
+  val point = plaqueH * 0.45f
+  val plaqueW = minOf(w * 0.7f, text.size.width + point * 2 + h * 0.5f)
+  val left = (w - plaqueW) / 2f
+  val right = left + plaqueW
+
+  // a row of gilt lozenges along the band, on both sides of the cartouche
+  val lozenge = h * 0.09f
+  val step = h * 0.36f
+  val ends = h * 0.55f
+  fun lozenges(from: Float, to: Float) {
+    if (to - from < step) return
+    val count = ((to - from) / step).toInt()
+    val spacing = (to - from) / count
+    for (i in 0..count) diamond(style.gilt, Offset(from + spacing * i, cy), lozenge)
+  }
+  lozenges(ends + h * 0.35f, left - h * 0.45f)
+  lozenges(right + h * 0.45f, w - ends - h * 0.35f)
+
+  // rosettes at the band's ends and beside the cartouche
+  rosette(style.gilt, style.accent, Offset(ends, cy), h * 0.24f)
+  rosette(style.gilt, style.accent, Offset(w - ends, cy), h * 0.24f)
+  rosette(style.gilt, style.accent, Offset(left - h * 0.2f, cy), h * 0.16f)
+  rosette(style.gilt, style.accent, Offset(right + h * 0.2f, cy), h * 0.16f)
+
+  val plaque = Path().apply {
+    moveTo(left, cy)
+    lineTo(left + point, cy - plaqueH / 2)
+    lineTo(right - point, cy - plaqueH / 2)
+    lineTo(right, cy)
+    lineTo(right - point, cy + plaqueH / 2)
+    lineTo(left + point, cy + plaqueH / 2)
+    close()
+  }
+  drawPath(plaque, style.plaque)
+  drawPath(plaque, style.gilt, style = Stroke(line * 1.5f))
+
+  drawText(text, topLeft = Offset((w - text.size.width) / 2f, cy - text.size.height / 2f))
+}
+
+private fun DrawScope.diamond(color: Color, center: Offset, r: Float) {
+  val path = Path().apply {
+    moveTo(center.x, center.y - r)
+    lineTo(center.x + r, center.y)
+    lineTo(center.x, center.y + r)
+    lineTo(center.x - r, center.y)
+    close()
+  }
+  drawPath(path, color)
+}
+
+/** A gilt eight-pointed rosette with a heart of [heart] and a gilt dot. */
+private fun DrawScope.rosette(gilt: Color, heart: Color, center: Offset, radius: Float) {
+  drawStar(gilt, center, radius, 0f, filled = true)
+  drawCircle(heart, radius * 0.28f, center)
+  drawCircle(gilt, radius * 0.12f, center)
+}
+
 /**
- * The ayah's end marker (Tasnim's gilt design): a gilt eight-pointed star and ring around the
- * ayah's number, in Arabic-Indic digits.
+ * The ayah's end marker (Tasnim's design): a round cream medallion ringed in gilt, with a crown
+ * of gilt petals around it and a fine teal ring inside, around the ayah's number in
+ * Arabic-Indic digits.
  */
 internal fun DrawScope.drawAyahMarker(
   measurer: TextMeasurer,
@@ -649,15 +690,29 @@ internal fun DrawScope.drawAyahMarker(
   diameter: Float,
   gilt: Color,
   ink: Color,
-  font: FontFamily
+  font: FontFamily,
+  accent: Color = gilt,
+  plaque: Color = Color(0xFFFCF6E8)
 ) {
   val radius = diameter / 2f
-  drawStar(gilt, center, radius, diameter * 0.05f, filled = false)
-  drawCircle(gilt, radius * 0.62f, center, style = Stroke(diameter * 0.03f))
+  val body = radius * 0.78f
+  // the crown of petals
+  val petals = 12
+  for (i in 0 until petals) {
+    val angle = Math.toRadians(360.0 / petals * i)
+    val petal = Offset(
+      center.x + (body * kotlin.math.cos(angle)).toFloat(),
+      center.y + (body * kotlin.math.sin(angle)).toFloat()
+    )
+    drawCircle(gilt, radius * 0.2f, petal)
+  }
+  drawCircle(plaque, body, center)
+  drawCircle(gilt, body, center, style = Stroke(diameter * 0.05f))
+  drawCircle(accent, body * 0.78f, center, style = Stroke(diameter * 0.025f))
   val digits = number.toString().map { '٠' + (it - '0') }.joinToString("")
   val layout = measurer.measure(
     digits,
-    TextStyle(fontFamily = font, color = ink, fontSize = (diameter * if (number > 99) 0.36f else 0.5f).toSp()),
+    TextStyle(fontFamily = font, color = ink, fontSize = (diameter * if (number > 99) 0.32f else 0.44f).toSp()),
     softWrap = false,
     maxLines = 1
   )

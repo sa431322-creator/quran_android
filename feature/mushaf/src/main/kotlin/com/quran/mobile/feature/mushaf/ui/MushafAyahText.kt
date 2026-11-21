@@ -83,7 +83,7 @@ fun MushafAyahMarker(ayahNumber: Int, style: MushafPageStyle, size: Dp, modifier
     modifier
       .size(size)
       .drawBehind {
-        drawAyahMarker(measurer, ayahNumber, center, this.size.minDimension, style.gilt, style.ink, style.headerFont)
+        drawAyahMarker(measurer, ayahNumber, center, this.size.minDimension, style.gilt, style.ink, style.headerFont, style.accent, style.plaque)
       }
   )
 }

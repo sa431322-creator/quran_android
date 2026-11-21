@@ -53,7 +53,8 @@ object TextMushafStyle {
       recitation = color(R.color.audio_highlight),
       ink = ink,
       titleFont = fonts.title,
-      glyphFilter = if (nightMode) nightGlyphFilter(ink) else null
+      glyphFilter = if (nightMode) nightGlyphFilter(ink) else null,
+      plaque = color(if (nightMode) R.color.page_frame_cartouche_night else R.color.page_frame_cartouche)
     )
   }
 }
