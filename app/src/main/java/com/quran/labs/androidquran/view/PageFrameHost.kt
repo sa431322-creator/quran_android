@@ -7,4 +7,7 @@ interface PageFrameHost {
 
   /** The round button on the left of the page's header: search. */
   fun onPageFrameSearch()
+
+  /** The translation pages' footer button: the translations and tafsirs to download and choose. */
+  fun onPageFrameTranslations()
 }

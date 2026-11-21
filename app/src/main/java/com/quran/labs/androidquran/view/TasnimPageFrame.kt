@@ -64,6 +64,9 @@ class TasnimPageFrame(private val context: Context) {
     setNightMode(false)
   }
 
+  /** A button in the footer, right of the page number (the translation pages' «add» button). */
+  var footerAction: Boolean = false
+
   var sura: String = ""
   var juz: String = ""
   var page: String = ""
@@ -88,6 +91,14 @@ class TasnimPageFrame(private val context: Context) {
   /** Where the page goes inside a frame [width] by [height]. */
   fun content(width: Int, height: Int, out: RectF): RectF {
     out.set(band + gap * 2, insetTop + band + header, width - band - gap * 2, height - insetBottom - band - footer)
+    return out
+  }
+
+  /** Where the footer's button goes in a frame [width] by [height]: right of the page number. */
+  fun footerActionRect(width: Int, height: Int, out: RectF): RectF {
+    val centerY = height - insetBottom - band - footer / 2f
+    val half = footer * 0.36f
+    out.set(width / 2f + dp(32f) + gap * 2, centerY - half, width - band - gap * 3, centerY + half)
     return out
   }
 
@@ -228,7 +239,7 @@ class TasnimPageFrame(private val context: Context) {
     val badgeW = dp(64f)
     val badgeH = footer * 0.62f
     ornamentStrip(canvas, left, w / 2f - badgeW / 2f - gap, centerY, footer * 0.24f)
-    ornamentStrip(canvas, w / 2f + badgeW / 2f + gap, right, centerY, footer * 0.24f)
+    if (!footerAction) ornamentStrip(canvas, w / 2f + badgeW / 2f + gap, right, centerY, footer * 0.24f)
     cartouche(canvas, w / 2f - badgeW / 2f, w / 2f + badgeW / 2f, centerY, badgeH, page, labelTypeface, 0.5f)
   }
 

@@ -28,6 +28,57 @@ object PageFrameButtons {
     return button
   }
 
+  /**
+   * The translation pages' footer button, «افزودن ترجمه و تفسیر» with a download icon: a teal
+   * pill edged in gilt; a tap opens the translations and tafsirs to download and choose.
+   */
+  @JvmStatic
+  fun createFooterButton(context: Context, parent: ViewGroup): android.widget.TextView {
+    val button = android.widget.TextView(context)
+    button.setText(R.string.tasnim_frame_translations)
+    button.gravity = android.view.Gravity.CENTER
+    button.maxLines = 1
+    button.ellipsize = android.text.TextUtils.TruncateAt.END
+    button.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+    runCatching {
+      androidx.core.content.res.ResourcesCompat.getFont(
+        context, com.quran.mobile.common.ui.core.R.font.tasnim_ui_medium
+      )
+    }.getOrNull()?.let { button.typeface = it }
+    val padding = dp(context, 12f)
+    button.setPadding(padding, 0, padding, 0)
+    button.compoundDrawablePadding = dp(context, 6f)
+    button.isClickable = true
+    button.setOnClickListener { (context as? PageFrameHost)?.onPageFrameTranslations() }
+    parent.addView(button, ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT))
+    styleFooterButton(context, false, button)
+    return button
+  }
+
+  @JvmStatic
+  fun styleFooterButton(context: Context, nightMode: Boolean, button: android.widget.TextView) {
+    fun c(id: Int) = ContextCompat.getColor(context, id)
+    val fill = c(if (nightMode) R.color.page_frame_band_night else R.color.page_frame_band)
+    val gold = c(if (nightMode) R.color.mushaf_gilt_night else R.color.page_frame_gold)
+    val text = c(if (nightMode) R.color.mushaf_gilt_night else R.color.page_frame_cartouche)
+    button.background = GradientDrawable().apply {
+      cornerRadius = dp(context, 40f).toFloat()
+      setColor(fill)
+      setStroke(maxOf(1, dp(context, 1f)), gold)
+    }
+    button.setTextColor(text)
+    val icon = ContextCompat.getDrawable(context, R.drawable.ic_tasnim_download)?.mutate()
+    icon?.setTint(gold)
+    val size = dp(context, 16f)
+    icon?.setBounds(0, 0, size, size)
+    // the icon before the words, in the reading direction
+    button.setCompoundDrawablesRelative(icon, null, null, null)
+  }
+
+  private fun dp(context: Context, value: Float): Int = Math.round(
+    TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, value, context.resources.displayMetrics)
+  )
+
   /** Cream (night: dark) faces ringed in teal and gilt, with the icon in teal (night: gilt). */
   @JvmStatic
   fun style(context: Context, nightMode: Boolean, vararg buttons: ImageButton) {

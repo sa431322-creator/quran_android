@@ -1993,6 +1993,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   // ---- the ornamental page frame's buttons ----------------------------------------------------
 
+  override fun onPageFrameTranslations() = startTranslationManager()
+
   override fun onPageFrameSearch() {
     startActivity(Intent(this, SearchActivity::class.java))
   }
@@ -2013,6 +2015,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       }
 
       override fun onReadingMode() = showReaderModeMenu()
+      override fun onTranslations() = startTranslationManager()
       override fun onAutoScroll() = startAutoScroll()
       override fun onIndex() = showSuraJumpSheet()
       override fun onSearch() = onPageFrameSearch()

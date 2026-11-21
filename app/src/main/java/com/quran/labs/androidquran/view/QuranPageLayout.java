@@ -85,6 +85,9 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
   private final RectF frameContent = new RectF();
   private ImageButton frameMenuButton;
   private ImageButton frameSearchButton;
+  // the translation pages' footer button: translations and tafsirs to add (null elsewhere)
+  @Nullable private android.widget.TextView frameFooterButton;
+  private final RectF frameFooterRect = new RectF();
 
   public QuranPageLayout(Context context) {
     super(context);
@@ -139,6 +142,10 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
       frame = new TasnimPageFrame(context);
       frameMenuButton = PageFrameButtons.create(context, this, true);
       frameSearchButton = PageFrameButtons.create(context, this, false);
+      if (shouldShowFrameTranslationsButton()) {
+        frame.setFooterAction(true);
+        frameFooterButton = PageFrameButtons.createFooterButton(context, this);
+      }
       // keep the frame's header and footer clear of the screen's cutouts (a camera hole)
       ViewCompat.setOnApplyWindowInsetsListener(this, (v, insets) -> {
         androidx.core.view.DisplayCutoutCompat cutout = insets.getDisplayCutout();
@@ -158,6 +165,11 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
 
   /** Whether this kind of page takes the ornamental frame in portrait (the mushaf's own pages). */
   protected boolean shouldShowFrame() {
+    return false;
+  }
+
+  /** Whether the frame's footer carries the «add translations and tafsirs» button. */
+  protected boolean shouldShowFrameTranslationsButton() {
     return false;
   }
 
@@ -190,6 +202,12 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
       int size = MeasureSpec.makeMeasureSpec(frame.getButtonSize(), MeasureSpec.EXACTLY);
       frameMenuButton.measure(size, size);
       frameSearchButton.measure(size, size);
+      if (frameFooterButton != null) {
+        frame.footerActionRect(width, height, frameFooterRect);
+        frameFooterButton.measure(
+            MeasureSpec.makeMeasureSpec(Math.round(frameFooterRect.width()), MeasureSpec.AT_MOST),
+            MeasureSpec.makeMeasureSpec(Math.round(frameFooterRect.height()), MeasureSpec.EXACTLY));
+      }
     } else if (view != null) {
       int width = MeasureSpec.getSize(widthMeasureSpec);
       int height = MeasureSpec.getSize(heightMeasureSpec);
@@ -230,6 +248,14 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
       int width = getMeasuredWidth();
       frameSearchButton.layout(inset, top, inset + size, top + size);
       frameMenuButton.layout(width - inset - size, top, width - inset, top + size);
+      if (frameFooterButton != null) {
+        frame.footerActionRect(width, getMeasuredHeight(), frameFooterRect);
+        // centered in the space right of the page number
+        int buttonWidth = frameFooterButton.getMeasuredWidth();
+        int left = Math.round(frameFooterRect.centerX() - buttonWidth / 2f);
+        frameFooterButton.layout(left, Math.round(frameFooterRect.top),
+            left + buttonWidth, Math.round(frameFooterRect.bottom));
+      }
       super.onLayout(changed, l, t, r, b);
     } else if (view != null) {
       int width = getMeasuredWidth();
@@ -336,6 +362,9 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     if (frame != null) {
       frame.setNightMode(nightMode);
       PageFrameButtons.style(context, nightMode, frameMenuButton, frameSearchButton);
+      if (frameFooterButton != null) {
+        PageFrameButtons.styleFooterButton(context, nightMode, frameFooterButton);
+      }
       invalidate();
     }
   }
