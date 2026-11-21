@@ -538,7 +538,9 @@ private fun PageLine(
         for (word in placed.lefts.indices) {
           if (ends.getOrNull(word) != true) continue
           val number = ayahNumber(ayahs[word])
-          val diameter = minOf((placed.rights[word] - placed.lefts[word]) * 1.35f, size.height * 0.8f)
+          // inside the end-of-ayah glyph's own place: the medallion is opaque and drawn over the
+          // words, so a wider one would cover the letters beside it
+          val diameter = minOf(placed.rights[word] - placed.lefts[word], size.height * 0.8f)
           val center = Offset((placed.lefts[word] + placed.rights[word]) / 2f, size.height / 2f)
           drawAyahMarker(measurer, number, center, diameter, gilt, textStyle.color, markerFont, accent, plaque)
         }
