@@ -1406,13 +1406,10 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     val quran = menu.findItem(R.id.goto_quran)
     val translation = menu.findItem(R.id.goto_translation)
     if (quran != null && translation != null) {
-      if (!showingTranslation) {
-        quran.isVisible = false
-        translation.isVisible = true
-      } else {
-        quran.isVisible = true
-        translation.isVisible = false
-      }
+      // the globe (mushaf, tajweed, translations and tafsirs) moved to the page frame's menu
+      // («قرآن، ترجمه و تفسیر»), so it is no longer on the bar
+      translation.isVisible = false
+      quran.isVisible = showingTranslation
     }
 
     // the text pages one under the other; page images are not laid out that way
