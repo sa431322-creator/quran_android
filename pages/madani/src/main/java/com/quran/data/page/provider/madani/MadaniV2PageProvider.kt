@@ -3,6 +3,7 @@ package com.quran.data.page.provider.madani
 import com.quran.data.source.MushafType
 import com.quran.data.source.PageContentType
 import com.quran.data.source.PageProvider
+import com.quran.labs.androidquran.pages.common.madani.MadaniPageProvider
 import com.quran.labs.androidquran.pages.data.madaniv2.MadaniV2DataSource
 import com.quran.labs.androidquran.pages.madani.R
 

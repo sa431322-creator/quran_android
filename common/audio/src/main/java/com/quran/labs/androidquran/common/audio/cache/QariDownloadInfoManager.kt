@@ -21,7 +21,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 @SingleIn(AppScope::class)
-class QariDownloadInfoManager @Inject constructor(
+@Inject
+class QariDownloadInfoManager(
   private val quranFileManager: QuranFileManager,
   private val audioInfoCommand: AudioInfoCommand,
   private val downloadInfoStreams: DownloadInfoStreams,
@@ -47,13 +48,10 @@ class QariDownloadInfoManager @Inject constructor(
     return downloadedQariInfo().map { list ->
       list.filter { qariDownloadInfo ->
         val qari = qariDownloadInfo.qari
-        val gappedItem = qariDownloadInfo as? QariDownloadInfo.GappedQariDownloadInfo
         qari.isGapless ||
             // gapped qaris are only shown if they don't have a gapless alternative or if
             // some file for the qari is already downloaded.
-            (!qari.hasGaplessAlternative ||
-                qariDownloadInfo.fullyDownloadedSuras.isNotEmpty() ||
-                (gappedItem?.partiallyDownloadedSuras?.isNotEmpty() ?: false))
+            (!qari.hasGaplessAlternative || qariDownloadInfo.surasWithLocalFiles.isNotEmpty())
       }
     }
   }

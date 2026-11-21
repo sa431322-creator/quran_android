@@ -6,7 +6,8 @@ import com.quran.data.source.PageProvider
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import dev.zacsweers.metro.Inject
 
-class QariUtil @Inject constructor(
+@Inject
+class QariUtil(
   private val pageProvider: PageProvider,
   private val serverQaris: ServerQariSource,
 ) {

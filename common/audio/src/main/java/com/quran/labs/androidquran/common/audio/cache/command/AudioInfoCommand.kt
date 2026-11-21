@@ -3,13 +3,15 @@ package com.quran.labs.androidquran.common.audio.cache.command
 import com.quran.data.model.audio.Qari
 import com.quran.labs.androidquran.common.audio.model.download.QariDownloadInfo
 import com.quran.labs.androidquran.common.audio.util.AudioExtensionDecider
+import com.quran.labs.androidquran.common.audio.util.AudioFileUtil
 import com.quran.labs.androidquran.common.audio.util.QariUtil
 import dev.zacsweers.metro.Inject
 import okio.FileSystem
 import okio.Path
 import okio.Path.Companion.toPath
 
-class AudioInfoCommand @Inject constructor(
+@Inject
+class AudioInfoCommand(
   private val fileSystem: FileSystem,
   private val qariUtil: QariUtil,
   private val audioExtensionDecider: AudioExtensionDecider,
@@ -47,7 +49,12 @@ class AudioInfoCommand @Inject constructor(
         } else {
           gaplessAudioInfoCommand.gaplessDownloads(path, allowedExtensions)
         }
-      QariDownloadInfo.GaplessQariDownloadInfo(qari, fullDownloads, partialDownloads)
+      val surasWithLocalFiles = if (path == null) {
+        emptyList()
+      } else {
+        gaplessAudioInfoCommand.gaplessDownloads(path, AudioFileUtil.audioExtensions).first
+      }
+      QariDownloadInfo.GaplessQariDownloadInfo(qari, fullDownloads, partialDownloads, surasWithLocalFiles)
     } else {
       val (fullDownloads, partiallyDownloadedSuras) =
         if (path == null) {
@@ -55,7 +62,14 @@ class AudioInfoCommand @Inject constructor(
         } else {
           gappedAudioInfoCommand.gappedDownloads(path, allowedExtensions)
         }
-      QariDownloadInfo.GappedQariDownloadInfo(qari, fullDownloads, partiallyDownloadedSuras)
+      val surasWithLocalFiles = if (path == null) {
+        emptyList()
+      } else {
+        val (localFullDownloads, localPartialDownloads) =
+          gappedAudioInfoCommand.gappedDownloads(path, AudioFileUtil.audioExtensions)
+        (localFullDownloads + localPartialDownloads.map { it.sura }).distinct()
+      }
+      QariDownloadInfo.GappedQariDownloadInfo(qari, fullDownloads, partiallyDownloadedSuras, surasWithLocalFiles)
     }
   }
 }

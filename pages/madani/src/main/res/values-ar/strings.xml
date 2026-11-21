@@ -4,4 +4,22 @@
   <string name="madani_v2_description">مصحف المدينة من مجمع الملك فهد مرسوماً بخطوطه: واضح على كل شاشة.</string>
   <string name="madani_v2_images_title">مصحف المدينة (صور)</string>
   <string name="madani_v2_images_description">مصحف المدينة نفسه بصور الصفحات، يُحمَّل مرة واحدة.</string>
+
+  <string name="new_madani_title">مصحف المدينة (١٤٢١)</string>
+  <string name="new_madani_description">مصحف المدينة الطبعة من عام ١٤٢١ من مجمع الملك فهد لطباعة المصحف الشريف</string>
+
+  <string name="newer_new_madani_title">مصحف المدينة (١٤٤٠)</string>
+  <string name="newer_new_madani_description">مصحف المدينة الطبعة من عام ١٤٤٠ من مجمع الملك فهد لطباعة المصحف الشريف</string>
+
+  <string name="newer_new_madani_lines_title">مصحف المدينة (١٤٣٩) - ملائم للشاشات الأطول</string>
+  <string name="newer_new_madani_lines_description">مصحف المدينة الطبعة من عام ١٤٣٩ من مجمع الملك فهد لطباعة المصحف الشريف</string>
+
+  <string name="madani_1441_lines_title">مصحف المدينة (١٤٤١) - ملائم للشاشات الأطول</string>
+  <string name="madani_1441_lines_description">مصحف المدينة الطبعة من عام ١٤٤١ من مجمع الملك فهد لطباعة المصحف الشريف</string>
+
+  <string name="shemerly_title">مصحف الشمرلي</string>
+  <string name="shemerly_description">المصحف الشريف طبعة الشمرلي المنتشرة بكثرة في مصر وبعض البلدان العربية.</string>
+
+  <string name="tajweed_title">مصحف التجويد</string>
+  <string name="tajweed_description">مصحف التجويد.</string>
 </resources>

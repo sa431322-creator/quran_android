@@ -3,8 +3,11 @@ package com.quran.labs.autoquran.di
 import android.content.Context
 import com.quran.data.source.PageProvider
 import com.quran.data.source.QuranDataSource
+import com.quran.labs.androidquran.common.audio.util.AudioDecoderCapabilities
 import com.quran.labs.androidquran.common.audio.util.AudioExtensionDecider
+import com.quran.labs.androidquran.common.audio.util.MediaCodecAudioDecoderCapabilities
 import com.quran.labs.androidquran.common.audio.util.QuranAudioExtensionDecider
+import com.quran.labs.androidquran.pages.common.madani.MadaniPageProvider
 import com.quran.mobile.di.qualifier.ApplicationContext
 import dev.zacsweers.metro.BindingContainer
 import dev.zacsweers.metro.Provides
@@ -17,11 +20,7 @@ class ServiceBindings(private val appContext: Context) {
   fun provideApplicationContext(): Context = appContext
 
   @Provides
-  fun provideQuranPageProvider(
-    providers: Map<@JvmSuppressWildcards String, @JvmSuppressWildcards PageProvider>
-  ): PageProvider {
-    return providers["madani"]!!
-  }
+  fun provideQuranPageProvider(): PageProvider = MadaniPageProvider()
 
   @Provides
   fun provideQuranDataSource(pageProvider: PageProvider): QuranDataSource {
@@ -31,4 +30,9 @@ class ServiceBindings(private val appContext: Context) {
   @Provides
   fun provideAudioExtensionDecider(quranAudioExtensionDecider: QuranAudioExtensionDecider): AudioExtensionDecider =
     quranAudioExtensionDecider
+
+  @Provides
+  fun provideAudioDecoderCapabilities(
+    mediaCodecAudioDecoderCapabilities: MediaCodecAudioDecoderCapabilities
+  ): AudioDecoderCapabilities = mediaCodecAudioDecoderCapabilities
 }

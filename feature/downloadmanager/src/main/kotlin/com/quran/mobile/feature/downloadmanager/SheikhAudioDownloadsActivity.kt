@@ -111,7 +111,7 @@ class SheikhAudioDownloadsActivity : ComponentActivity() {
               titleResource = titleResource,
               isContextual = selectionInfo.isNotEmpty(),
               selectionInfo.isEmpty() || selectionInfo.any { !it.isDownloaded },
-              selectionInfo.any { it.isDownloaded },
+              selectionInfo.any { it.hasLocalFiles },
               downloadAction = ::onDownloadSelectionSelected,
               eraseAction = sheikhAudioPresenter::onRemoveSelection,
               onBackAction = {
@@ -140,7 +140,7 @@ class SheikhAudioDownloadsActivity : ComponentActivity() {
             is SheikhDownloadDialog.RemoveConfirmation ->
               RemoveConfirmationDialog(
                 title = suraNameForRemovalOrNull(dialog.entriesToRemove),
-                onConfirmation = { onRemoveSelectionConfirmed(currentDownloadState.selections) },
+                onConfirmation = { onRemoveSelectionConfirmed(dialog.entriesToRemove) },
                 onDismiss = sheikhAudioPresenter::onCancelDialog,
                 isSuraRemoval = dialog.entriesToRemove.any { it is EntryForQari.SuraForQari }
               )
@@ -172,14 +172,8 @@ class SheikhAudioDownloadsActivity : ComponentActivity() {
   }
 
   private fun suraNameForRemovalOrNull(items: List<EntryForQari>): String? {
-    val removals = items.filter { it.isDownloaded }
-    val suraRemovals = removals.filterIsInstance<EntryForQari.SuraForQari>()
-
-    return if (suraRemovals.size == 1) {
-      quranNaming.getSuraName(this, suraRemovals.first().sura)
-    } else {
-      null
-    }
+    val entry = items.singleOrNull() as? EntryForQari.SuraForQari ?: return null
+    return quranNaming.getSuraName(this, entry.sura)
   }
 
   private fun onSuraClicked(
