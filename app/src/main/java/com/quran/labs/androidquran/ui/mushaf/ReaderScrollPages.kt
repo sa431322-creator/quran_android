@@ -9,6 +9,7 @@ import androidx.core.content.edit
 import androidx.core.view.isVisible
 import com.quran.data.model.SuraAyah
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.view.TasnimFramedLayout
 import com.quran.mobile.feature.mushaf.data.ayahKey
 import com.quran.mobile.feature.mushaf.ui.MushafPageLabels
 
@@ -27,7 +28,8 @@ class ReaderScrollPages(
   private val actions: ScrollPagesActions
 ) {
   val state = ScrollPagesState()
-  private var view: ComposeView? = null
+  // the layer: the pages in Tasnim's ornamental frame, fixed on the screen
+  private var view: TasnimFramedLayout? = null
 
   val isShowing: Boolean get() = view?.isVisible == true
 
@@ -44,7 +46,7 @@ class ReaderScrollPages(
     state.auto = false
     state.playing = false
     state.session++
-    val layer = view ?: ComposeView(context).also { layer ->
+    val layer = view ?: ComposeView(context).let { layer ->
       layer.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
       // no touch falls through to the reader's page behind
       layer.isClickable = true
@@ -52,6 +54,7 @@ class ReaderScrollPages(
         QuranTheme {
           ScrollPages(state, labels, suraName, object : ScrollPagesActions by actions {
             override fun onPage(page: Int) {
+              showLabels(page)
               if (isShowing) actions.onPage(page)
             }
 
@@ -62,16 +65,26 @@ class ReaderScrollPages(
           })
         }
       }
+      val framed = TasnimFramedLayout(context, layer)
+      framed.update(state.nightMode, state.paper)
       // right above the pages, under the reader's bars
       val parent = pages.parent as ViewGroup
       parent.addView(
-        layer,
+        framed,
         parent.indexOfChild(pages) + 1,
         ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
       )
-      view = layer
+      view = framed
+      framed
     }
+    showLabels(page)
     layer.isVisible = true
+  }
+
+  /** The frame's sura, juz and page number: the page at the middle of the screen. */
+  private fun showLabels(page: Int) {
+    val label = labels(page)
+    view?.setLabels(label.suraName, label.juz, label.pageNumber)
   }
 
   fun hide() {
@@ -115,6 +128,7 @@ class ReaderScrollPages(
     state.nightMode = nightMode
     state.nightBrightness = nightBrightness
     state.paper = paper
+    view?.update(nightMode, paper)
   }
 
   companion object {

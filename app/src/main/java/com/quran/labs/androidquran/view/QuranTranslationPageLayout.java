@@ -11,11 +11,23 @@ import com.quran.labs.androidquran.util.QuranSettings;
 
 public class QuranTranslationPageLayout extends QuranPageLayout {
   private TranslationView translationView;
+  // in Tasnim's ornamental page frame (a single page in portrait); a tablet's two pages have none
+  private final boolean withFrame;
 
   public QuranTranslationPageLayout(Context context) {
+    this(context, false);
+  }
+
+  public QuranTranslationPageLayout(Context context, boolean withFrame) {
     super(context);
+    this.withFrame = withFrame;
     isFullWidth = true;
     initialize();
+  }
+
+  @Override
+  protected boolean shouldShowFrame() {
+    return withFrame;
   }
 
   @Override

@@ -9,6 +9,7 @@ import androidx.core.content.edit
 import androidx.core.view.isVisible
 import com.quran.data.model.SuraAyah
 import com.quran.labs.androidquran.common.ui.core.QuranTheme
+import com.quran.labs.androidquran.view.TasnimFramedLayout
 import com.quran.mobile.feature.mushaf.data.MushafRepository
 import com.quran.mobile.feature.mushaf.data.ayahKey
 
@@ -24,7 +25,8 @@ class ReaderAyahCards(
   private val actions: AyahCardsActions
 ) {
   val state = AyahCardsState()
-  private var view: ComposeView? = null
+  // the cards in Tasnim's ornamental frame, fixed on the screen
+  private var view: TasnimFramedLayout? = null
 
   val isShowing: Boolean get() = view?.isVisible == true
 
@@ -36,11 +38,9 @@ class ReaderAyahCards(
     val pages = pages()
     val context = pages.context
     state.repository = repository
-    state.topInset = topInset
-    state.bottomInset = bottomInset
     state.showAll = showAll(context)
     state.scrollTo = ScrollRequest(ayahKey(start.sura, start.ayah))
-    val cards = view ?: ComposeView(context).also { cards ->
+    val cards = view ?: ComposeView(context).let { cards ->
       cards.setViewCompositionStrategy(ViewCompositionStrategy.DisposeOnDetachedFromWindow)
       cards.setContent {
         QuranTheme {
@@ -52,15 +52,21 @@ class ReaderAyahCards(
           })
         }
       }
+      val framed = TasnimFramedLayout(context, cards)
+      framed.update(state.nightMode, state.paper)
       // right above the pages, under the reader's bars and toolbar
       val parent = pages.parent as ViewGroup
       parent.addView(
-        cards,
+        framed,
         parent.indexOfChild(pages) + 1,
         ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
       )
-      view = cards
+      view = framed
+      framed
     }
+    // the bars cover the frame's header and footer first: the cards step aside only for the rest
+    state.topInset = maxOf(0, topInset - cards.contentTop())
+    state.bottomInset = maxOf(0, bottomInset - cards.contentBottomInset())
     cards.isVisible = true
   }
 
@@ -85,6 +91,12 @@ class ReaderAyahCards(
     state.paper = paper
     state.textSize = textSize
     state.columns = columns
+    view?.update(nightMode, paper)
+  }
+
+  /** The frame's sura, juz and page number: those of the card at the top. */
+  fun setFrameLabels(sura: String, juz: String, page: String) {
+    view?.setLabels(sura, juz, page)
   }
 
   companion object {

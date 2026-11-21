@@ -7,8 +7,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.RectF;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.PaintDrawable;
@@ -139,8 +137,8 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
 
     if (!isLandscape && shouldShowFrame()) {
       frame = new TasnimPageFrame(context);
-      frameMenuButton = frameButton(R.drawable.ic_tasnim_menu, R.string.menu_settings, true);
-      frameSearchButton = frameButton(R.drawable.ic_tasnim_search, R.string.menu_search, false);
+      frameMenuButton = PageFrameButtons.create(context, this, true);
+      frameSearchButton = PageFrameButtons.create(context, this, false);
       // keep the frame's header and footer clear of the screen's cutouts (a camera hole)
       ViewCompat.setOnApplyWindowInsetsListener(this, (v, insets) -> {
         androidx.core.view.DisplayCutoutCompat cutout = insets.getDisplayCutout();
@@ -175,51 +173,6 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     frame.setJuz(juz);
     frame.setPage(page);
     invalidate();
-  }
-
-  private ImageButton frameButton(int icon, int description, boolean isMenu) {
-    ImageButton button = new ImageButton(context);
-    button.setImageResource(icon);
-    button.setContentDescription(context.getString(description));
-    button.setScaleType(ImageButton.ScaleType.CENTER);
-    button.setOnClickListener(v -> {
-      if (context instanceof PageFrameHost) {
-        if (isMenu) {
-          ((PageFrameHost) context).onPageFrameMenu();
-        } else {
-          ((PageFrameHost) context).onPageFrameSearch();
-        }
-      }
-    });
-    addView(button, new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT));
-    return button;
-  }
-
-  private void styleFrameButtons(boolean nightMode) {
-    if (frame == null) return;
-    int ring = ContextCompat.getColor(context,
-        nightMode ? R.color.page_frame_band_night : R.color.page_frame_band);
-    int face = ContextCompat.getColor(context,
-        nightMode ? R.color.page_frame_button_night : R.color.page_frame_button);
-    int gold = ContextCompat.getColor(context,
-        nightMode ? R.color.mushaf_gilt_night : R.color.page_frame_gold);
-    int icon = ContextCompat.getColor(context,
-        nightMode ? R.color.mushaf_gilt_night : R.color.page_frame_band);
-    int inset = Math.round(TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 2f,
-        getResources().getDisplayMetrics()));
-    for (ImageButton button : new ImageButton[] { frameMenuButton, frameSearchButton }) {
-      GradientDrawable outer = new GradientDrawable();
-      outer.setShape(GradientDrawable.OVAL);
-      outer.setColor(ring);
-      GradientDrawable inner = new GradientDrawable();
-      inner.setShape(GradientDrawable.OVAL);
-      inner.setColor(face);
-      inner.setStroke(Math.max(1, inset / 2), gold);
-      LayerDrawable background = new LayerDrawable(new Drawable[] { outer, inner });
-      background.setLayerInset(1, inset, inset, inset, inset);
-      button.setBackground(background);
-      button.setColorFilter(icon);
-    }
   }
 
   @Override
@@ -382,7 +335,7 @@ public abstract class QuranPageLayout extends QuranPageWrapperLayout
     updateBackground(nightMode, quranSettings);
     if (frame != null) {
       frame.setNightMode(nightMode);
-      styleFrameButtons(nightMode);
+      PageFrameButtons.style(context, nightMode, frameMenuButton, frameSearchButton);
       invalidate();
     }
   }
