@@ -80,6 +80,7 @@ data class MushafMenuState(
 interface MushafMenuActions {
   fun onScrollReading(scroll: Boolean)
   fun onReadingMode()
+  fun onTranslations()
   fun onAutoScroll()
   fun onIndex()
   fun onSearch()
@@ -177,6 +178,9 @@ private fun MushafMenu(state: MushafMenuState, actions: MushafMenuActions, onDis
               SectionTitle(stringResource(R.string.tasnim_menu_section_reading), colors)
               MenuRow(painterResource(R.drawable.ic_tasnim_mushaf), stringResource(R.string.tasnim_menu_reading_mode), colors) {
                 close { actions.onReadingMode() }
+              }
+              MenuRow(painterResource(R.drawable.ic_tasnim_download), stringResource(R.string.tasnim_menu_translations), colors) {
+                close { actions.onTranslations() }
               }
               if (state.canScrollPages) {
                 MenuRow(painterResource(R.drawable.ic_auto_scroll), stringResource(R.string.tasnim_auto_scroll), colors) {

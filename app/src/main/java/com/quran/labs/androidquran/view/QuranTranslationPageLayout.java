@@ -31,6 +31,11 @@ public class QuranTranslationPageLayout extends QuranPageLayout {
   }
 
   @Override
+  protected boolean shouldShowFrameTranslationsButton() {
+    return true;
+  }
+
+  @Override
   protected View generateContentView(@NonNull Context context, boolean isLandscape) {
     translationView = new TranslationView(context);
     return translationView;

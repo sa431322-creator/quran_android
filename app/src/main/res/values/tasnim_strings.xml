@@ -140,6 +140,8 @@
   <string name="tasnim_menu_mode_horizontal" translatable="false">مصحف افقی</string>
   <string name="tasnim_menu_section_reading" translatable="false">خواندن</string>
   <string name="tasnim_menu_reading_mode" translatable="false">قرآن، ترجمه و تفسیر</string>
+  <string name="tasnim_menu_translations" translatable="false">ترجمه‌ها و تفسیرها</string>
+  <string name="tasnim_frame_translations" translatable="false">ترجمه و تفسیر</string>
   <string name="tasnim_menu_index" translatable="false">فهرست</string>
   <string name="tasnim_menu_audio" translatable="false">صوتی‌ها</string>
   <string name="tasnim_menu_section_look" translatable="false">ظاهر</string>
