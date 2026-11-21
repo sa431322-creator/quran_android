@@ -1412,20 +1412,12 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       quran.isVisible = showingTranslation
     }
 
-    // the text pages one under the other; page images are not laid out that way
-    val canScrollPages = hasTextPages() && !showingTranslation
-    menu.findItem(R.id.auto_scroll)?.isVisible = canScrollPages
-    menu.findItem(R.id.reading_layout)?.let { item ->
-      item.isVisible = canScrollPages
-      // named for the layout it switches to
-      item.setTitle(
-        if (ReaderScrollPages.isScrollReading(this)) {
-          R.string.tasnim_reading_layout_pages
-        } else {
-          R.string.tasnim_reading_layout_scroll
-        }
-      )
-    }
+    // auto-scroll, the reading layout, search and the page's color are in the page frame's
+    // menu now; the bar's overflow keeps only the jump, the settings and the help
+    menu.findItem(R.id.auto_scroll)?.isVisible = false
+    menu.findItem(R.id.reading_layout)?.isVisible = false
+    menu.findItem(R.id.search)?.isVisible = false
+    menu.findItem(R.id.page_theme)?.isVisible = false
 
     // hidden only when the system ignores app orientation requests
     menu.findItem(R.id.rotate_screen)?.isVisible =
