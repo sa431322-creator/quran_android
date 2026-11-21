@@ -109,8 +109,10 @@ internal class TranslationAdapter(
   private fun positionForViewHolderIndex(index: Int): IntArray? {
     val viewHolder = recyclerView.findViewHolderForAdapterPosition(index) as RowViewHolder?
     return viewHolder?.ayahNumber?.let { ayahNumberView ->
-      val x = (ayahNumberView.left + ayahNumberView.boxCenterX)
-      val y = (ayahNumberView.top + ayahNumberView.boxBottomY)
+      // the number sits in its row (with the ayah's buttons), which sits in the list
+      val row = viewHolder.itemView
+      val x = (row.left + ayahNumberView.left + ayahNumberView.boxCenterX)
+      val y = (row.top + ayahNumberView.top + ayahNumberView.boxBottomY)
       intArrayOf(x, y)
     }
   }
@@ -447,6 +449,29 @@ internal class TranslationAdapter(
     ayahNumber.setTextColor(textColor)
     ayahNumber.setNightMode(isNightMode)
     ayahNumber.setAyah(text, indicators(row.ayahInfo))
+    bindVerseActions(row, ayahNumber.parent as? View)
+  }
+
+  /** The ayah's share, play and bookmark buttons, as on the ayah cards. */
+  private fun bindVerseActions(row: TranslationViewRow, rowView: View?) {
+    rowView ?: return
+    val suraAyah = row.ayahInfo.asSuraAyah()
+    val actions = context as? TranslationAyahActions
+    val tint = ContextCompat.getColor(
+      context,
+      if (isNightMode) R.color.mushaf_gilt_night else R.color.page_frame_band
+    )
+    listOf(
+      R.id.verse_share to { actions?.onShareAyah(suraAyah) },
+      R.id.verse_play to { actions?.onPlayAyah(suraAyah) },
+      R.id.verse_bookmark to { actions?.onBookmarkAyah(suraAyah) }
+    ).forEach { (id, action) ->
+      rowView.findViewById<android.widget.ImageView>(id)?.apply {
+        setColorFilter(tint)
+        visibility = if (actions == null) View.GONE else View.VISIBLE
+        setOnClickListener { action() }
+      }
+    }
   }
 
   private fun indicators(ayahInfo: QuranAyahInfo): List<AyahNumberView.Indicator> {

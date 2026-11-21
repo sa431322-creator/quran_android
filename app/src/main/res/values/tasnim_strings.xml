@@ -142,6 +142,9 @@
   <string name="tasnim_menu_reading_mode" translatable="false">قرآن، ترجمه و تفسیر</string>
   <string name="tasnim_menu_translations" translatable="false">ترجمه‌ها و تفسیرها</string>
   <string name="tasnim_frame_translations" translatable="false">ترجمه و تفسیر</string>
+  <string name="tasnim_verse_share" translatable="false">اشتراک‌گذاری آیه</string>
+  <string name="tasnim_verse_play" translatable="false">پخش از این آیه</string>
+  <string name="tasnim_verse_bookmark" translatable="false">نشانک آیه</string>
   <string name="tasnim_menu_index" translatable="false">فهرست</string>
   <string name="tasnim_menu_audio" translatable="false">صوتی‌ها</string>
   <string name="tasnim_menu_section_look" translatable="false">ظاهر</string>

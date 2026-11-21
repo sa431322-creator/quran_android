@@ -213,7 +213,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   QuranReadingPageComponentProvider, AyahToolBarInjector, QariListWrapperInjector,
   AudioBarInjector, AyahBookmarkWrapperInjector, ReadingBookmarkSheetWrapperInjector,
   ActivityCompat.OnRequestPermissionsResultCallback, AudioPresenterScreen,
-  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host, AyahShareSheet.Host, PageFrameHost {
+  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host, AyahShareSheet.Host, PageFrameHost,
+  com.quran.labs.androidquran.ui.translation.TranslationAyahActions {
   private var lastPopupTime: Long = 0
   private var isActionBarHidden = true
   private var shouldReconnect = false
@@ -2002,6 +2003,14 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
 
   override fun onPageFrameTranslations() = startTranslationManager()
 
+  // ---- an ayah's buttons on the translation pages ----------------------------------------------
+
+  override fun onShareAyah(suraAyah: SuraAyah) = showAyahShareSheet(suraAyah, suraAyah)
+
+  override fun onPlayAyah(suraAyah: SuraAyah) = playFromAyah(suraAyah.sura, suraAyah.ayah)
+
+  override fun onBookmarkAyah(suraAyah: SuraAyah) = showAyahBookmarkSheet(suraAyah)
+
   override fun onPageFrameSearch() {
     startActivity(Intent(this, SearchActivity::class.java))
   }
@@ -2594,6 +2603,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     override fun onPlay(sura: Int, ayah: Int) = playFromAyah(sura, ayah)
 
     override fun onBookmark(sura: Int, ayah: Int) = showAyahBookmarkSheet(SuraAyah(sura, ayah))
+
+    override fun onShare(sura: Int, ayah: Int) {
+      val suraAyah = SuraAyah(sura, ayah)
+      showAyahShareSheet(suraAyah, suraAyah)
+    }
 
     override fun onLongPress(sura: Int, ayah: Int, bounds: androidx.compose.ui.geometry.Rect) {
       // the ayah toolbar over the card, placed like a page's: relative to the pages' view
