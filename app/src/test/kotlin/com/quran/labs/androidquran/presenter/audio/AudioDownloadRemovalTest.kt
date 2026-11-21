@@ -14,6 +14,7 @@ import com.quran.labs.androidquran.common.audio.extension.isRangeDownloaded
 import com.quran.labs.androidquran.common.audio.model.QariItem
 import com.quran.labs.androidquran.common.audio.util.AudioDecoderCapabilities
 import com.quran.labs.androidquran.common.audio.util.QariUtil
+import com.quran.labs.androidquran.common.audio.util.ServerQariSource
 import com.quran.labs.androidquran.common.audio.util.QuranAudioExtensionDecider
 import com.quran.labs.androidquran.fakes.FakePageProvider
 import com.quran.labs.androidquran.pages.data.madani.MadaniDataSource
@@ -214,7 +215,7 @@ class AudioDownloadRemovalTest {
     })
     return AudioInfoCommand(
       FileSystem.SYSTEM,
-      QariUtil(FakePageProvider(listOf(qari))),
+      QariUtil(FakePageProvider(listOf(qari)), ServerQariSource.None),
       decider,
       GappedAudioInfoCommand(QuranInfo(MadaniDataSource()), FileSystem.SYSTEM),
       GaplessAudioInfoCommand(FileSystem.SYSTEM)
