@@ -206,7 +206,9 @@ fun MushafPageView(
   /** filled with the page's word positions, for a host that hit-tests itself */
   hits: MushafPageHits? = null,
   /** when set, every touch on the page goes here instead of [onTap] and [onAyahLongPress] */
-  onGesture: ((MushafGesture, Offset) -> Unit)? = null
+  onGesture: ((MushafGesture, Offset) -> Unit)? = null,
+  /** false when the host shows the sura, juz and page number itself (a page frame around it) */
+  showLabels: Boolean = true
 ) {
   // each text line's words and position, to find all of a long-pressed ayah's words
   val pageHits = hits ?: remember { MushafPageHits() }
@@ -251,7 +253,7 @@ fun MushafPageView(
       val window = LocalWindowInfo.current.containerSize
       val widthPx = sane(with(density) { maxWidth.toPx() }, window.width)
       val heightPx = sane(with(density) { maxHeight.toPx() }, window.height)
-      val sizing = PageSizing(widthPx, heightPx)
+      val sizing = PageSizing(widthPx, heightPx, showLabels)
       val labelFontPx = sizing.labelFont
       val labelRowPx = sizing.labelRow
       val fontPx = sizing.font
@@ -274,10 +276,12 @@ fun MushafPageView(
       }
 
       Column(Modifier.fillMaxSize()) {
-      PageLabelRow(
-        start = labels.suraName, end = labels.juz, style = labelStyle, height = labelRowPx,
-        startStyle = labelStyle.copy(fontFamily = style.titleFont, fontSize = labelStyle.fontSize * 1.3f)
-      )
+      if (showLabels) {
+        PageLabelRow(
+          start = labels.suraName, end = labels.juz, style = labelStyle, height = labelRowPx,
+          startStyle = labelStyle.copy(fontFamily = style.titleFont, fontSize = labelStyle.fontSize * 1.3f)
+        )
+      }
       Column(
         modifier = Modifier
           .weight(1f)
@@ -323,7 +327,9 @@ fun MushafPageView(
           }
         }
       }
-      PageNumber(labels.pageNumber, labelStyle.copy(color = style.ink), style.gilt, labelRowPx)
+      if (showLabels) {
+        PageNumber(labels.pageNumber, labelStyle.copy(color = style.ink), style.gilt, labelRowPx)
+      }
       }
     }
   }
@@ -336,10 +342,10 @@ private val PAGE_PADDING_VERTICAL = 4.dp
  * How a page is sized in a text area of [width] by [height] (any one unit): from the width, and in
  * portrait no larger than lets the 15 rows fit at the print's line spacing.
  */
-private class PageSizing(width: Float, height: Float) {
+private class PageSizing(width: Float, height: Float, labels: Boolean = true) {
   private val widthFont = width / LINE_EM
   val labelFont = widthFont * LABEL_EM
-  val labelRow = labelFont * LABEL_ROW_EM
+  val labelRow = if (labels) labelFont * LABEL_ROW_EM else 0f
   private val textHeight = (height - 2 * labelRow).coerceAtLeast(1f)
   val font = if (height >= width) {
     minOf(widthFont, textHeight / (MUSHAF_LINES_PER_PAGE * PRINT_ROW_EM))
@@ -360,10 +366,11 @@ private class PageSizing(width: Float, height: Float) {
  * inside: [height] where the page fits it (portrait), more where it would scroll (landscape). For
  * a host that lays pages out one under the other.
  */
-fun mushafPageFullHeight(width: Dp, height: Dp): Dp {
+fun mushafPageFullHeight(width: Dp, height: Dp, showLabels: Boolean = true): Dp {
   val sizing = PageSizing(
     (width - PAGE_PADDING_HORIZONTAL * 2).value,
-    (height - PAGE_PADDING_VERTICAL * 2).value
+    (height - PAGE_PADDING_VERTICAL * 2).value,
+    showLabels
   )
   return sizing.fullHeight.dp + PAGE_PADDING_VERTICAL * 2
 }

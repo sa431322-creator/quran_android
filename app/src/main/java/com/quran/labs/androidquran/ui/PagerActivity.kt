@@ -136,6 +136,12 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.util.ShareUtil
 import com.quran.labs.androidquran.view.IconPageIndicator
+import com.quran.labs.androidquran.view.PageFrameHost
+import com.quran.labs.androidquran.ui.mushaf.MushafMenuActions
+import com.quran.labs.androidquran.ui.mushaf.MushafMenuState
+import com.quran.labs.androidquran.ui.mushaf.MushafMenuView
+import com.quran.mobile.feature.pagetheme.PageTheme
+import com.quran.mobile.feature.pagetheme.PageThemeConstants
 import com.quran.labs.androidquran.view.QuranSpinner
 import com.quran.labs.androidquran.view.SlidingUpPanelLayout
 import com.quran.mobile.common.download.DownloadInfoStreams
@@ -207,7 +213,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   QuranReadingPageComponentProvider, AyahToolBarInjector, QariListWrapperInjector,
   AudioBarInjector, AyahBookmarkWrapperInjector, ReadingBookmarkSheetWrapperInjector,
   ActivityCompat.OnRequestPermissionsResultCallback, AudioPresenterScreen,
-  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host, AyahShareSheet.Host {
+  ReadingBookmarkPresenter.Screen, SuraJumpSheet.Host, AyahShareSheet.Host, PageFrameHost {
   private var lastPopupTime: Long = 0
   private var isActionBarHidden = true
   private var shouldReconnect = false
@@ -1992,6 +1998,62 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       ViewGroup.LayoutParams.MATCH_PARENT,
       ViewGroup.LayoutParams.MATCH_PARENT
     )
+    overlay.visibility = View.VISIBLE
+    toggleActionBarVisibility(false)
+  }
+
+  // ---- the ornamental page frame's buttons ----------------------------------------------------
+
+  override fun onPageFrameSearch() {
+    startActivity(Intent(this, SearchActivity::class.java))
+  }
+
+  /** The mushaf's settings menu, sliding in from the right over the page. */
+  override fun onPageFrameMenu() {
+    val state = MushafMenuState(
+      canScrollPages = hasTextPages() && !showingTranslation,
+      isScrollReading = ReaderScrollPages.isScrollReading(this),
+      nightMode = quranSettings.isNightMode,
+      pageTheme = PageTheme.fromKey(quranSettings.pageTheme)
+    )
+    val actions = object : MushafMenuActions {
+      override fun onScrollReading(scroll: Boolean) {
+        ReaderScrollPages.setScrollReading(this@PagerActivity, scroll)
+        syncScrollReading()
+        supportInvalidateOptionsMenu()
+      }
+
+      override fun onReadingMode() = showReaderModeMenu()
+      override fun onAutoScroll() = startAutoScroll()
+      override fun onIndex() = showSuraJumpSheet()
+      override fun onSearch() = onPageFrameSearch()
+      override fun onAudio() = toggleActionBarVisibility(true)
+
+      override fun onNightMode(night: Boolean) {
+        quranSettings.pageAppearance =
+          if (night) PageThemeConstants.PAGE_APPEARANCE_DARK else PageThemeConstants.PAGE_APPEARANCE_LIGHT
+      }
+
+      override fun onPageTheme(theme: PageTheme) {
+        quranSettings.pageTheme = theme.storageKey
+        // a paper color is seen by day: leave night for it, but keep an automatic appearance
+        if (quranSettings.pageAppearance == PageThemeConstants.PAGE_APPEARANCE_DARK) {
+          quranSettings.pageAppearance = PageThemeConstants.PAGE_APPEARANCE_LIGHT
+        }
+      }
+
+      override fun onMorePageThemes() = showPageThemeSheet()
+      override fun onBookmarkPage() = showReadingBookmarkSheet(ReadingBookmarkTarget.Page(currentPage))
+      override fun onSettings() {
+        startActivity(Intent(this@PagerActivity, QuranPreferenceActivity::class.java))
+      }
+    }
+    val menu = MushafMenuView(this, state, actions) {
+      overlay.removeAllViews()
+      overlay.visibility = View.GONE
+    }
+    overlay.removeAllViews()
+    overlay.addView(menu, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
     overlay.visibility = View.VISIBLE
     toggleActionBarVisibility(false)
   }

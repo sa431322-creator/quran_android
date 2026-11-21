@@ -13,6 +13,7 @@ import com.quran.labs.androidquran.ui.helpers.QuranDisplayHelper
 import com.quran.labs.androidquran.ui.util.ImageAyahUtils
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.HighlightingImageView
+import com.quran.labs.androidquran.view.QuranPageLayout
 import com.quran.page.common.data.AyahBounds
 import com.quran.page.common.data.AyahCoordinates
 import com.quran.page.common.data.PageCoordinates
@@ -60,6 +61,8 @@ open class AyahImageTrackerItem @JvmOverloads constructor(
     val rub3Text = QuranDisplayHelper.displayRub3(context, quranInfo, page)
     val manzilText = quranDisplayData.getManzilForPage(context, page)
     ayahView.setOverlayText(suraText, juzText, pageText, rub3Text, manzilText)
+    // a framed page shows them in its frame (the page layout is the image's parent)
+    (ayahView.parent as? QuranPageLayout)?.setFrameLabels(suraText, juzText, pageText)
   }
 
   override fun onSetAyahCoordinates(ayahCoordinates: AyahCoordinates) {

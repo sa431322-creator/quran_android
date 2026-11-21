@@ -129,6 +129,9 @@ public class HighlightingImageView extends AppCompatImageView {
       new MushafPageOrnamentDrawer(getContext());
   private final RectF imageRect = new RectF();
   private boolean isSinglePortraitPage = true;
+  // inside Tasnim's ornamental page frame: the frame shows the page's labels and keeps clear of
+  // the screen's cutouts, so the image draws no labels and needs no room for them
+  private boolean isFramed = false;
 
   private final ImageDrawHelper glyphBoundsDebuggingDrawer = DEBUG_BOUNDS ?
       new GlyphBoundsDebuggingDrawer(() -> ayahCoordinates) : null;
@@ -155,7 +158,7 @@ public class HighlightingImageView extends AppCompatImageView {
     Insetter.builder()
         .setOnApplyInsetsListener((view, insets, initialState) -> {
           final DisplayCutoutCompat cutout = insets.getDisplayCutout();
-          if (cutout != null) {
+          if (cutout != null && !isFramed) {
             topSafeOffset = cutout.getSafeInsetTop();
             bottomSafeOffset = cutout.getSafeInsetBottom();
             horizontalSafeOffset = Math.max(cutout.getSafeInsetLeft(), cutout.getSafeInsetRight());
@@ -166,6 +169,18 @@ public class HighlightingImageView extends AppCompatImageView {
           }
         })
         .applyToView(this);
+  }
+
+  /** Inside Tasnim's ornamental page frame (see {@link TasnimPageFrame}). */
+  public void setFramed(boolean framed) {
+    isFramed = framed;
+    if (framed) {
+      topSafeOffset = 0;
+      bottomSafeOffset = 0;
+      horizontalSafeOffset = 0;
+      verticalOffsetForScrolling = 0;
+      setPadding(0, 0, 0, 0);
+    }
   }
 
   public void setIsScrollable(boolean scrollable, boolean landscape) {
@@ -523,7 +538,7 @@ public class HighlightingImageView extends AppCompatImageView {
   }
 
   private void overlayText(Canvas canvas, Matrix matrix) {
-    if (overlayParams == null || !initOverlayParams(matrix)) {
+    if (isFramed || overlayParams == null || !initOverlayParams(matrix)) {
       return;
     }
 
