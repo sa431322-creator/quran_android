@@ -122,6 +122,7 @@ interface AyahCardsActions {
   fun onTap()
   fun onPlay(sura: Int, ayah: Int)
   fun onBookmark(sura: Int, ayah: Int)
+  fun onShare(sura: Int, ayah: Int)
   /** a long press: the reader's ayah toolbar at [bounds] (window coordinates) */
   fun onLongPress(sura: Int, ayah: Int, bounds: Rect)
   /**
@@ -390,6 +391,13 @@ private fun AyahCard(
     Row(verticalAlignment = Alignment.CenterVertically) {
       MushafAyahMarker(ayah, style, 40.dp)
       Spacer(Modifier.weight(1f))
+      IconButton(onClick = { actions.onShare(sura, ayah) }) {
+        Icon(
+          painterResource(R.drawable.ic_tasnim_share),
+          contentDescription = stringResource(R.string.tasnim_verse_share),
+          tint = colors.action
+        )
+      }
       IconButton(onClick = { actions.onPlay(sura, ayah) }) {
         // the audio bar's own play icon
         Icon(

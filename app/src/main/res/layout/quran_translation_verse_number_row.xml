@@ -1,15 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.quran.labs.androidquran.view.AyahNumberView
+<!-- an ayah's number row on the translation pages, with the ayah's share, play and bookmark -->
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/ayah_number"
     android:layout_width="match_parent"
-    android:layout_height="64dp"
-    android:paddingStart="16dp"
-    android:paddingEnd="16dp"
-    app:verseBoxHeight="32dp"
-    app:nightBackgroundColor="@color/translation_verse_background_night_color"
-    app:backgroundColor="@color/translation_verse_background_color"
-    android:textColor="@color/translation_verse_text_color"
-    android:textSize="13sp"
-    />
+    android:layout_height="64dp">
+
+  <com.quran.labs.androidquran.view.AyahNumberView
+      android:id="@+id/ayah_number"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:paddingStart="16dp"
+      android:paddingEnd="16dp"
+      app:verseBoxHeight="32dp"
+      app:nightBackgroundColor="@color/translation_verse_background_night_color"
+      app:backgroundColor="@color/translation_verse_background_color"
+      android:textColor="@color/translation_verse_text_color"
+      android:textSize="13sp"
+      />
+
+  <!-- on the side away from the ayah's number, as on the ayah cards -->
+  <LinearLayout
+      android:id="@+id/verse_actions"
+      android:layout_width="wrap_content"
+      android:layout_height="match_parent"
+      android:layout_gravity="right|center_vertical"
+      android:layoutDirection="ltr"
+      android:gravity="center_vertical"
+      android:orientation="horizontal"
+      android:paddingRight="8dp">
+
+    <ImageButton
+        android:id="@+id/verse_bookmark"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/tasnim_verse_bookmark"
+        android:src="@drawable/ic_tasnim_bookmark" />
+
+    <ImageButton
+        android:id="@+id/verse_play"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/tasnim_verse_play"
+        android:scaleX="-1"
+        android:src="@drawable/ic_tasnim_play" />
+    <!-- (the Tasnim play icon points left; turned to point like the cards' play button) -->
+
+    <ImageButton
+        android:id="@+id/verse_share"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/tasnim_verse_share"
+        android:src="@drawable/ic_tasnim_share" />
+  </LinearLayout>
+</FrameLayout>
