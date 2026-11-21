@@ -154,7 +154,8 @@ internal fun ScrollPages(
       .pointerInput(Unit) { detectTapGestures { tap() } }
   ) {
     val all = pages ?: return@BoxWithConstraints
-    val pageHeight = mushafPageFullHeight(maxWidth, maxHeight)
+    // the frame around the layer shows the sura, juz and page number, so the pages do not
+    val pageHeight = mushafPageFullHeight(maxWidth, maxHeight, showLabels = false)
     val pageHeightPx = with(LocalDensity.current) { pageHeight.toPx() }
     val seconds = AUTO_SCROLL_SECONDS_PER_PAGE[state.speed.coerceIn(AUTO_SCROLL_SECONDS_PER_PAGE.indices)]
     val pxPerSecond = pageHeightPx / seconds
@@ -215,7 +216,8 @@ internal fun ScrollPages(
                 // the text waits under the ayah's toolbar
                 state.playing = false
                 currentActions.onAyahLongPress(key, bounds)
-              }
+              },
+              showLabels = false
             )
           }
         }

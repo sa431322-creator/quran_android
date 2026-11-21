@@ -2011,7 +2011,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   /** The mushaf's settings menu, sliding in from the right over the page. */
   override fun onPageFrameMenu() {
     val state = MushafMenuState(
-      canScrollPages = hasTextPages() && !showingTranslation,
+      canScrollPages = canScrollPages(),
       isScrollReading = ReaderScrollPages.isScrollReading(this),
       nightMode = quranSettings.isNightMode,
       pageTheme = PageTheme.fromKey(quranSettings.pageTheme)
@@ -2421,6 +2421,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       TextMushaf.repository(this, MushafEdition.PLAIN_V2)
     }
     ayahCards.show(start, repository, toolBarArea.height, audioStatusBar.height + pageSliderArea.height)
+    showAyahCardsFrameLabels(start.sura, start.ayah)
     onAyahCardsBackCallback.isEnabled = true
     // the whole Quran's text, loaded once (not again while a load is still running)
     if (ayahCards.state.persian == null && persianTextJob?.isActive != true) {
@@ -2550,6 +2551,16 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     override fun onCloseAuto() = stopAutoScroll()
   }
 
+  /** The ayah cards' frame: the sura, juz and page number of the ayah at the top. */
+  private fun showAyahCardsFrameLabels(sura: Int, ayah: Int) {
+    val page = quranInfo.getPageFromSuraAyah(sura, ayah)
+    ayahCards.setFrameLabels(
+      quranDisplayData.getSuraName(this, sura, true),
+      quranDisplayData.getJuzDisplayStringForPage(this, page),
+      QuranUtils.getLocalizedNumber(page)
+    )
+  }
+
   private fun hideAyahCards() {
     ayahCards.hide()
     onAyahCardsBackCallback.isEnabled = false
@@ -2597,6 +2608,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       if (byUser && selectionStart != null && !slidingPanel.isPaneVisible) {
         readingEventPresenterBridge.clearSelectedAyah()
       }
+      showAyahCardsFrameLabels(sura, ayah)
       ensurePage(sura, ayah)
     }
 

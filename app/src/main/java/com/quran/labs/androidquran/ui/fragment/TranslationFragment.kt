@@ -25,6 +25,7 @@ import com.quran.labs.androidquran.ui.helpers.QuranPage
 import com.quran.labs.androidquran.ui.translation.TranslationView
 import com.quran.labs.androidquran.ui.util.PageController
 import com.quran.labs.androidquran.util.QuranSettings
+import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.QuranTranslationPageLayout
 import com.quran.mobile.translation.model.LocalTranslation
 import com.quran.reading.common.ReadingEventPresenter
@@ -65,8 +66,16 @@ class TranslationFragment : Fragment(), AyahInteractionHandler, QuranPage,
     container: ViewGroup?, savedInstanceState: Bundle?
   ): View? {
     val context: Context? = activity
-    mainView = QuranTranslationPageLayout(context)
+    mainView = QuranTranslationPageLayout(context, true)
     mainView.setPageController(this, pageNumber, quranInfo.skip)
+    // the page's sura, juz and number in the ornamental frame, as on the mushaf's pages
+    if (context != null) {
+      mainView.setFrameLabels(
+        quranDisplayData.getSuraNameFromPage(context, pageNumber, true),
+        quranDisplayData.getJuzDisplayStringForPage(context, pageNumber),
+        QuranUtils.getLocalizedNumber(pageNumber)
+      )
+    }
     translationView = mainView.translationView
     translationView.setTranslationClickedListener {
       val activity: Activity? = activity
