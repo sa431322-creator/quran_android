@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The statement on Tasnim, shown under the header of the About screen (xml/about.xml). -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingStart="20dp"
+    android:paddingTop="4dp"
+    android:paddingEnd="20dp"
+    android:paddingBottom="16dp">
+
+  <TextView
+      style="@style/TasnimAboutHeading"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:text="@string/tasnim_about_basmala" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:text="@string/tasnim_about_opening" />
+
+  <TextView
+      style="@style/TasnimAboutTitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:gravity="center_horizontal"
+      android:text="@string/tasnim_about_title" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_intro" />
+
+  <TextView
+      style="@style/TasnimAboutTitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_features_title" />
+
+  <TextView
+      style="@style/TasnimAboutHeading"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature1_title" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature1_body" />
+
+  <TextView
+      style="@style/TasnimAboutHeading"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature2_title" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature2_body" />
+
+  <TextView
+      style="@style/TasnimAboutHeading"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature3_title" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_feature3_body" />
+
+  <TextView
+      style="@style/TasnimAboutTitle"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_closing_title" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_closing" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:text="@string/tasnim_about_prayer" />
+
+  <TextView
+      style="@style/TasnimAboutHeading"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="12dp"
+      android:gravity="end"
+      android:text="@string/tasnim_about_signature_name" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="0dp"
+      android:gravity="end"
+      android:text="@string/tasnim_about_signature_org" />
+
+  <TextView
+      style="@style/TasnimAboutBody"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="0dp"
+      android:gravity="end"
+      android:text="@string/tasnim_about_signature_date" />
+</LinearLayout>
