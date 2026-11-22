@@ -8,6 +8,7 @@ import com.quran.data.core.QuranInfo
 import com.quran.data.model.SuraAyah
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.pages.data.madani.MadaniDataSource
+import com.quran.labs.androidquran.tasnim.TasnimConfigRepository
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -17,7 +18,15 @@ import org.robolectric.annotation.Config
 @RunWith(RobolectricTestRunner::class)
 class ShareUtilTest {
   private val quranInfo = QuranInfo(MadaniDataSource())
-  private val shareUtil = ShareUtil(QuranDisplayData(quranInfo), quranInfo)
+  private val shareUtil = ShareUtil(
+    QuranDisplayData(quranInfo),
+    quranInfo,
+    TasnimConfigRepository(
+      null,
+      ApplicationProvider.getApplicationContext<Context>()
+        .getSharedPreferences("share_util_test", Context.MODE_PRIVATE)
+    )
+  )
 
   @Test
   fun `a single ayah shows its page`() {

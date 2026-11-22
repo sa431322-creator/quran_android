@@ -86,6 +86,8 @@
   <string name="tasnim_share_text_hint">متن آیه با نام سوره، شماره آیه و صفحه</string>
   <string name="tasnim_share_copy">کپی متن</string>
   <string name="tasnim_share_link">پیوند آیه</string>
+  <!-- the "link" share: %1$s is the ayah range, %2$s where to get Tasnim -->
+  <string name="tasnim_share_link_message" translatable="false">%1$s\nاین آیه را در اپلیکیشن تسنیم بخوانید:\n%2$s</string>
   <string name="tasnim_share_as_image">تصویر آیه</string>
   <string name="tasnim_share_as_image_hint">با قاب قرآنی، پس‌زمینه و تفسیر</string>
   <string name="tasnim_share_with_audio">صوت یا ویدیو</string>

@@ -16,6 +16,7 @@ import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.common.QuranAyahInfo
 import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.model.translation.ArabicDatabaseUtils
+import com.quran.labs.androidquran.tasnim.TasnimConfigRepository
 import com.quran.labs.androidquran.ui.util.ToastCompat
 import com.quran.mobile.translation.model.LocalTranslation
 import dev.zacsweers.metro.Inject
@@ -23,7 +24,8 @@ import java.text.NumberFormat
 
 class ShareUtil @Inject internal constructor(
   private val quranDisplayData: QuranDisplayData,
-  private val quranInfo: QuranInfo
+  private val quranInfo: QuranInfo,
+  private val configRepository: TasnimConfigRepository
 ) {
 
   fun copyVerses(activity: Activity, verses: List<QuranText>) {
@@ -46,22 +48,32 @@ class ShareUtil @Inject internal constructor(
     shareViaIntent(activity, text, com.quran.labs.androidquran.common.toolbar.R.string.share_ayah_text)
   }
 
+  /**
+   * Tasnim: shares the ayah range with a link to get Tasnim (there is no Tasnim web page per ayah,
+   * so this replaces upstream's quran.com link).
+   */
   fun shareAyahLink(activity: Activity, start: SuraAyah, end: SuraAyah) {
-    // keep the preview range aligned with the URL, which is limited to a single sura.
-    val endAyah = if (end.sura == start.sura) end.ayah else quranInfo.getNumberOfAyahs(start.sura)
-    val url = buildString {
-      append("https://quran.com/${start.sura}/${start.ayah}")
-      if (endAyah != start.ayah) {
-        append("-$endAyah")
-      }
-    }
-
-    val previewTitle = rangeLabel(activity, start, SuraAyah(start.sura, endAyah))
-
+    val label = rangeLabel(activity, start, end)
+    val text = activity.getString(R.string.tasnim_share_link_message, label, appLink(activity))
     shareViaIntent(
-      activity, url, com.quran.labs.androidquran.common.toolbar.R.string.share_ayah,
-      previewTitle
+      activity, text, com.quran.labs.androidquran.common.toolbar.R.string.share_ayah, label
     )
+  }
+
+  /**
+   * Where to get Tasnim: the update link set in the Tasnim admin panel, else the website, else
+   * the app's store page, always as a web address (a store app link can't be opened everywhere).
+   */
+  fun appLink(context: Context): String {
+    val config = configRepository.cached()
+    val link = config.update.url?.takeIf { it.isNotBlank() }
+      ?: config.links.website?.takeIf { it.isNotBlank() }
+      ?: "https://play.google.com/store/apps/details?id=${context.packageName}"
+    return if (link.startsWith("market://details")) {
+      "https://play.google.com/store/apps/" + link.removePrefix("market://")
+    } else {
+      link
+    }
   }
 
   fun shareViaIntent(
