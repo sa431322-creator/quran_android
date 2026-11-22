@@ -7,6 +7,11 @@
       android:summary="@string/about_description"
       android:title="@string/app_name"/>
 
+  <Preference
+      android:key="tasnimAboutStatement"
+      android:layout="@layout/tasnim_about_statement"
+      android:selectable="false"/>
+
   <PreferenceCategory
       android:key="aboutDataSources"
       android:title="@string/about_data_sources"

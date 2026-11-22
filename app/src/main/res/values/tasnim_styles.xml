@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <!-- The statement on the About screen (layout/tasnim_about_statement.xml) -->
+  <style name="TasnimAboutBody" parent="TasnimUiText">
+    <item name="android:layout_marginTop">8dp</item>
+    <item name="android:textSize">14sp</item>
+    <item name="android:lineSpacingMultiplier">1.3</item>
+    <item name="android:textColor">?android:attr/textColorSecondary</item>
+  </style>
+
+  <style name="TasnimAboutHeading" parent="TasnimUiText.Medium">
+    <item name="android:layout_marginTop">12dp</item>
+    <item name="android:textSize">15sp</item>
+    <item name="android:textColor">?android:attr/textColorPrimary</item>
+  </style>
+
+  <style name="TasnimAboutTitle" parent="TasnimAboutHeading">
+    <item name="android:layout_marginTop">20dp</item>
+    <item name="android:textSize">17sp</item>
+  </style>
+</resources>

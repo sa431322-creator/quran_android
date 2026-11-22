@@ -155,4 +155,23 @@
   <string name="tasnim_menu_translation_preview" translatable="false">به نام خداوند بخشندهٔ مهربان</string>
   <string name="tasnim_menu_section_more" translatable="false">مورد علاقه</string>
   <string name="tasnim_menu_bookmark_page" translatable="false">نشانک این صفحه</string>
+
+  <!-- About screen: the statement on Tasnim (tasnim_about_statement.xml) -->
+  <string name="tasnim_about_basmala" translatable="false">بسم الله الرحمن الرحیم</string>
+  <string name="tasnim_about_opening" translatable="false">الحمد لله، والصلاة والسلام على سید الأنبیاء والمرسلین، سیدنا ونبینا محمد، وعلى آله وصحبه أجمعین.</string>
+  <string name="tasnim_about_title" translatable="false">اپلیکیشن تسنیم؛ گامی نو در مسیر پیوند با قرآن کریم</string>
+  <string name="tasnim_about_intro" translatable="false">اپلیکیشن تسنیم، بستری قرآنی به زبان فارسی است که با هدف فراهم‌ساختن دسترسی آسان به تلاوت، ترجمه، تفسیر و معارف قرآن کریم طراحی شده است تا همراهی شایسته برای علاقه‌مندان کلام الله و راهنمایی در مسیر انس، تدبر و عمل به آیات نورانی قرآن باشد.</string>
+  <string name="tasnim_about_features_title" translatable="false">جلوه‌هایی از نور در اپلیکیشن تسنیم</string>
+  <string name="tasnim_about_feature1_title" translatable="false">۱. پخش زنده شبانه‌روزی برنامه‌های قرآنی</string>
+  <string name="tasnim_about_feature1_body" translatable="false">پخش زنده تصویری برنامه‌های قرآنی، در کنار رادیوی قرآنی ۲۴ ساعته، با مجموعه‌ای از تلاوت‌های دل‌نشین و ترجمه‌های فارسی قرآن کریم؛ فرصتی برای بهره‌مندی از نور وحی و انس با کلام الله در ساعات مختلف شبانه‌روز.</string>
+  <string name="tasnim_about_feature2_title" translatable="false">۲. گنجینه‌ای از معارف و تفاسیر قرآن کریم</string>
+  <string name="tasnim_about_feature2_body" translatable="false">کتابخانه‌ای غنی از آثار تفسیری، منابع علوم قرآنی، آموزش تجوید و ترجمه‌های معتبر فارسی؛ بستری برای آشنایی عمیق‌تر با مفاهیم آیات، گسترش دانش قرآنی و تقویت روحیه تدبر در کلام الله.</string>
+  <string name="tasnim_about_feature3_title" translatable="false">۳. مصحف جامع و تلاوت قاریان برجسته</string>
+  <string name="tasnim_about_feature3_body" translatable="false">مصحف قرآن کریم همراه با مجموعه‌ای از قرائت‌های ارزشمند و تلاوت‌های قاریان برجسته جهان اسلام، در کنار امکانات و منابع مورد نیاز علاقه‌مندان برای بهره‌مندی، آموزش و مطالعه قرآن کریم.</string>
+  <string name="tasnim_about_closing_title" translatable="false">تسنیم؛ همراه شما در مسیر نور و هدایت</string>
+  <string name="tasnim_about_closing" translatable="false">اپلیکیشن تسنیم؛ همراهی برای انس با قرآن، چراغی برای اندیشه و گامی در مسیر هدایت.</string>
+  <string name="tasnim_about_prayer" translatable="false">از الله متعال مسئلت داریم که این تلاش قرآنی را خالصانه در راه رضای خود بپذیرد، آن را در میزان حسنات همه دست‌اندرکاران قرار دهد و به تمامی کسانی که در شکل‌گیری و گسترش این حرکت مبارک همکاری کرده‌اند، اجر و پاداش فراوان عطا فرماید.</string>
+  <string name="tasnim_about_signature_name" translatable="false">محمد انصاری</string>
+  <string name="tasnim_about_signature_org" translatable="false">انجمن همبستگی اجتماعی ندا</string>
+  <string name="tasnim_about_signature_date" translatable="false">۱۴۴۸ هجری قمری ــ ۲۰۲۶ م</string>
 </resources>
