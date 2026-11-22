@@ -11,7 +11,6 @@ import com.quran.labs.androidquran.data.QuranDisplayData
 import com.quran.labs.androidquran.database.DatabaseHandler
 import com.quran.labs.androidquran.database.TranslationsDBAdapter
 import com.quran.labs.androidquran.model.translation.ArabicDatabaseUtils
-import com.quran.labs.androidquran.tasnim.TasnimConfigRepository
 import com.quran.labs.androidquran.util.QuranFileUtils
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.util.ShareUtil
@@ -32,8 +31,7 @@ class ShareContentLoader @Inject constructor(
   private val translationsDBAdapter: TranslationsDBAdapter,
   private val quranFileUtils: QuranFileUtils,
   private val ayahMapper: AyahMapper,
-  private val shareUtil: ShareUtil,
-  private val configRepository: TasnimConfigRepository
+  private val shareUtil: ShareUtil
 ) {
 
   /** Persian tafsir first, then the translations the reader has downloaded. */
@@ -138,19 +136,9 @@ class ShareContentLoader @Inject constructor(
    * The link printed on cards: the update link set in the Tasnim admin panel, else the website,
    * else the app's store page.
    */
-  fun downloadLink(): String {
-    val config = configRepository.cached()
-    val link = config.update.url?.takeIf { it.isNotBlank() }
-      ?: config.links.website?.takeIf { it.isNotBlank() }
-      ?: "https://play.google.com/store/apps/details?id=${appContext.packageName}"
-    // a store app link can't be opened from a picture; print the store's web address instead
-    val webLink = if (link.startsWith("market://details")) {
-      "https://play.google.com/store/apps/" + link.removePrefix("market://")
-    } else {
-      link
-    }
-    return webLink.removePrefix("https://").removePrefix("http://").removePrefix("www.").trimEnd('/')
-  }
+  fun downloadLink(): String =
+    shareUtil.appLink(appContext)
+      .removePrefix("https://").removePrefix("http://").removePrefix("www.").trimEnd('/')
 
   private fun translation(filename: String, start: SuraAyah, end: SuraAyah): Map<SuraAyah, String> {
     return runCatching {
