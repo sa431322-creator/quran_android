@@ -32,6 +32,10 @@ class TasnimFramedLayout(context: Context, private val content: View) : ViewGrou
     setWillNotDraw(false)
     // no touch on the frame falls through to the reader's page behind
     isClickable = true
+    // a remote's focus goes to what is inside the frame (the cards' buttons, the pages), never
+    // to the frame itself, which a click makes focusable
+    isFocusable = false
+    descendantFocusability = FOCUS_AFTER_DESCENDANTS
     PageFrameButtons.style(context, false, menuButton, searchButton)
     if (!framed) {
       menuButton.visibility = GONE

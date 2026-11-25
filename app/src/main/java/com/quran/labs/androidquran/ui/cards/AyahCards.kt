@@ -5,6 +5,12 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.combinedClickable
+import com.quran.labs.androidquran.common.ui.core.isTv
+import androidx.compose.ui.res.colorResource
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.focus.onFocusChanged
+import androidx.compose.ui.focus.focusProperties
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -316,6 +322,7 @@ private fun ShowAllRow(state: AyahCardsState, colors: CardColors, uiFont: FontFa
     Modifier
       .fillMaxWidth()
       .heightIn(min = 48.dp)
+      .tvFocusRing(RoundedCornerShape(12.dp))
       .toggleable(value = state.showAll, role = Role.Switch) { show ->
         state.showAll = show
         state.opened.clear()
@@ -364,6 +371,7 @@ private fun AyahCard(
   val sura = ayahKeySura(item.key)
   val ayah = ayahKeyAyah(item.key)
   val number = QuranUtils.getLocalizedNumber(ayah)
+  val tv = isTv()
   var coordinates by remember { mutableStateOf<LayoutCoordinates?>(null) }
   val shape = RoundedCornerShape(16.dp)
   val background = when {
@@ -378,6 +386,9 @@ private fun AyahCard(
       .clip(shape)
       .background(background)
       .border(1.dp, if (playing) colors.playingBorder else colors.border, shape)
+      // TV: the remote moves between the card's buttons, so the card itself takes no focus
+      // (its buttons sit inside it, where moving on from the card could never reach them)
+      .focusProperties { canFocus = !tv }
       .combinedClickable(
         interactionSource = remember { MutableInteractionSource() },
         indication = null,
@@ -391,14 +402,14 @@ private fun AyahCard(
     Row(verticalAlignment = Alignment.CenterVertically) {
       MushafAyahMarker(ayah, style, 40.dp)
       Spacer(Modifier.weight(1f))
-      IconButton(onClick = { actions.onShare(sura, ayah) }) {
+      IconButton(onClick = { actions.onShare(sura, ayah) }, modifier = Modifier.tvFocusRing(CircleShape)) {
         Icon(
           painterResource(R.drawable.ic_tasnim_share),
           contentDescription = stringResource(R.string.tasnim_verse_share),
           tint = colors.action
         )
       }
-      IconButton(onClick = { actions.onPlay(sura, ayah) }) {
+      IconButton(onClick = { actions.onPlay(sura, ayah) }, modifier = Modifier.tvFocusRing(CircleShape)) {
         // the audio bar's own play icon
         Icon(
           QuranIcons.PlayArrow,
@@ -406,7 +417,7 @@ private fun AyahCard(
           tint = colors.action
         )
       }
-      IconButton(onClick = { actions.onBookmark(sura, ayah) }) {
+      IconButton(onClick = { actions.onBookmark(sura, ayah) }, modifier = Modifier.tvFocusRing(CircleShape)) {
         Icon(
           painterResource(R.drawable.ic_tasnim_bookmark),
           contentDescription = stringResource(R.string.tasnim_cards_bookmark, number),
@@ -461,7 +472,7 @@ private fun AyahCard(
       )
     }
 
-    TextButton(onClick = onToggle) {
+    TextButton(onClick = onToggle, modifier = Modifier.tvFocusRing(RoundedCornerShape(20.dp))) {
       Icon(
         painterResource(R.drawable.ic_expand_more_24),
         contentDescription = null,
@@ -515,3 +526,17 @@ private class CardColors(
 }
 
 private const val TOP_AYAH_SETTLE_MS = 400L
+
+/**
+ * TV: a gold ring round the control the remote is on (the default focus highlight is too faint
+ * across a room). Nothing on a phone.
+ */
+@Composable
+private fun Modifier.tvFocusRing(shape: Shape): Modifier {
+  if (!isTv()) return this
+  var focused by remember { mutableStateOf(false) }
+  val gold = colorResource(R.color.page_frame_gold)
+  return this
+    .onFocusChanged { focused = it.hasFocus }
+    .then(if (focused) Modifier.border(3.dp, gold, shape) else Modifier)
+}

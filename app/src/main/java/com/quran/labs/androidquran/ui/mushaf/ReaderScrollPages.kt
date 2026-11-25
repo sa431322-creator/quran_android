@@ -33,6 +33,16 @@ class ReaderScrollPages(
 
   val isShowing: Boolean get() = view?.isVisible == true
 
+  /** TV: the remote's up/down move the text by most of a screen (TasnimTvMushaf). */
+  fun scrollByKey(direction: Int) {
+    state.keyScroll = direction to System.nanoTime()
+  }
+
+  /** TV: the remote's left/right go to the top of the next or previous page. */
+  fun turnPage(delta: Int) {
+    state.jumpTo = (state.currentPage + delta).coerceIn(1, 604)
+  }
+
   /** Whether the layer is showing and moving on its own (or stopped by a tap, in auto-scroll). */
   val isAutoScrolling: Boolean get() = isShowing && state.auto
 

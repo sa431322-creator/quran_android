@@ -5,6 +5,21 @@ import android.content.Context
 import android.widget.FrameLayout
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.ui.input.key.type
+import androidx.compose.ui.input.key.onPreviewKeyEvent
+import androidx.compose.ui.input.key.key
+import androidx.compose.ui.input.key.KeyEventType
+import androidx.compose.ui.input.key.Key
+import androidx.compose.ui.focus.onFocusChanged
+import com.quran.labs.androidquran.common.ui.core.isTv
+import androidx.compose.runtime.withFrameNanos
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.focus.focusProperties
+import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.foundation.interaction.collectIsFocusedAsState
+import androidx.compose.foundation.LocalIndication
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -154,6 +169,8 @@ private fun MushafMenu(state: MushafMenuState, actions: MushafMenuActions, onDis
         Modifier
           .fillMaxSize()
           .background(Color(0x66000000))
+          // a tap outside closes the menu; the remote never lands on it
+          .focusProperties { canFocus = false }
           .clickable(interactionSource = remember { MutableInteractionSource() }, indication = null) { close() }
       )
     }
@@ -175,7 +192,20 @@ private fun MushafMenu(state: MushafMenuState, actions: MushafMenuActions, onDis
               .systemBarsPadding()
           ) {
             MenuHeader(colors) { close() }
-            Column(Modifier.verticalScroll(rememberScrollState()).padding(bottom = 16.dp)) {
+            // TV: the remote starts on the first setting (docs/tv/PLAN.md, phase 4)
+            val firstSetting = remember { FocusRequester() }
+            val tv = isTv()
+            LaunchedEffect(tv) {
+              if (!tv) return@LaunchedEffect
+              withFrameNanos { }
+              runCatching { firstSetting.requestFocus() }
+            }
+            Column(
+              Modifier
+                .focusRequester(firstSetting)
+                .verticalScroll(rememberScrollState())
+                .padding(bottom = 16.dp)
+            ) {
               if (state.canScrollPages) {
                 SectionTitle(stringResource(R.string.tasnim_menu_display_mode), colors)
                 DisplayModeToggle(state.isScrollReading, colors) { scroll ->
@@ -268,8 +298,7 @@ private fun MenuHeader(colors: MenuColors, onClose: () -> Unit) {
     Box(
       Modifier
         .size(40.dp)
-        .clip(CircleShape)
-        .clickable(onClick = onClose),
+        .menuClickable(CircleShape, colors, onClose),
       contentAlignment = Alignment.Center
     ) {
       Icon(QuranIcons.Close, contentDescription = stringResource(R.string.tasnim_menu_close), tint = colors.accent)
@@ -302,7 +331,7 @@ private fun MenuRow(
     Row(
       Modifier
         .fillMaxWidth()
-        .clickable(onClick = onClick)
+        .menuClickable(RectangleShape, colors, onClick)
         .padding(horizontal = 20.dp, vertical = 14.dp),
       verticalAlignment = Alignment.CenterVertically
     ) {
@@ -344,7 +373,7 @@ private fun ModeHalf(title: String, selected: Boolean, colors: MenuColors, modif
       .fillMaxHeight()
       .clip(RoundedCornerShape(24.dp))
       .background(if (selected) colors.accent else Color.Transparent)
-      .clickable(onClick = onClick),
+      .menuClickable(RoundedCornerShape(24.dp), colors, onClick),
     contentAlignment = Alignment.Center
   ) {
     Text(
@@ -356,6 +385,7 @@ private fun ModeHalf(title: String, selected: Boolean, colors: MenuColors, modif
 
 @Composable
 private fun NightModeRow(night: Boolean, colors: MenuColors, onChange: (Boolean) -> Unit) {
+  val tv = isTv()
   MenuRow(
     painterResource(R.drawable.ic_tasnim_moon),
     stringResource(R.string.tasnim_menu_night_mode),
@@ -364,6 +394,8 @@ private fun NightModeRow(night: Boolean, colors: MenuColors, onChange: (Boolean)
       Switch(
         checked = night,
         onCheckedChange = onChange,
+        // the row itself toggles it, so the remote doesn't stop twice on one setting
+        modifier = Modifier.focusProperties { canFocus = !tv },
         colors = SwitchDefaults.colors(checkedTrackColor = colors.accent)
       )
     }
@@ -397,12 +429,12 @@ private fun PageColors(
         Box(
           Modifier
             .size(38.dp)
+            .menuClickable(CircleShape, colors) { onTheme(theme) }
             .clip(CircleShape)
             .border(if (isSelected) 3.dp else 1.dp, if (isSelected) colors.accent else colors.gold, CircleShape)
             .padding(if (isSelected) 5.dp else 2.dp)
             .clip(CircleShape)
             .background(Color(theme.backgroundColor(context)))
-            .clickable { onTheme(theme) }
         )
       }
     }
@@ -424,7 +456,15 @@ private fun TextSizeRow(
   onChange: (Int) -> Unit
 ) {
   var value by remember { mutableStateOf(size.toFloat()) }
-  Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 10.dp)) {
+  var sliderFocused by remember { mutableStateOf(false) }
+  val tv = isTv()
+  Column(
+    Modifier
+      .fillMaxWidth()
+      // TV: the remote's left/right move the slider; a gold frame shows it has the focus
+      .then(if (sliderFocused && tv) Modifier.border(3.dp, colors.gold) else Modifier)
+      .padding(horizontal = 20.dp, vertical = 10.dp)
+  ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       Text(title, style = MenuText.copy(color = colors.ink), modifier = Modifier.weight(1f))
       Text(
@@ -436,6 +476,22 @@ private fun TextSizeRow(
       value = value,
       onValueChange = { value = it },
       onValueChangeFinished = { onChange(value.toInt()) },
+      modifier = Modifier
+        .onFocusChanged { sliderFocused = it.isFocused }
+        // TV: left/right step the size, saved at once (the track runs right to left, so left
+        // is bigger); up/down move on through the menu
+        .onPreviewKeyEvent { event ->
+          if (!tv || event.type != KeyEventType.KeyDown) return@onPreviewKeyEvent false
+          val step = when (event.key) {
+            Key.DirectionLeft -> 1
+            Key.DirectionRight -> -1
+            else -> return@onPreviewKeyEvent false
+          }
+          val next = (value.toInt() + step).coerceIn(MIN_TEXT_SIZE, MAX_TEXT_SIZE)
+          value = next.toFloat()
+          onChange(next)
+          true
+        },
       valueRange = MIN_TEXT_SIZE.toFloat()..MAX_TEXT_SIZE.toFloat(),
       // whole sizes only, one stop for each
       steps = MAX_TEXT_SIZE - MIN_TEXT_SIZE - 1,
@@ -462,3 +518,18 @@ private fun TextSizeRow(
 /** The settings screen's range for both sizes (its sliders run to 40); a size under 10 is unreadable. */
 private const val MIN_TEXT_SIZE = 10
 private const val MAX_TEXT_SIZE = 40
+
+/**
+ * A menu control's click; on TV a gold frame marks the one the remote is on (the default
+ * focus highlight is too faint across a room). The same as a plain click on a phone.
+ */
+@Composable
+private fun Modifier.menuClickable(shape: Shape, colors: MenuColors, onClick: () -> Unit): Modifier {
+  val interaction = remember { MutableInteractionSource() }
+  val focused by interaction.collectIsFocusedAsState()
+  val tv = isTv()
+  return this
+    .clip(shape)
+    .then(if (tv && focused) Modifier.border(3.dp, colors.gold, shape) else Modifier)
+    .clickable(interactionSource = interaction, indication = LocalIndication.current, onClick = onClick)
+}

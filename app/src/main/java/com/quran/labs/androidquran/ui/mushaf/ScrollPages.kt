@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.collectIsDraggedAsState
 import androidx.compose.foundation.layout.Box
@@ -74,6 +75,9 @@ class ScrollPagesState {
   var currentPage by mutableIntStateOf(1)
   /** a page to bring to the top (the reader went there by other means); cleared once done */
   var jumpTo by mutableStateOf<Int?>(null)
+
+  /** TV: a remote's up (-1) or down (1) press, with a stamp so the same press twice still moves */
+  var keyScroll by mutableStateOf<Pair<Int, Long>?>(null)
   /** auto-scroll: the pages move on their own and show its controls; otherwise read by hand */
   var auto by mutableStateOf(false)
   /** in auto-scroll, whether the text is moving */
@@ -181,6 +185,13 @@ internal fun ScrollPages(
             delay(PAGE_SETTLE_MS)
             currentActions.onPage(page)
           }
+      }
+      val keyScroll = state.keyScroll
+      LaunchedEffect(list, keyScroll) {
+        val (direction, _) = keyScroll ?: return@LaunchedEffect
+        // most of a screen, so a line at the bottom is still seen at the top after the move
+        list.animateScrollBy(direction * list.layoutInfo.viewportSize.height * 0.6f)
+        state.keyScroll = null
       }
       val jumpTo = state.jumpTo
       LaunchedEffect(list, jumpTo) {

@@ -3,9 +3,12 @@ package com.quran.labs.androidquran.tasnim
 import android.content.Context
 import androidx.activity.OnBackPressedCallback
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import androidx.core.view.doOnLayout
+import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.feature.livetv.radio.LiveRadioService
 
@@ -37,7 +40,7 @@ object TasnimTvMushaf {
   /**
    * The remote in the mushaf reader. Left/right already turn pages (the pager handles the
    * arrows, right to left). This adds:
-   * - center / enter / menu on the page: show or hide the bars (sura jump, audio, settings);
+   * - center / enter on the page: show or hide the bars (sura jump, audio, settings);
    * - play / play-pause with nothing playing: start the recitation from this page. Android
    *   sends media keys to the last media session that played, when there is one, so this runs
    *   only before any: after a recitation the keys reach AudioService's session (pause/resume),
@@ -57,10 +60,9 @@ object TasnimTvMushaf {
   ): Boolean {
     if (event.repeatCount > 0) return false
     return when (keyCode) {
-      KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER,
-      KeyEvent.KEYCODE_NUMPAD_ENTER, KeyEvent.KEYCODE_MENU -> {
+      KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_NUMPAD_ENTER -> {
         // only on the page itself: on a bar's button center presses that button
-        if (focused == null || focused === pager || keyCode == KeyEvent.KEYCODE_MENU) {
+        if (focused == null || focused === pager) {
           toggleBars()
           true
         } else {
@@ -75,16 +77,92 @@ object TasnimTvMushaf {
   }
 
   /**
-   * The page fills the screen, so the remote can't move up from it into the bars: showing them
-   * puts the focus on their first button, hiding them gives it back to the page.
+   * The remote's menu key opens the mushaf menu, which on a landscape screen has no frame
+   * button. AppCompat takes this key for the bar's overflow before onKeyDown, so this runs from
+   * dispatchKeyEvent. Returns true when the key was taken.
    */
-  fun focusBars(visible: Boolean, bars: View, pager: View) {
-    if (visible) bars.post { bars.requestFocus() } else pager.requestFocus()
+  fun interceptMenuKey(event: KeyEvent, overlay: View, openMenu: () -> Unit): Boolean {
+    if (event.keyCode != KeyEvent.KEYCODE_MENU) return false
+    // a panel already open (the menu itself, a sheet) is closed with back, not replaced
+    if (event.action == KeyEvent.ACTION_UP && !event.isCanceled && overlay.visibility != View.VISIBLE) {
+      openMenu()
+    }
+    return true
   }
 
-  /** With the bars hidden (or nothing focused), the remote's focus belongs on the page. */
-  fun keepFocus(barsHidden: Boolean, focused: View?, pager: View) {
-    if (focused == null || (barsHidden && focused !== pager)) pager.requestFocus()
+  /**
+   * The remote over the scrolling (vertical) pages, which have nothing to focus: with the focus on
+   * the pages, up/down move the text and left/right go to the next or previous page (left is
+   * next, as a Persian book turns). Returns true when the key was taken.
+   */
+  fun onScrollPagesKey(
+    keyCode: Int,
+    focused: View?,
+    pager: View,
+    scroll: (direction: Int) -> Unit,
+    turn: (delta: Int) -> Unit
+  ): Boolean {
+    if (focused != null && focused !== pager) return false
+    when (keyCode) {
+      KeyEvent.KEYCODE_DPAD_UP -> scroll(-1)
+      KeyEvent.KEYCODE_DPAD_DOWN -> scroll(1)
+      KeyEvent.KEYCODE_DPAD_LEFT -> turn(1)
+      KeyEvent.KEYCODE_DPAD_RIGHT -> turn(-1)
+      else -> return false
+    }
+    return true
+  }
+
+  /**
+   * The page fills the screen, so the remote can't move up from it into the bars: showing them
+   * puts the focus on their first button, hiding them gives it back to what is being read.
+   */
+  fun focusBars(visible: Boolean, bars: View, surface: View) {
+    if (visible) bars.post { bars.requestFocus() } else surface.requestFocus()
+  }
+
+  /**
+   * With the bars hidden (or nothing focused), the remote's focus belongs on what is being read
+   * ([surface]: the pages, or the translation cards or scrolling pages over them, whose buttons
+   * the remote moves through); not while a panel is open over it ([overlay]: the mushaf menu, a
+   * bookmark or page theme sheet), which hides the bars itself and keeps the focus.
+   */
+  fun keepFocus(barsHidden: Boolean, focused: View?, surface: View, overlay: View, pager: View) {
+    if (overlay.visibility == View.VISIBLE) return
+    val onHiddenPages = focused === pager && surface !== pager
+    if (focused == null || onHiddenPages || (barsHidden && !surface.holds(focused))) {
+      // a view shown this moment is laid out (and has focusable children) only after this frame
+      surface.post { surface.requestFocus() }
+    }
+  }
+
+  /**
+   * An arrow key on the pages while the translation cards or scrolling pages cover them: the
+   * remote goes into those instead (the pages behind would turn unseen).
+   */
+  fun moveIntoSurface(keyCode: Int, focused: View?, surface: View, pager: View): Boolean {
+    if (surface === pager || focused !== pager) return false
+    if (keyCode != KeyEvent.KEYCODE_DPAD_UP && keyCode != KeyEvent.KEYCODE_DPAD_DOWN &&
+      keyCode != KeyEvent.KEYCODE_DPAD_LEFT && keyCode != KeyEvent.KEYCODE_DPAD_RIGHT
+    ) {
+      return false
+    }
+    surface.requestFocus()
+    return true
+  }
+
+  /**
+   * The reader bar on TV: the mushaf menu gets a button there, since its page frame button is
+   * only on portrait screens and a TV is always landscape; turning the screen means nothing on
+   * a TV, so that button goes.
+   */
+  fun prepareReaderMenu(context: Context, menu: Menu) {
+    if (menu.findItem(R.id.tasnim_tv_mushaf_menu) == null) {
+      menu.add(Menu.NONE, R.id.tasnim_tv_mushaf_menu, Menu.NONE, R.string.tasnim_menu_title)
+        .setIcon(R.drawable.ic_tasnim_menu)
+        .setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS)
+    }
+    menu.findItem(R.id.rotate_screen)?.isVisible = false
   }
 
   /** The reader came to the front: a paused radio lets go of the remote's media keys. */
@@ -105,5 +183,15 @@ object TasnimTvMushaf {
   }
 
   /** The bars' auto-hide waits while the remote is inside them. */
-  fun mayAutoHide(focused: View?, pager: View): Boolean = focused == null || focused === pager
+  fun mayAutoHide(focused: View?, surface: View): Boolean = focused == null || surface.holds(focused)
+
+  /** Whether [view] is this view or inside it. */
+  private fun View.holds(view: View): Boolean {
+    var current: View? = view
+    while (current != null) {
+      if (current === this) return true
+      current = current.parent as? View
+    }
+    return false
+  }
 }

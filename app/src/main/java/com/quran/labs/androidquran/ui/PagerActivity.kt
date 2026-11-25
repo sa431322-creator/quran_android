@@ -357,7 +357,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       if (activity != null) {
         if (msg.what == MSG_HIDE_ACTIONBAR) {
           // TV: not while the remote is in the bars (phase 4)
-          if (!activity.isTv() || TasnimTvMushaf.mayAutoHide(activity.currentFocus, activity.viewPager)) {
+          if (!activity.isTv() || TasnimTvMushaf.mayAutoHide(activity.currentFocus, activity.tvReadingSurface())) {
             activity.toggleActionBarVisibility(false)
           }
         } else {
@@ -850,7 +850,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
   override fun onWindowFocusChanged(hasFocus: Boolean) {
     super.onWindowFocusChanged(hasFocus)
     // TV: back from a sheet or dialog, the remote returns to the page (phase 4)
-    if (hasFocus && isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
+    if (hasFocus && isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, tvReadingSurface(), overlay, viewPager)
     if (hasFocus) {
       handler.sendEmptyMessageDelayed(MSG_HIDE_ACTIONBAR, DEFAULT_HIDE_AFTER_TIME)
     } else {
@@ -986,7 +986,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     isActionBarHidden = !visible
     // TV: hidden bars can't keep the remote's focus, and back hides shown ones (phase 4)
     if (isTv()) {
-      TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, viewPager)
+      TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, tvReadingSurface(), overlay, viewPager)
       TasnimTvMushaf.onBarsShown(tvBarsBackCallback, visible)
     }
     ayahCards.state.barsVisible = visible
@@ -1076,6 +1076,28 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     }
   }
 
+  /** TV: what is being read, where the remote's focus belongs when the bars are hidden. */
+  private fun tvReadingSurface(): View = ayahCards.focusView ?: viewPager
+
+  override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+    // TV: the remote's menu key opens the mushaf menu, not the bar's overflow (phase 4)
+    if (isTv() && TasnimTvMushaf.interceptMenuKey(event, overlay, ::onPageFrameMenu)) return true
+    if (isTv() && event.action == KeyEvent.ACTION_DOWN && scrollPages.isShowing &&
+      overlay.visibility != View.VISIBLE &&
+      TasnimTvMushaf.onScrollPagesKey(
+        event.keyCode, currentFocus, viewPager, scrollPages::scrollByKey, scrollPages::turnPage
+      )
+    ) {
+      return true
+    }
+    if (isTv() && event.action == KeyEvent.ACTION_DOWN &&
+      TasnimTvMushaf.moveIntoSurface(event.keyCode, currentFocus, tvReadingSurface(), viewPager)
+    ) {
+      return true
+    }
+    return super.dispatchKeyEvent(event)
+  }
+
   override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
     // TV remote (docs/tv/PLAN.md, phase 4): bars on center, recitation on play
     if (isTv() && TasnimTvMushaf.onReaderKeyDown(
@@ -1083,7 +1105,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
         hasAudio = audioStatusRepositoryBridge.audioRequest() != null,
         toggleBars = {
           toggleActionBar()
-          TasnimTvMushaf.focusBars(!isActionBarHidden, toolBarArea, viewPager)
+          TasnimTvMushaf.focusBars(!isActionBarHidden, toolBarArea, tvReadingSurface())
         },
         play = ::onPlayPressed
       )
@@ -1430,6 +1452,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     // hidden only when the system ignores app orientation requests
     menu.findItem(R.id.rotate_screen)?.isVisible =
       OrientationLockUtils.isOrientationLockSupported(resources.configuration)
+    // TV: the mushaf menu on the bar, no rotate button (phase 4)
+    if (isTv()) TasnimTvMushaf.prepareReaderMenu(this, menu)
     return true
   }
 
@@ -1437,6 +1461,9 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     val itemId = item.itemId
     if (itemId == R.id.favorite_item) {
       showReadingBookmarkSheet(ReadingBookmarkTarget.Page(currentPage))
+      return true
+    } else if (itemId == R.id.tasnim_tv_mushaf_menu) {
+      onPageFrameMenu()
       return true
     } else if (itemId == R.id.goto_quran) {
       switchToQuran()
@@ -2037,7 +2064,11 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       override fun onAutoScroll() = startAutoScroll()
       override fun onIndex() = showSuraJumpSheet()
       override fun onSearch() = onPageFrameSearch()
-      override fun onAudio() = toggleActionBarVisibility(true)
+      override fun onAudio() {
+        toggleActionBarVisibility(true)
+        // TV: the remote goes to the bars, where the audio bar is (phase 4)
+        if (isTv()) TasnimTvMushaf.focusBars(true, toolBarArea, tvReadingSurface())
+      }
 
       override fun onNightMode(night: Boolean) {
         quranSettings.pageAppearance =
@@ -2440,6 +2471,8 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
     ayahCards.show(start, repository, toolBarArea.height, audioStatusBar.height + pageSliderArea.height)
     showAyahCardsFrameLabels(start.sura, start.ayah)
     onAyahCardsBackCallback.isEnabled = true
+    // TV: the remote goes into the cards (phase 4)
+    if (isTv()) TasnimTvMushaf.keepFocus(isActionBarHidden, currentFocus, tvReadingSurface(), overlay, viewPager)
     // the whole Quran's text, loaded once (not again while a load is still running)
     if (ayahCards.state.persian == null && persianTextJob?.isActive != true) {
       persianTextJob = lifecycleScope.launch {

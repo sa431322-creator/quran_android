@@ -30,6 +30,9 @@ class ReaderAyahCards(
 
   val isShowing: Boolean get() = view?.isVisible == true
 
+  /** The cards while they show, where the TV remote's focus belongs (TasnimTvMushaf). */
+  val focusView: View? get() = view?.takeIf { it.isVisible }
+
   /**
    * Shows the cards at [start], drawn with [repository]'s fonts, between bars [topInset] and
    * [bottomInset] px high.
