@@ -91,6 +91,12 @@ data class MushafMenuState(
   val isScrollReading: Boolean,
   val nightMode: Boolean,
   val pageTheme: PageTheme,
+  /**
+   * The text-size section only changes the translation view and the ayah cards; the mushaf's
+   * own pages (images, or the tajweed text sized to its 15 lines) never follow it, so it is
+   * hidden there.
+   */
+  val showTextSize: Boolean = true,
   /** «اندازهٔ متن آیه» and «اندازه قلم ترجمه» (sp) */
   val ayahTextSize: Int = 15,
   val translationTextSize: Int = 15
@@ -241,23 +247,25 @@ private fun MushafMenu(state: MushafMenuState, actions: MushafMenuActions, onDis
                 onMore = { close { actions.onMorePageThemes() } }
               )
 
-              SectionTitle(stringResource(R.string.tasnim_menu_section_text_size), colors)
-              TextSizeRow(
-                stringResource(R.string.prefs_ayah_text_title),
-                state.ayahTextSize,
-                preview = stringResource(R.string.tasnim_menu_ayah_preview),
-                arabic = true,
-                colors = colors,
-                onChange = actions::onAyahTextSize
-              )
-              TextSizeRow(
-                stringResource(R.string.prefs_translation_text_title),
-                state.translationTextSize,
-                preview = stringResource(R.string.tasnim_menu_translation_preview),
-                arabic = false,
-                colors = colors,
-                onChange = actions::onTranslationTextSize
-              )
+              if (state.showTextSize) {
+                SectionTitle(stringResource(R.string.tasnim_menu_section_text_size), colors)
+                TextSizeRow(
+                  stringResource(R.string.prefs_ayah_text_title),
+                  state.ayahTextSize,
+                  preview = stringResource(R.string.tasnim_menu_ayah_preview),
+                  arabic = true,
+                  colors = colors,
+                  onChange = actions::onAyahTextSize
+                )
+                TextSizeRow(
+                  stringResource(R.string.prefs_translation_text_title),
+                  state.translationTextSize,
+                  preview = stringResource(R.string.tasnim_menu_translation_preview),
+                  arabic = false,
+                  colors = colors,
+                  onChange = actions::onTranslationTextSize
+                )
+              }
 
               SectionTitle(stringResource(R.string.tasnim_menu_section_more), colors)
               MenuRow(painterResource(R.drawable.ic_tasnim_bookmark), stringResource(R.string.tasnim_menu_bookmark_page), colors) {

@@ -2049,6 +2049,7 @@ class PagerActivity : AppCompatActivity(), AudioBarListener, OnBookmarkTagsUpdat
       isScrollReading = ReaderScrollPages.isScrollReading(this),
       nightMode = quranSettings.isNightMode,
       pageTheme = PageTheme.fromKey(quranSettings.pageTheme),
+      showTextSize = showingTranslation || ayahCards.isShowing,
       ayahTextSize = quranSettings.ayahTextSize,
       translationTextSize = quranSettings.translationTextSize
     )
