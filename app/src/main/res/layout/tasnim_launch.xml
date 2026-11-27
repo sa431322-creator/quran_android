@@ -148,6 +148,20 @@
               android:text="@string/tasnim_section_radio"
               app:drawableTopCompat="@drawable/ic_tasnim_radio" />
         </LinearLayout>
+
+        <!-- articles from the control panel: one wide tile, icon beside the text -->
+        <TextView
+            android:id="@+id/launch_articles"
+            style="@style/TasnimLaunchTile"
+            android:layout_width="match_parent"
+            android:layout_weight="0"
+            android:layout_marginTop="12dp"
+            android:paddingStart="20dp"
+            android:paddingTop="14dp"
+            android:paddingEnd="20dp"
+            android:paddingBottom="14dp"
+            android:text="@string/tasnim_section_articles"
+            app:drawableStartCompat="@drawable/ic_tasnim_articles" />
       </LinearLayout>
 
       <LinearLayout

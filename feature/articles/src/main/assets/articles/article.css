@@ -1,0 +1,157 @@
+/*
+ * Article page in the app (ADR 0016 in tasneem-backend). The .article-body rules are the same as
+ * the control panel's editor (apps/admin/src/styles.css) and the website (apps/web/src/styles.css);
+ * only the --a-* colours differ (Tasnim colours, light and dark).
+ */
+@font-face {
+  font-family: Vazirmatn;
+  src: url("file:///android_res/font/vazirmatn.ttf");
+}
+:root {
+  --a-bg: #f7f0e1;
+  --a-text: #1c1a16;
+  --a-muted: #5a5347;
+  --a-accent: #1f4e56;
+  --a-gold: #c8a45e;
+  --a-soft: #f2e9d6;
+  --a-border: #e4dac4;
+  --a-mark: rgba(200, 164, 94, 0.35);
+}
+:root.dark {
+  --a-bg: #0e1518;
+  --a-text: #e8e0cc;
+  --a-muted: #a9a08c;
+  --a-accent: #8ccadb;
+  --a-gold: #c8a45e;
+  --a-soft: #1a252a;
+  --a-border: #2a3a40;
+  --a-mark: rgba(200, 164, 94, 0.3);
+}
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  padding: 16px 20px 40px;
+  background: var(--a-bg);
+  color: var(--a-text);
+  font-family: Vazirmatn, sans-serif;
+  -webkit-tap-highlight-color: transparent;
+}
+.cover { display: block; width: 100%; aspect-ratio: 16 / 9; object-fit: cover; border-radius: 16px; margin-bottom: 18px; }
+h1.title { margin: 0 0 8px; font-size: 25px; line-height: 1.6; font-weight: 700; color: var(--a-accent); }
+.byline { font-size: 13px; color: var(--a-muted); margin-bottom: 12px; }
+.summary { margin: 0 0 22px; font-size: 16px; line-height: 2; color: var(--a-muted); }
+.article-body {
+  font-family: Vazirmatn, sans-serif;
+  font-size: 17px;
+  line-height: 2;
+  color: var(--a-text);
+  overflow-wrap: anywhere;
+}
+.article-body > * + * {
+  margin-top: 0.9em;
+}
+.article-body p {
+  margin: 0;
+}
+.article-body h2,
+.article-body h3,
+.article-body h4 {
+  margin: 1.4em 0 0.4em;
+  line-height: 1.6;
+  font-weight: 700;
+  color: var(--a-accent);
+}
+.article-body h2 {
+  font-size: 1.45em;
+}
+.article-body h3 {
+  font-size: 1.22em;
+}
+.article-body h4 {
+  font-size: 1.05em;
+}
+.article-body > :first-child {
+  margin-top: 0;
+}
+.article-body a {
+  color: var(--a-accent);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.article-body mark {
+  background: var(--a-mark);
+  color: inherit;
+  border-radius: 3px;
+  padding: 0 2px;
+}
+.article-body ul,
+.article-body ol {
+  margin: 0;
+  padding-inline-start: 1.6em;
+}
+.article-body ul {
+  list-style: disc;
+}
+.article-body ol {
+  list-style: decimal;
+}
+.article-body li > p {
+  margin: 0;
+}
+.article-body li + li {
+  margin-top: 0.25em;
+}
+.article-body blockquote {
+  margin-inline: 0;
+  padding: 0.6em 1em;
+  border-inline-start: 4px solid var(--a-gold);
+  background: var(--a-soft);
+  border-radius: 0 10px 10px 0;
+  color: var(--a-text);
+}
+.article-body[dir="rtl"] blockquote,
+[dir="rtl"] .article-body blockquote {
+  border-radius: 10px 0 0 10px;
+}
+.article-body img {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  margin-inline: auto;
+  border-radius: 12px;
+}
+.article-body hr {
+  border: 0;
+  height: 1px;
+  background: var(--a-border);
+  margin: 1.6em 0;
+}
+.article-body table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92em;
+  display: block;
+  overflow-x: auto;
+}
+.article-body th,
+.article-body td {
+  border: 1px solid var(--a-border);
+  padding: 0.4em 0.7em;
+  text-align: start;
+  vertical-align: top;
+}
+.article-body th {
+  background: var(--a-soft);
+  font-weight: 700;
+}
+.article-body td > p,
+.article-body th > p {
+  margin: 0;
+}
+.article-body code {
+  font-family: ui-monospace, monospace;
+  font-size: 0.9em;
+  background: var(--a-soft);
+  padding: 0 4px;
+  border-radius: 4px;
+}

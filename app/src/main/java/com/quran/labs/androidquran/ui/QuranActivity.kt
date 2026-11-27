@@ -73,6 +73,7 @@ import com.quran.labs.androidquran.util.QuranSettings
 import com.quran.labs.androidquran.util.QuranUtils
 import com.quran.labs.androidquran.view.SlidingTabLayout
 import com.quran.mobile.di.ExtraScreenProvider
+import com.quran.mobile.feature.articles.ArticlesActivity
 import com.quran.mobile.feature.library.LibraryActivity
 import com.quran.mobile.feature.livetv.LiveTvActivity
 import com.quran.mobile.feature.livetv.data.LiveChannelRepository
@@ -465,6 +466,10 @@ class QuranActivity : AppCompatActivity(),
     findViewById<View>(R.id.nav_listen).setOnClickListener { jumpToLastPage() }
     findViewById<View>(R.id.nav_library).setOnClickListener {
       startActivity(Intent(this, LibraryActivity::class.java))
+    }
+    // TV's home layout has no articles item (articles are phone and tablet only for now)
+    findViewById<View>(R.id.nav_articles)?.setOnClickListener {
+      startActivity(Intent(this, ArticlesActivity::class.java))
     }
     // the selected item's icon carries its own colors
     TextViewCompat.setCompoundDrawableTintList(findViewById(R.id.nav_quran), null)

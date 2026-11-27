@@ -249,6 +249,7 @@ dependencies {
   implementation(project(":feature:pagetheme"))
   implementation(project(":feature:downloadmanager"))
   implementation(project(":feature:library"))
+  implementation(project(":feature:articles"))
   implementation(project(":feature:livetv"))
   // Ads (ADR 0010): house ads from the Tasnim server, never on Quran pages. Builds made with
   // -PnoAds (also set for F-Droid together with -PdisableFirebase) get ads-noop: no ad code runs.
