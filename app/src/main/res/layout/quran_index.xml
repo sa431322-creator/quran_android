@@ -287,5 +287,11 @@
         style="@style/TasnimNavItem"
         android:text="@string/tasnim_nav_library"
         app:drawableTopCompat="@drawable/ic_tasnim_library" />
+
+    <TextView
+        android:id="@+id/nav_articles"
+        style="@style/TasnimNavItem"
+        android:text="@string/tasnim_nav_articles"
+        app:drawableTopCompat="@drawable/ic_tasnim_articles" />
   </LinearLayout>
 </LinearLayout>

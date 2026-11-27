@@ -47,6 +47,7 @@ import com.quran.labs.androidquran.QuranPreferenceActivity
 import com.quran.labs.androidquran.R
 import com.quran.labs.androidquran.data.Constants
 import com.quran.labs.androidquran.util.ThemeUtil
+import com.quran.mobile.feature.articles.ArticlesActivity
 import com.quran.mobile.feature.library.LibraryActivity
 import com.quran.mobile.feature.livetv.LiveTvActivity
 import com.quran.mobile.feature.livetv.radio.RadioActivity
@@ -95,6 +96,10 @@ class TasnimLaunchActivity : AppCompatActivity() {
     findViewById<View>(R.id.launch_mushaf).setOnClickListener { openMushaf() }
     findViewById<View>(R.id.launch_library).setOnClickListener {
       startActivity(Intent(this, LibraryActivity::class.java))
+    }
+    // not in the TV layout (articles are phone and tablet only for now)
+    findViewById<View>(R.id.launch_articles)?.setOnClickListener {
+      startActivity(Intent(this, ArticlesActivity::class.java))
     }
     findViewById<View>(R.id.launch_live).setOnClickListener {
       startActivity(Intent(this, LiveTvActivity::class.java))

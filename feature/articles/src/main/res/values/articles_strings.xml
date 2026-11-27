@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Articles (ADR 0016 in tasneem-backend). The articles are Persian, so these are Persian everywhere. -->
+<resources>
+  <string name="articles_title" translatable="false">مقاله‌ها</string>
+  <string name="articles_back" translatable="false">بازگشت</string>
+  <string name="articles_empty" translatable="false">هنوز مقاله‌ای منتشر نشده است</string>
+  <string name="articles_error" translatable="false">بارگیری مقاله‌ها فعلاً ممکن نیست</string>
+  <string name="articles_offline" translatable="false">نسخهٔ ذخیره‌شده؛ اتصال به اینترنت برقرار نیست</string>
+  <string name="articles_retry" translatable="false">تلاش دوباره</string>
+  <string name="articles_more" translatable="false">مقاله‌های قدیمی‌تر</string>
+  <string name="articles_share" translatable="false">هم‌رسانی</string>
+  <string name="articles_by" translatable="false">نوشتهٔ %1$s</string>
+  <string name="articles_not_found" translatable="false">این مقاله دیگر در دسترس نیست</string>
+</resources>

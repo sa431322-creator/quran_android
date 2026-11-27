@@ -96,6 +96,12 @@
         android:name="com.quran.mobile.feature.library.reader.LibraryReaderActivity"
         android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
     <activity
+        android:name="com.quran.mobile.feature.articles.ArticlesActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
+    <activity
+        android:name="com.quran.mobile.feature.articles.ArticleActivity"
+        android:theme="@style/QuranToolBarDayNight.TasnimUi"/>
+    <activity
         android:name=".ui.PagerActivity"
         android:launchMode="singleTop"
         android:theme="@style/QuranToolBar.Overlay"
