@@ -31,6 +31,8 @@ class ArticleImages(private val client: OkHttpClient) {
         BitmapFactory.decodeFile(file.path)?.also { memory.put(url, it) }
       } catch (_: IOException) {
         null
+      } catch (_: IllegalArgumentException) {
+        null // a link OkHttp can't use (not http/https): no picture, never a crash
       }
     }
   }

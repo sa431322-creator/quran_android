@@ -79,6 +79,7 @@ class ArticlesTest {
       override suspend fun article(id: Long): Article = when (mode) {
         "online" -> article
         "gone" -> throw ArticlesApiException.NotFound(id)
+        "down" -> throw ArticlesApiException.Unavailable("HTTP 502")
         else -> throw IOException("offline")
       }
     }
@@ -89,6 +90,9 @@ class ArticlesTest {
     mode = "offline"
     assertThat(repo.article(7)).isEqualTo(com.quran.mobile.feature.articles.data.Loaded(article, offline = true))
     assertThat(repo.firstPage().offline).isTrue()
+
+    mode = "down"
+    assertThat(repo.article(7).offline).isTrue()
 
     mode = "gone"
     runCatching { repo.article(7) }

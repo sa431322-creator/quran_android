@@ -21,13 +21,18 @@ class ArticlesRepository(
   private val pageAdapter = moshi.adapter(ArticlePage::class.java)
   private val articleAdapter = moshi.adapter(Article::class.java)
 
-  /** The newest articles; the saved first page when offline. Throws when there is neither. */
+  /**
+   * The newest articles; the saved first page when the server can't be reached or is down.
+   * Throws when there is neither.
+   */
   suspend fun firstPage(): Loaded<ArticlePage> =
     try {
       val page = api.page(null)
       save(LIST_FILE) { pageAdapter.toJson(page) }
       Loaded(page, offline = false)
     } catch (e: IOException) {
+      read(LIST_FILE) { pageAdapter.fromJson(it) }?.let { Loaded(it, offline = true) } ?: throw e
+    } catch (e: ArticlesApiException.Unavailable) {
       read(LIST_FILE) { pageAdapter.fromJson(it) }?.let { Loaded(it, offline = true) } ?: throw e
     }
 
@@ -45,6 +50,8 @@ class ArticlesRepository(
       withContext(Dispatchers.IO) { File(dir, file).delete() }
       throw e
     } catch (e: IOException) {
+      read(file) { articleAdapter.fromJson(it) }?.let { Loaded(it, offline = true) } ?: throw e
+    } catch (e: ArticlesApiException.Unavailable) {
       read(file) { articleAdapter.fromJson(it) }?.let { Loaded(it, offline = true) } ?: throw e
     }
   }
